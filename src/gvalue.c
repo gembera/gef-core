@@ -52,7 +52,7 @@ g_value_destroy_data(GValue * value){
 		GPtrArray* a = (GPtrArray*)value->data.v_pointer;
 		for(i = 0; i < g_ptr_array_length(a); i++)
 		{
-			GValue * vi = g_ptr_array_index(a, i);
+			GValue * vi = g_ptr_array_get(a, i);
 			g_value_destroy(vi);
 		}
 		g_ptr_array_free(a);
@@ -335,7 +335,7 @@ void g_value_set_double_by_path(GValue * value, gstring path, gdouble pathval)
 GValue * g_value_get_by_index(GValue * value, gint index)
 {
 	GPtrArray * ar = g_value_get_array(value);
-	return ar == NULL ? NULL : (GValue *)g_ptr_array_index(ar, index);
+	return ar == NULL ? NULL : (GValue *)g_ptr_array_get(ar, index);
 }
 gint g_value_array_length(GValue * value)
 {

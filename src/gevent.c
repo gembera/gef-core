@@ -88,8 +88,8 @@ void g_event_fire(GEvent * self, gpointer args)
 	{
 		for(i = 0; i < g_ptr_array_length(self->items_to_free); i++)
 		{
-			g_list_free_1((GList*)g_ptr_array_index(self->items_to_free, i));
+			g_list_free_1((GList*)g_ptr_array_get(self->items_to_free, i));
 		}
-		g_ptr_array_set_size(self->items_to_free, 0);
+		g_ptr_array_set_length(self->items_to_free, 0);
 	}
 }

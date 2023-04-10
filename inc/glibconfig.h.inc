@@ -54,3 +54,7 @@
 #define g_log_debug printf
 
 #define g_print printf
+
+
+#cmakedefine ENABLE_MEM_PROFILE
+#cmakedefine ENABLE_MEM_RECORD

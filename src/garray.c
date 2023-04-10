@@ -12,69 +12,79 @@ struct _GRealArray {
   guint8 *data;
   guint len;
   guint alloc;
+  guint item_size;
 };
 
 static void g_array_maybe_expand(GRealArray *array, gint len);
 
-GArray *g_array_new(void) {
+GArray *g_array_new(gint item_size) {
   GRealArray *array;
+  g_return_val_if_fail(item_size > 0, NULL);
 
   array = g_new(GRealArray, 1);
+  g_return_val_if_fail(array != NULL, NULL);
 
   array->data = NULL;
   array->len = 0;
   array->alloc = 0;
+  array->item_size = item_size;
 
   return (GArray *)array;
 }
 
 void g_array_free(GArray *array) {
-  // if (free_segment)
   g_free(array->data);
-
   g_free(array);
 }
 
-GArray *g_rarray_append(GArray *array, gpointer data, gint size) {
-  g_array_maybe_expand((GRealArray *)array, size);
-
-  memcpy(array->data + array->len, data, size);
-
-  array->len += size;
-
-  return array;
+void g_array_append_items(GArray *arr, gpointer data, gint count) {
+  g_return_if_fail(arr != NULL);
+  g_return_if_fail(count > 0);
+  GRealArray *array = (GRealArray *)arr;
+  gint size = array->item_size;
+  g_array_maybe_expand(array, size * count);
+  memcpy(array->data + array->len, data, size * count);
+  array->len += size * count;
 }
 
-GArray *g_rarray_prepend(GArray *array, gpointer data, gint size) {
-  g_array_maybe_expand((GRealArray *)array, size);
-
-  g_memmove(array->data + size, array->data, array->len);
-  memcpy(array->data, data, size);
-
-  array->len += size;
-
-  return array;
+void g_array_prepend_items(GArray *arr, gpointer data, gint count) {
+  g_return_if_fail(arr != NULL);
+  g_return_if_fail(count > 0);
+  GRealArray *array = (GRealArray *)arr;
+  gint size = array->item_size;
+  g_array_maybe_expand(array, size * count);
+  g_memmove(array->data + size * count, array->data, array->len);
+  memcpy(array->data, data, size * count);
+  array->len += size * count;
 }
 
-GArray *g_rarray_set_length(GArray *array, gint length, gint size) {
-  g_array_maybe_expand((GRealArray *)array, length * size - array->len);
-  if (array->data)
-    memset(array->data + length * size, 0, size);
+void g_array_set_length(GArray *arr, gint length) {
+  g_return_if_fail(arr != NULL);
+  GRealArray *array = (GRealArray *)arr;
+  gint size = array->item_size;
+  g_array_maybe_expand(array, length * size - array->len);
   array->len = length * size;
-  return array;
 }
 
-GArray *g_rarray_remove_index(GArray *array, gint size, gint index) {
+void g_array_remove(GArray *arr, gint index) {
+  g_return_if_fail(arr != NULL);
+  gint length = g_array_length(arr);
+  g_return_if_fail(index >= 0 && index < length);
+  GRealArray *array = (GRealArray *)arr;
+  gint size = array->item_size;
   if (array->data && index < array->len / size - 1)
     g_memmove(array->data + index * size, array->data + (index + 1) * size,
               array->len - (1 + index) * size);
   array->len -= size;
-  return array;
 }
 
-GArray *g_rarray_insert_val(GArray *array, gint index, gpointer data,
-                            gint size) {
-  g_array_maybe_expand((GRealArray *)array, size);
+void g_array_insert_ref(GArray *arr, gint index, gpointer data) {
+  g_return_if_fail(arr != NULL);
+  gint length = g_array_length(arr);
+  g_return_if_fail(index >= 0 && index <= length);
+  GRealArray *array = (GRealArray *)arr;
+  gint size = array->item_size;
+  g_array_maybe_expand(array, size);
   array->len += size;
 
   if (array->data && index < array->len / size - 1)
@@ -82,9 +92,20 @@ GArray *g_rarray_insert_val(GArray *array, gint index, gpointer data,
               array->len - (1 + index) * size);
 
   memcpy(array->data + index * size, data, size);
-  return array;
 }
-
+gint g_array_length(GArray *arr) {
+  g_return_val_if_fail(arr != NULL, 0);
+  GRealArray *array = (GRealArray *)arr;
+  return array->len / array->item_size;
+}
+void g_array_set_capacity(GArray *arr, gint capacity) {
+  g_return_if_fail(arr != NULL);
+  gint length = g_array_length(arr);
+  g_return_if_fail(capacity > length);
+  GRealArray *array = (GRealArray *)arr;
+  gint size = array->item_size;
+  g_array_maybe_expand(array, capacity * size - array->len);
+}
 static void g_array_maybe_expand(GRealArray *array, gint len) {
   guint old_alloc;
 
@@ -105,18 +126,13 @@ struct _GRealPtrArray {
   gpointer *pdata;
   gint len;
   gint alloc;
-  GCompareFunc comp;
 };
 
 static void g_ptr_array_maybe_expand(GRealPtrArray *array, gint len);
 
-GPtrArray *g_ptr_array_new() { return g_ptr_array_new_sorted(NULL); }
-GPtrArray *g_ptr_array_new_sorted(GCompareFunc func) {
+GPtrArray *g_ptr_array_new() {
   GRealPtrArray *array;
-
   array = g_new0(GRealPtrArray, 1);
-  array->comp = func;
-
   return (GPtrArray *)array;
 }
 void g_ptr_array_free(GPtrArray *array) {
@@ -130,28 +146,20 @@ void g_ptr_array_free(GPtrArray *array) {
 
 static void g_ptr_array_maybe_expand(GRealPtrArray *array, gint len) {
   guint old_alloc;
-
   if ((array->len + len) > array->alloc) {
     old_alloc = array->alloc;
-
-    // array->alloc = g_nearest_pow (array->len + len);
-    // array->alloc = MAX (array->alloc, MIN_ARRAY_SIZE);
     array->alloc = array->len + len;
     if (array->pdata)
       array->pdata = g_realloc(array->pdata, sizeof(gpointer) * array->alloc);
     else
       array->pdata = g_new0(gpointer, array->alloc);
-
     memset(array->pdata + old_alloc, 0, array->alloc - old_alloc);
   }
 }
 
 void g_ptr_array_set_capacity(GPtrArray *farray, gint length) {
-
   GRealPtrArray *array = (GRealPtrArray *)farray;
-
   g_return_if_fail(array);
-
   if (length > array->len)
     g_ptr_array_maybe_expand(array, (length - array->len));
 }
@@ -161,7 +169,7 @@ void g_ptr_array_set_size(GPtrArray *farray, gint length) {
   array->len = length;
 }
 
-void g_ptr_array_remove_index(GPtrArray *farray, gint index) {
+void g_ptr_array_remove(GPtrArray *farray, gint index) {
   int i;
   GRealPtrArray *array = (GRealPtrArray *)farray;
 
@@ -195,147 +203,41 @@ void g_ptr_array_insert(GPtrArray *farray, gint index, gpointer item) {
     array->pdata[index] = item;
   }
 }
-void g_ptr_array_add_all(GPtrArray *array, GPtrArray *artoadd) {
-  gint i, len;
-  g_return_if_fail(array != NULL && artoadd != NULL);
-  len = g_ptr_array_length(artoadd);
-  for (i = 0; i < len; i++) {
-    g_ptr_array_add(array, g_ptr_array_index(artoadd, i));
-  }
-}
-
-gint g_ptr_array_lookup(GPtrArray *array, void *item) {
-  GCompareFunc comp = ((GRealPtrArray *)array)->comp;
-  return g_ptr_array_lookup_ex(array, item, comp);
-}
-gint g_ptr_array_lookup_ex(GPtrArray *ar, void *item, GCompareFunc func) {
-  GCompareFunc comp = func != NULL ? func : ((GRealPtrArray *)ar)->comp;
-  if (comp != NULL) {
-    gint size, l, r, m, c;
-    gpointer data;
-    size = g_ptr_array_length(ar);
-
-    l = 0;
-    r = size - 1;
-    while (l <= r) {
-      m = (l + r) / 2;
-      data = g_ptr_array_index(ar, m);
-      c = comp(item, data);
-      if (c == 0)
-        return m;
-      else if (c < 0) {
-        r = m - 1;
-      } else {
-        l = m + 1;
-      }
-    }
-    return -1;
-  }
-  return -1;
-}
-gint g_ptr_array_index_of(GPtrArray *ar, void *item) {
+gint g_ptr_array_search(GPtrArray *ar, GSearchFunc func, gpointer item) {
   gint i;
   for (i = 0; i < g_ptr_array_length(ar); i++) {
-    if (item == g_ptr_array_index(ar, i))
+    if (func(g_ptr_array_get(ar, i), item))
       return i;
   }
   return -1;
 }
-gboolean g_ptr_array_remove(GPtrArray *farray, gpointer data) {
-  GRealPtrArray *array = (GRealPtrArray *)farray;
-  int i;
-
-  g_return_val_if_fail(array, FALSE);
-
-  for (i = 0; i < array->len; i += 1) {
-    if (array->pdata[i] == data) {
-      g_ptr_array_remove_index(farray, i);
-      return TRUE;
-    }
+gint g_ptr_array_index_of(GPtrArray *ar, gpointer item) {
+  gint i;
+  for (i = 0; i < g_ptr_array_length(ar); i++) {
+    if (item == g_ptr_array_get(ar, i))
+      return i;
   }
-
-  return FALSE;
+  return -1;
 }
 
-gint g_ptr_array_add(GPtrArray *farray, gpointer item) {
-  GRealPtrArray *array = (GRealPtrArray *)farray;
-
-  GCompareFunc comp = ((GRealPtrArray *)farray)->comp;
-
-  g_return_val_if_fail(array, -1);
-
-  g_ptr_array_maybe_expand(array, 1);
-
-  if (comp == NULL) {
-    array->pdata[array->len++] = item;
-    return array->len - 1;
-  } else {
-
-    gint size, l, r, m = -1, c;
-    gpointer data;
-    size = g_ptr_array_length(farray);
-
-    if (size > 0) {
-      m = size - 1;
-      data = g_ptr_array_index(farray, m);
-      c = comp(item, data);
-      if (c < 0) {
-        m = 0;
-        data = g_ptr_array_index(farray, m);
-        c = comp(item, data);
-        if (c > 0) {
-          l = 0;
-          r = size - 1;
-          while (l <= r) {
-            m = (l + r) / 2;
-            data = g_ptr_array_index(farray, m);
-            c = comp(item, data);
-            if (c == 0) {
-              break;
-            } else if (c < 0) {
-              r = m - 1;
-            } else {
-              l = m + 1;
-            }
-          }
-        }
-      }
-    }
-
-    if (size == 0) {
-      array->pdata[array->len++] = item;
-      return array->len - 1;
-    } else {
-      gint index = c < 0 ? m : m + 1;
-      g_ptr_array_insert(farray, index, item);
-      return index;
-    }
-  }
+void g_ptr_array_append_items(GPtrArray *arr, gpointer *data, gint count) {
+  g_return_if_fail(arr != NULL);
+  g_return_if_fail(count > 0);
+  GRealPtrArray *array = (GRealPtrArray *)arr;
+  gint size = sizeof(gpointer);
+  g_ptr_array_maybe_expand(array, count);
+  memcpy(array->pdata + array->len, data, size * count);
+  array->len += count;
 }
 
-/* Byte arrays
- */
-
-GByteArray *g_byte_array_new(void) { return (GByteArray *)g_array_new(); }
-
-void g_byte_array_free(GByteArray *array) { g_array_free((GArray *)array); }
-
-GByteArray *g_byte_array_append(GByteArray *array, const guint8 *data,
-                                guint len) {
-  g_rarray_append((GArray *)array, (guint8 *)data, len);
-
-  return array;
-}
-
-GByteArray *g_byte_array_prepend(GByteArray *array, const guint8 *data,
-                                 guint len) {
-  g_rarray_prepend((GArray *)array, (guint8 *)data, len);
-
-  return array;
-}
-
-GByteArray *g_byte_array_set_length(GByteArray *array, gint length) {
-  g_rarray_set_length((GArray *)array, length, 1);
-
-  return array;
+void g_ptr_array_prepend_items(GPtrArray *arr, gpointer *data, gint count) {
+  g_return_if_fail(arr != NULL);
+  g_return_if_fail(count > 0);
+  GRealPtrArray *array = (GRealPtrArray *)arr;
+  gint size = sizeof(gpointer);
+  g_ptr_array_maybe_expand(array, count);
+  g_memmove((guint8 *)(array->pdata + count), (guint8 *)array->pdata,
+            size * array->len);
+  memcpy(array->pdata, data, size * count);
+  array->len += count;
 }
