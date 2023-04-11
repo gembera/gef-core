@@ -1,14 +1,8 @@
 #include "glib.h"
 #include <assert.h>
 
-void mem_record_callback(gulong index, gpointer memnew, gpointer memfree,
-                         gulong allocated, gulong freed, const char *__file__,
-                         const int __line__) {
-  printf("\n%ld\t%lx\t%lx\t%ld\t%ld\t%s(%d)", index, memnew, memfree,
-         allocated, freed, __file__, __line__);
-}
 int test_mem(int, char *[]) {
-  g_mem_record(mem_record_callback);
+  g_mem_record(g_mem_record_default_callback);
   g_mem_record_begin();
   gpointer data1 = g_malloc0(100);
   gpointer data2 = g_malloc(200);

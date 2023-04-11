@@ -26,7 +26,7 @@ char *_memmove(char *dst, register char *src, register int n) {
 #define SIZE_META SIZEOF_LONG
 static gulong allocated_mem = 0;
 static gulong freed_mem = 0;
-#endif 
+#endif
 
 gpointer _g_malloc(gulong size) {
   gpointer p;
@@ -36,7 +36,7 @@ gpointer _g_malloc(gulong size) {
 #ifdef ENABLE_MEM_PROFILE
   gulong *t;
   size += SIZE_META;
-#endif 
+#endif
 
   p = (gpointer)malloc(size);
   if (!p)
@@ -48,7 +48,7 @@ gpointer _g_malloc(gulong size) {
   p = ((guchar *)p + SIZE_META);
   *t = size;
   allocated_mem += size;
-#endif 
+#endif
 
   return p;
 }
@@ -61,7 +61,7 @@ gpointer _g_malloc0(gulong size) {
 #ifdef ENABLE_MEM_PROFILE
   gulong *t;
   size += SIZE_META;
-#endif 
+#endif
 
   p = (gpointer)calloc(size, 1);
   if (!p)
@@ -108,7 +108,7 @@ gpointer _g_realloc(gpointer mem, gulong size) {
   p = ((guchar *)p + SIZE_META);
   *t = size;
   allocated_mem += size;
-#endif 
+#endif
 
   return p;
 }
@@ -198,6 +198,14 @@ void g_mem_record_free(gpointer mem, const char *__file__, const int __line__) {
   }
   _g_free(mem);
 }
+
+void g_mem_record_default_callback(gulong index, gpointer memnew,
+                                 gpointer memfree, gulong allocated,
+                                 gulong freed, const char *__file__,
+                                 const int __line__) {
+  printf("\n%ld\t%lx\t%lx\t%ld\t%ld\t%s(%d)", index, memnew, memfree, allocated,
+         freed, __file__, __line__);
+}
 #endif
 
 #ifdef ENABLE_MEM_PROFILE
@@ -205,4 +213,4 @@ void g_mem_profile(gulong *pallocated, gulong *pfreed) {
   *pallocated = allocated_mem;
   *pfreed = freed_mem;
 }
-#endif 
+#endif

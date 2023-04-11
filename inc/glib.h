@@ -322,7 +322,7 @@ struct _GArray {
 };
 
 struct _GPtrArray {
-  gpointer *pdata;
+  gpointer *data;
   gint len;
 };
 
@@ -418,7 +418,10 @@ void g_hash_table_clear(GHashTable *hash_table);
  */
 
 #ifdef ENABLE_MEM_RECORD
-
+void g_mem_record_default_callback(gulong index, gpointer memnew,
+                                   gpointer memfree, gulong allocated,
+                                   gulong freed, const char *__file__,
+                                   const int __line__);
 void g_mem_record(GMemRecordCallback callback);
 void g_mem_record_begin();
 void g_mem_record_end();
@@ -563,32 +566,38 @@ void g_array_free(GArray *array);
 gint g_array_length(GArray *array);
 void g_array_set_length(GArray *arr, gint length);
 void g_array_set_capacity(GArray *arr, gint length);
-#define g_array_add_ref(arr, ref) g_array_insert_ref(arr, g_array_length(arr), ref)
-#define g_array_add(arr, type, val) g_array_insert(arr, type, g_array_length(arr), val)
+#define g_array_add_ref(arr, ref)                                              \
+  g_array_insert_ref(arr, g_array_length(arr), ref)
+#define g_array_add(arr, type, val)                                            \
+  g_array_insert(arr, type, g_array_length(arr), val)
 void g_array_remove(GArray *arr, gint index);
 void g_array_insert_ref(GArray *arr, gint index, gpointer ref);
-#define g_array_insert(arr, type, index, val)  {  type __tmp__ = val; g_array_insert_ref(arr, index, &__tmp__); } 
+#define g_array_insert(arr, type, index, val)                                  \
+  {                                                                            \
+    type __tmp__ = val;                                                        \
+    g_array_insert_ref(arr, index, &__tmp__);                                  \
+  }
 void g_array_append_items(GArray *arr, gpointer items, gint count);
 void g_array_prepend_items(GArray *arr, gpointer items, gint count);
 
-/* Resizable pointer array. 
+/* Resizable pointer array.
  */
 GPtrArray *g_ptr_array_new(void);
 void g_ptr_array_free(GPtrArray *array);
-#define g_ptr_array(array, type) ((type *)(array->pdata))
-#define g_ptr_array_get(array, index) array->pdata[index]
-#define g_ptr_array_set(array, index, val) array->pdata[index] = val
+#define g_ptr_array(array, type) ((type *)(array->data))
+#define g_ptr_array_get(array, index) array->data[index]
+#define g_ptr_array_set(array, index, val) array->data[index] = val
 #define g_ptr_array_length(array) (array->len)
 void g_ptr_array_set_length(GPtrArray *array, gint length);
 void g_ptr_array_set_capacity(GPtrArray *farray, gint capacity);
-#define g_ptr_array_add(array, data) g_ptr_array_insert(array, g_ptr_array_length(array), data)
+#define g_ptr_array_add(array, data)                                           \
+  g_ptr_array_insert(array, g_ptr_array_length(array), data)
 void g_ptr_array_remove(GPtrArray *array, gint index);
 void g_ptr_array_insert(GPtrArray *farray, gint index, gpointer data);
-void g_ptr_array_append_items(GPtrArray *arr, gpointer* items, gint count);
-void g_ptr_array_prepend_items(GPtrArray *arr, gpointer* items, gint count);
+void g_ptr_array_append_items(GPtrArray *arr, gpointer *items, gint count);
+void g_ptr_array_prepend_items(GPtrArray *arr, gpointer *items, gint count);
 gint g_ptr_array_index_of(GPtrArray *array, gpointer item);
 gint g_ptr_array_search(GPtrArray *array, GSearchFunc func, gpointer item);
-
 
 #ifdef GLIB_HASE_TIME
 GTimer *g_timer_new(gint interval);

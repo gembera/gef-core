@@ -100,15 +100,13 @@ gint g_array_length(GArray *arr) {
 }
 void g_array_set_capacity(GArray *arr, gint capacity) {
   g_return_if_fail(arr != NULL);
-  gint length = g_array_length(arr);
-  g_return_if_fail(capacity > length);
   GRealArray *array = (GRealArray *)arr;
   gint size = array->item_size;
-  g_array_maybe_expand(array, capacity * size - array->len);
+  if (capacity * size > array->len)
+    g_array_maybe_expand(array, capacity * size - array->len);
 }
 static void g_array_maybe_expand(GRealArray *array, gint len) {
   guint old_alloc;
-
   if ((array->len + len) > array->alloc) {
     old_alloc = array->alloc;
     array->alloc = array->len + len;
@@ -123,7 +121,7 @@ static void g_array_maybe_expand(GRealArray *array, gint len) {
 typedef struct _GRealPtrArray GRealPtrArray;
 
 struct _GRealPtrArray {
-  gpointer *pdata;
+  gpointer *data;
   gint len;
   gint alloc;
 };
@@ -137,10 +135,7 @@ GPtrArray *g_ptr_array_new() {
 }
 void g_ptr_array_free(GPtrArray *array) {
   g_return_if_fail(array);
-
-  // if (free_segment)
-  g_free(array->pdata);
-
+  g_free(array->data);
   g_free(array);
 }
 
@@ -149,11 +144,11 @@ static void g_ptr_array_maybe_expand(GRealPtrArray *array, gint len) {
   if ((array->len + len) > array->alloc) {
     old_alloc = array->alloc;
     array->alloc = array->len + len;
-    if (array->pdata)
-      array->pdata = g_realloc(array->pdata, sizeof(gpointer) * array->alloc);
+    if (array->data)
+      array->data = g_realloc(array->data, sizeof(gpointer) * array->alloc);
     else
-      array->pdata = g_new0(gpointer, array->alloc);
-    memset(array->pdata + old_alloc, 0, array->alloc - old_alloc);
+      array->data = g_new0(gpointer, array->alloc);
+    memset(array->data + old_alloc, 0, array->alloc - old_alloc);
   }
 }
 
@@ -163,7 +158,7 @@ void g_ptr_array_set_capacity(GPtrArray *farray, gint length) {
   if (length > array->len)
     g_ptr_array_maybe_expand(array, (length - array->len));
 }
-void g_ptr_array_set_size(GPtrArray *farray, gint length) {
+void g_ptr_array_set_length(GPtrArray *farray, gint length) {
   GRealPtrArray *array = (GRealPtrArray *)farray;
   g_ptr_array_set_capacity(farray, length);
   array->len = length;
@@ -177,9 +172,9 @@ void g_ptr_array_remove(GPtrArray *farray, gint index) {
   g_return_if_fail(index >= 0 && index < array->len);
 
   for (i = index; i < array->len - 1; i++)
-    array->pdata[i] = array->pdata[i + 1];
+    array->data[i] = array->data[i + 1];
 
-  array->pdata[array->len - 1] = NULL;
+  array->data[array->len - 1] = NULL;
 
   array->len -= 1;
 }
@@ -193,14 +188,14 @@ void g_ptr_array_insert(GPtrArray *farray, gint index, gpointer item) {
   g_ptr_array_maybe_expand(array, 1);
 
   if (index == array->len) {
-    array->pdata[array->len++] = item;
+    array->data[array->len++] = item;
   } else {
     array->len++;
 
     for (i = array->len - 1; i > index; i--)
-      array->pdata[i] = array->pdata[i - 1];
+      array->data[i] = array->data[i - 1];
 
-    array->pdata[index] = item;
+    array->data[index] = item;
   }
 }
 gint g_ptr_array_search(GPtrArray *ar, GSearchFunc func, gpointer item) {
@@ -226,7 +221,7 @@ void g_ptr_array_append_items(GPtrArray *arr, gpointer *data, gint count) {
   GRealPtrArray *array = (GRealPtrArray *)arr;
   gint size = sizeof(gpointer);
   g_ptr_array_maybe_expand(array, count);
-  memcpy(array->pdata + array->len, data, size * count);
+  memcpy(array->data + array->len, data, size * count);
   array->len += count;
 }
 
@@ -236,8 +231,8 @@ void g_ptr_array_prepend_items(GPtrArray *arr, gpointer *data, gint count) {
   GRealPtrArray *array = (GRealPtrArray *)arr;
   gint size = sizeof(gpointer);
   g_ptr_array_maybe_expand(array, count);
-  g_memmove((guint8 *)(array->pdata + count), (guint8 *)array->pdata,
+  g_memmove((guint8 *)(array->data + count), (guint8 *)array->data,
             size * array->len);
-  memcpy(array->pdata, data, size * count);
+  memcpy(array->data, data, size * count);
   array->len += count;
 }
