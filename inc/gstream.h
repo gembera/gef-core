@@ -45,7 +45,7 @@ struct _GStreamClass
 	gint (*write)(gpointer self, void * buffer, gint length);
 	void (*seek)(gpointer self, gint offset, GSeekOrigin origin);
 	void (*flush)(gpointer self);
-	gboolean (*is_eof)(gpointer self);
+	gbool (*is_eof)(gpointer self);
 };
 
 #define g_stream_virtual_get_length(self) GSTREAMCLASS(GOBJECT(self)->g_class)->get_length(self)
@@ -68,8 +68,8 @@ void g_stream_finalize(gpointer self);
 void g_stream_class_init(gpointer clazz);
 
 gint g_stream_get_length(gstring uri);
-void g_stream_read_all(gstring uri, gpointer* buffer, gint*buflen, gboolean appendzero);
-void g_stream_read_all_content(gpointer self, gpointer* buffer, gint*buflen, gboolean appendzero);
+void g_stream_read_all(gstring uri, gpointer* buffer, gint*buflen, gbool appendzero);
+void g_stream_read_all_content(gpointer self, gpointer* buffer, gint*buflen, gbool appendzero);
 gint32 g_stream_read_int32(gpointer self, gint32* data);
 gfloat g_stream_read_float(gpointer self);
 gint16 g_stream_read_int16(gpointer self);

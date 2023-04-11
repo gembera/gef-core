@@ -10,7 +10,7 @@ int test_hashtable(int, char *[]) {
   gpointer hvalue = NULL;
   gpointer orig_key;
   gpointer orig_value;
-  gboolean ret;
+  gbool ret;
   gint h_size;
 
   GHashTable *ht = g_hash_table_new_str();

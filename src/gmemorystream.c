@@ -84,7 +84,7 @@ void g_memory_stream_seek(gpointer self, gint offset, GSeekOrigin origin)
 	}
 	s->position = pos;
 }
-gboolean g_memory_stream_is_eof(gpointer self)
+gbool g_memory_stream_is_eof(gpointer self)
 {
 	return g_memory_stream_get_position(self) >= g_memory_stream_get_length(self);
 }

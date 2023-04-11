@@ -12,7 +12,7 @@ typedef void (*EVENT_CALLBACK)(gpointer self, gpointer data, gpointer args);
 
 typedef struct
 {
-	gboolean consumed;
+	gbool consumed;
 	gpointer value;
 } GEventArgs;
 
@@ -22,7 +22,7 @@ struct _GEvent
 	gpointer sender;
 	GList *callback_list;
 	GList *data_list;
-	gboolean event_firing;
+	gbool event_firing;
 	GPtrArray *items_to_free;
 };
 

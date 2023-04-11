@@ -97,13 +97,13 @@ GObjectClass *g_register_class(const gchar *classname, GObjectClass *baseclazz, 
 	return clazz;
 }
 
-gboolean g_is_type_of(GObjectClass *thisclazz, GObjectClass *targetclazz)
+gbool g_is_type_of(GObjectClass *thisclazz, GObjectClass *targetclazz)
 {
 	while (thisclazz != NULL && thisclazz != targetclazz)
 		thisclazz = thisclazz->g_base_class;
 	return thisclazz == targetclazz;
 }
-gboolean g_is_instance_of(gpointer self, GObjectClass *targetclazz)
+gbool g_is_instance_of(gpointer self, GObjectClass *targetclazz)
 {
 	return g_is_type_of(GOBJECT(self)->g_class, targetclazz);
 }

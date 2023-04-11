@@ -127,7 +127,7 @@ void _g_free(gpointer mem) {
   }
 }
 #ifdef ENABLE_MEM_RECORD
-static gboolean mem_record_enabled = FALSE;
+static gbool mem_record_enabled = FALSE;
 static gchar mem_record_log[1024];
 static gulong mem_record_index = 0;
 static GMemRecordCallback mem_record_callback = NULL;

@@ -53,7 +53,7 @@ void g_stream_write_string_with_length(gpointer self, gstring text)
 	g_stream_write_int16(self, len);
 	g_stream_virtual_write(self, text, len);
 }
-void g_stream_read_all_content(gpointer self, gpointer* retbuffer, gint* retbuflen, gboolean appendzero)
+void g_stream_read_all_content(gpointer self, gpointer* retbuffer, gint* retbuflen, gbool appendzero)
 {
 	gpointer buffer = NULL;
 	gint buflen = 0;
@@ -131,7 +131,7 @@ gint g_stream_get_length(gstring uri)
 	return length;
 
 }
-void g_stream_read_all(gstring uri, gpointer* retbuffer, gint* retbuflen, gboolean appendzero)
+void g_stream_read_all(gstring uri, gpointer* retbuffer, gint* retbuflen, gbool appendzero)
 {
 	gpointer buffer = NULL;
 	gint buflen = 0;

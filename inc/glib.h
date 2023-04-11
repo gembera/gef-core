@@ -104,7 +104,7 @@ typedef char gchar;
 typedef short gshort;
 typedef long glong;
 typedef int gint;
-typedef gint gboolean;
+typedef gint gbool;
 
 typedef unsigned char guchar;
 typedef unsigned short gushort;
@@ -222,7 +222,7 @@ void g_mem_profile(gulong *allocated, gulong *freed);
 typedef void (*GCallback)(gpointer data, gpointer user_data);
 typedef guint (*GHashHandler)(gconstpointer key);
 typedef gint (*GCompareHandler)(gconstpointer a, gconstpointer b);
-typedef gboolean (*GSearchHandler)(gconstpointer item, gconstpointer target);
+typedef gbool (*GSearchHandler)(gconstpointer item, gconstpointer target);
 
 // Array
 typedef struct _GArray {
@@ -239,21 +239,20 @@ GArray *g_array_new(gint item_size);
 void g_array_free(GArray *self);
 #define g_array(self, type) ((type *)(self->data))
 #define g_array_get(self, type, index) ((type *)(self->data))[index]
-#define g_array_set(self, type, index, val)                                   \
-  ((type *)(self->data))[index] = val
+#define g_array_set(self, type, index, val) ((type *)(self->data))[index] = val
 gint g_array_length(GArray *self);
 void g_array_set_length(GArray *self, gint length);
 void g_array_set_capacity(GArray *self, gint length);
-#define g_array_add_ref(self, ref)                                              \
+#define g_array_add_ref(self, ref)                                             \
   g_array_insert_ref(self, g_array_length(self), ref)
-#define g_array_add(self, type, val)                                            \
+#define g_array_add(self, type, val)                                           \
   g_array_insert(self, type, g_array_length(self), val)
 void g_array_remove(GArray *self, gint index);
 void g_array_insert_ref(GArray *self, gint index, gpointer ref);
-#define g_array_insert(self, type, index, val)                                  \
+#define g_array_insert(self, type, index, val)                                 \
   {                                                                            \
     type __tmp__ = val;                                                        \
-    g_array_insert_ref(self, index, &__tmp__);                                  \
+    g_array_insert_ref(self, index, &__tmp__);                                 \
   }
 void g_array_append_items(GArray *self, gpointer items, gint count);
 void g_array_prepend_items(GArray *self, gpointer items, gint count);
@@ -266,7 +265,7 @@ void g_ptr_array_free(GPtrArray *self);
 #define g_ptr_array_length(self) (self->len)
 void g_ptr_array_set_length(GPtrArray *self, gint length);
 void g_ptr_array_set_capacity(GPtrArray *self, gint capacity);
-#define g_ptr_array_add(self, data)                                           \
+#define g_ptr_array_add(self, data)                                            \
   g_ptr_array_insert(self, g_ptr_array_length(self), data)
 void g_ptr_array_remove(GPtrArray *self, gint index);
 void g_ptr_array_insert(GPtrArray *self, gint index, gpointer data);
@@ -274,6 +273,42 @@ void g_ptr_array_append_items(GPtrArray *self, gpointer *items, gint count);
 void g_ptr_array_prepend_items(GPtrArray *self, gpointer *items, gint count);
 gint g_ptr_array_index_of(GPtrArray *self, gpointer item);
 gint g_ptr_array_search(GPtrArray *self, GSearchHandler func, gpointer item);
+
+// Hash handlers
+guint g_ptr_hash(gconstpointer v);
+guint g_str_hash(gconstpointer v);
+guint g_str_ihash(gconstpointer v);
+guint g_str_aphash(gconstpointer v);
+
+gint g_ptr_equal(gconstpointer v1, gconstpointer v2);
+gint g_str_equal(gconstpointer v1, gconstpointer v2);
+gint g_str_iequal(gconstpointer v1, gconstpointer v2);
+
+// HashMap
+typedef struct _GHashMapNode {
+  gpointer key;
+  gpointer value;
+} GHashMapNode;
+
+typedef struct _GHashMap {
+  GPtrArray *slots;
+} GHashMap;
+typedef void (*GHashMapVisitCallback)(gpointer key, gpointer value,
+                                      gpointer user_data);
+
+GHashMap *g_hash_map_new(GHashHandler hash_func,
+                         GCompareHandler key_compare_func);
+#define g_hash_map_new_str() g_hash_map_new(g_str_hash, g_str_equal)
+void g_hash_map_free(GHashMap *self, gbool free_key, gbool free_val);
+gpointer g_hash_map_get(GHashMap *self, gconstpointer key);
+gpointer g_hash_map_set(GHashMap *self, gpointer key, gpointer value);
+GHashMapNode g_hash_map_remove(GHashMap *self, gconstpointer key);
+void g_hash_map_visit(GHashMap *self, GHashMapVisitCallback func,
+                      gpointer user_data);
+GPtrArray *g_hash_map_keys(GHashMap *self);
+GPtrArray *g_hash_map_values(GHashMap *self);
+GPtrArray *g_hash_map_remove_all(GHashMap *self);
+GPtrArray *g_hash_map_size(GHashMap *self);
 
 // HashTable
 typedef struct _GHashNode {
@@ -289,15 +324,6 @@ typedef struct _GHashTable {
 } GHashTable;
 typedef void (*GHashTableVisitCallback)(gpointer key, gpointer value,
                                         gpointer user_data);
-// Hash handlers
-guint g_ptr_hash(gconstpointer v);
-guint g_str_hash(gconstpointer v);
-guint g_str_ihash(gconstpointer v);
-guint g_str_aphash(gconstpointer v);
-
-gint g_ptr_equal(gconstpointer v1, gconstpointer v2);
-gint g_str_equal(gconstpointer v1, gconstpointer v2);
-gint g_str_iequal(gconstpointer v1, gconstpointer v2);
 
 GHashTable *g_hash_table_new(GHashHandler hash_func,
                              GCompareHandler key_compare_func);
@@ -307,9 +333,9 @@ void g_hash_table_deep_destroy(GHashTable *hash_table);
 void g_hash_table_insert(GHashTable *hash_table, gpointer key, gpointer value);
 void g_hash_table_remove(GHashTable *hash_table, gconstpointer key);
 gpointer g_hash_table_lookup(GHashTable *hash_table, gconstpointer key);
-gboolean g_hash_table_lookup_extended(GHashTable *hash_table,
-                                      gconstpointer lookup_key,
-                                      gpointer *orig_key, gpointer *value);
+gbool g_hash_table_lookup_extended(GHashTable *hash_table,
+                                   gconstpointer lookup_key, gpointer *orig_key,
+                                   gpointer *value);
 void g_hash_table_foreach(GHashTable *hash_table, GHashTableVisitCallback func,
                           gpointer user_data);
 gint g_hash_table_size(GHashTable *hash_table);
@@ -410,8 +436,8 @@ void g_strdown(gchar *string);
 void g_strup(gchar *string);
 void g_strreverse(gchar *string);
 void g_strcpy(gchar *dst, gchar *src);
-gboolean g_strstartwith(gchar *string, gchar *sub);
-gboolean g_strendwith(gchar *string, gchar *sub);
+gbool g_strstartwith(gchar *string, gchar *sub);
+gbool g_strendwith(gchar *string, gchar *sub);
 gint g_strindexof(gstring fstring, gchar *str, gint index);
 gint g_strlastindexof(gstring fstring, gchar *str);
 gstring g_strsubstring(gstring fstring, gint st, gint len);
@@ -456,7 +482,7 @@ gint g_utf8_strlen(const gchar *p, gint max);
 gwchar g_utf8_get_char(const gchar *p);
 int g_unichar_to_utf8(gwchar c, gchar *outbuf);
 
-gboolean g_is_space(gwchar c);
+gbool g_is_space(gwchar c);
 #define g_is_cjk(c) ((c) >= 8192)
 
 GString *g_string_new(const gchar *init);
@@ -492,18 +518,18 @@ void base64_cleanup();
 #ifdef HAVE_TIMER
 typedef struct _GTimer {
   ghandle handle;
-  gboolean enabled;
+  gbool enabled;
   gint interval;
-  gboolean support_background_running;
+  gbool support_background_running;
   GList *callback_list;
   GList *data_list;
 } GTimer;
 typedef void (*GTimerCallback)(GTimer *timer, gpointer data);
 GTimer *g_timer_new(gint interval);
-GTimer *g_timer_new_ex(gint interval, gboolean background);
+GTimer *g_timer_new_ex(gint interval, gbool background);
 void g_timer_destroy(GTimer *timer);
 
-gboolean g_timer_is_enabled(GTimer *timer);
+gbool g_timer_is_enabled(GTimer *timer);
 void g_timer_start(GTimer *timer);
 void g_timer_stop(GTimer *timer);
 void g_timer_add_listener(GTimer *timer, GTimerCallback callback,

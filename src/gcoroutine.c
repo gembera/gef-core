@@ -12,10 +12,10 @@ typedef struct
 	GCoroutine* co;
 } GCoroutineRunner;
 
-static gboolean coroutine_initialized = FALSE;
+static gbool coroutine_initialized = FALSE;
 static GSList * coroutine_funcs = NULL;
 
-gboolean g_coroutine_is_ready(void);
+gbool g_coroutine_is_ready(void);
 void g_coroutine_initialize(void);
 
 GCoroutine* g_coroutine_new()
@@ -87,7 +87,7 @@ void g_coroutine_run(GCoroutine* co, COROUTINE_FUNC func)
 	coroutine_funcs = g_slist_append(coroutine_funcs, runner);
 }
 
-gboolean g_coroutine_is_ready()
+gbool g_coroutine_is_ready()
 {
 	return coroutine_initialized;
 }

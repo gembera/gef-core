@@ -71,8 +71,8 @@ void            g_value_copy            (GValue * v1, GValue * v2);
 void            g_value_destroy         (GValue * value);
 void            g_value_destroy_data    (GValue * value);
 void            g_value_set_boolean     (GValue         *value,
-										 gboolean        v_boolean);
-gboolean        g_value_get_boolean     (GValue         *value);
+										 gbool        v_boolean);
+gbool        g_value_get_boolean     (GValue         *value);
 void            g_value_set_int         (GValue         *value,
 										 gint            v_int);
 gint            g_value_get_int         (GValue         *value);

@@ -45,7 +45,7 @@ gint g_file_stream_open(gpointer self, gstring name, GFileMode mode)
 	
 	return 0;
 }
-gboolean g_file_stream_is_open(gpointer self)
+gbool g_file_stream_is_open(gpointer self)
 {
 	GFileStream * s = GFILESTREAM(self);
 	g_return_val_if_fail(self != NULL, FALSE);
@@ -128,7 +128,7 @@ void g_file_stream_flush(gpointer self)
 	g_return_if_fail(g_file_stream_is_open(self));
 	fflush((FILE*)s->file_handle);
 }
-gboolean g_file_stream_is_eof(gpointer self)
+gbool g_file_stream_is_eof(gpointer self)
 {
 	GFileStream * s = GFILESTREAM(self);
 	g_return_val_if_fail(g_file_stream_is_open(self), TRUE);

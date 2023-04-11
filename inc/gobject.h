@@ -58,8 +58,8 @@ void g_object_init(gpointer self);
 void g_object_finalize(gpointer self);
 void g_object_class_init(gpointer clazz);
 const gchar *g_get_class_name(GObjectClass *clazz);
-gboolean g_is_type_of(GObjectClass *thisclazz, GObjectClass *targetclazz);
-gboolean g_is_instance_of(gpointer self, GObjectClass *targetclazz);
+gbool g_is_type_of(GObjectClass *thisclazz, GObjectClass *targetclazz);
+gbool g_is_instance_of(gpointer self, GObjectClass *targetclazz);
 
 #define GOBJECT(p) ((GObject *)(p))
 #define CLASS(class) (GObjectClass *)g_get_class_##class()

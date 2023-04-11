@@ -6,7 +6,7 @@ typedef struct _Person {
   gint age;
 } Person;
 
-gboolean search_callback(gconstpointer item, gconstpointer name) {
+gbool search_callback(gconstpointer item, gconstpointer name) {
   return g_strequal(((Person *)item)->name, (gchar *)name);
 };
 

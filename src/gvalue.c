@@ -79,14 +79,14 @@ g_value_destroy(GValue * value)
 }
 void
 g_value_set_boolean (GValue  *value,
-					 gboolean v_boolean)
+					 gbool v_boolean)
 {
 	g_value_destroy_data(value);
 	value->g_type = G_TYPE_BOOLEAN;
 	value->data.v_int = v_boolean;
 }
 
-gboolean
+gbool
 g_value_get_boolean (GValue *value)
 {
 	g_return_val_if_fail (G_IS_VALUE_BOOLEAN (value), 0);

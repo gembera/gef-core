@@ -33,7 +33,7 @@ gint g_memory_stream_read(gpointer self, void * buffer, gint length);
 void g_memory_stream_seek(gpointer self, gint offset, GSeekOrigin origin);
 void g_memory_stream_set_capacity(gpointer self, gint capacity);
 void g_memory_stream_flush(gpointer self);
-gboolean g_memory_stream_is_eof(gpointer self);
+gbool g_memory_stream_is_eof(gpointer self);
 gpointer g_get_class_GMemoryStream(void);
 
 void g_memory_stream_init(gpointer self);

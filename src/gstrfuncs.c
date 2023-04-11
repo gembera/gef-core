@@ -171,7 +171,7 @@ void g_strdelimit(gchar *string, const gchar *delimiters, gchar new_delim) {
   }
 }
 
-gboolean g_strstartwith(gchar *string, gchar *sub) {
+gbool g_strstartwith(gchar *string, gchar *sub) {
   gint i, len = strlen(sub);
   if ((gint)strlen(string) < len)
     return FALSE;
@@ -181,7 +181,7 @@ gboolean g_strstartwith(gchar *string, gchar *sub) {
   }
   return TRUE;
 }
-gboolean g_strendwith(gchar *string, gchar *sub) {
+gbool g_strendwith(gchar *string, gchar *sub) {
   gint i, len = strlen(sub);
   gint lensrc = strlen(string);
   if (lensrc < len)
@@ -244,7 +244,7 @@ gint g_strgethex(gchar c) {
 }
 gint g_strparseinteger(gstring fstring, gchar chend, gint base) {
   gchar *s = fstring;
-  gboolean negate = FALSE;
+  gbool negate = FALSE;
   gint result = 0;
 
   while (g_is_space(*s))
@@ -348,6 +348,6 @@ guint g_str_ihash(gconstpointer v) {
   return h /* % M */;
 }
 
-gboolean g_is_space(gwchar c) {
+gbool g_is_space(gwchar c) {
   return c == ' ' || c == '\t' || c == '\r' || c == '\n';
 }

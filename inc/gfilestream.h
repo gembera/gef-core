@@ -45,8 +45,8 @@ gint g_file_stream_write(gpointer self, void * buffer, gint length);
 gint g_file_stream_read(gpointer self, void * buffer, gint length);
 void g_file_stream_seek(gpointer self, gint offset, GSeekOrigin origin);
 void g_file_stream_flush(gpointer self);
-gboolean g_file_stream_is_eof(gpointer self);
-gboolean g_file_stream_is_open(gpointer self);
+gbool g_file_stream_is_eof(gpointer self);
+gbool g_file_stream_is_open(gpointer self);
 
 gpointer g_get_class_GFileStream(void);
 

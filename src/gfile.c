@@ -63,11 +63,11 @@ gint g_file_rename(gstring oldpath, gstring newpath)
 	g_free(nnewpath);
 	return r;
 }
-gboolean g_dir_exists(gstring path)
+gbool g_dir_exists(gstring path)
 {
 	return access(path, F_OK) == 0;
 }
-gboolean g_file_exists(gstring path)
+gbool g_file_exists(gstring path)
 {
 	return access(path, F_OK) == 0;
 }
@@ -77,7 +77,7 @@ gint g_file_get_size(gstring path)
 	stat(path, &st);
 	return (gint)st.st_size;
 }
-static gint _g_file_make_full_directory(gstring path, gboolean root) {
+static gint _g_file_make_full_directory(gstring path, gbool root) {
 	gint r = 0;
 	gint pos = 0;
 	gstring tmp = g_file_get_normalize_path(path);
