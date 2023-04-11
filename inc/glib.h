@@ -43,26 +43,6 @@
 #undef MININT
 #define MININT ((gint)~MAXINT)
 
-/* Provide simple macro statement wrappers (adapted from Perl):
- *  G_STMT_START { statements; } G_STMT_END;
- *  can be used as a single statement, as in
- *  if (x) G_STMT_START { ... } G_STMT_END; else ...
- */
-#if !(defined(G_STMT_START) && defined(G_STMT_END))
-#if defined(__GNUC__) && !defined(__STRICT_ANSI__) && !defined(__cplusplus)
-#define G_STMT_START	(void)(
-#define G_STMT_END		)
-#else
-#if (defined(sun) || defined(__sun__))
-#define G_STMT_START if (1)
-#define G_STMT_END else(void) 0
-#else
-#define G_STMT_START do
-#define G_STMT_END while (0)
-#endif
-#endif
-#endif
-
 #ifdef __DMALLOC_H__
 
 #define g_new(type, count) ALLOC(type, count)
@@ -80,42 +60,14 @@
 #define g_assert(expr)
 #define g_assert_not_reached()
 
-#else /* !G_DISABLE_ASSERT */
-
-#ifdef __GNUC__
+#else /* G_DISABLE_ASSERT */
 
 #define g_assert(expr)                                                         \
-  G_STMT_START {                                                               \
-    if (!(expr))                                                               \
-      g_error("file %s: line %d (%s): \"%s\"", __FILE__, __LINE__,             \
-              __PRETTY_FUNCTION__, #expr);                                     \
-  }                                                                            \
-  G_STMT_END
+  if (!(expr))                                                                 \
+    g_error("file %s: line %d: \"%s\"", __FILE__, __LINE__, #expr);
 
 #define g_assert_not_reached()                                                 \
-  G_STMT_START {                                                               \
-    g_error("file %s: line %d (%s): \"should not be reached\"", __FILE__,      \
-            __LINE__, __PRETTY_FUNCTION__);                                    \
-  }                                                                            \
-  G_STMT_END
-
-#else /* !__GNUC__ */
-
-#define g_assert(expr)                                                         \
-  G_STMT_START {                                                               \
-    if (!(expr))                                                               \
-      g_error("file %s: line %d: \"%s\"", __FILE__, __LINE__, #expr);          \
-  }                                                                            \
-  G_STMT_END
-
-#define g_assert_not_reached()                                                 \
-  G_STMT_START {                                                               \
-    g_error("file %s: line %d: \"should not be reached\"", __FILE__,           \
-            __LINE__);                                                         \
-  }                                                                            \
-  G_STMT_END
-
-#endif /* __GNUC__ */
+  g_error("file %s: line %d: \"should not be reached\"", __FILE__, __LINE__);
 
 #endif /* G_DISABLE_ASSERT */
 
@@ -126,51 +78,19 @@
 
 #else /* !G_DISABLE_CHECKS */
 
-#ifdef __GNUC__
-
 #define g_return_if_fail(expr)                                                 \
-  G_STMT_START {                                                               \
-    if (!(expr)) {                                                             \
-      g_warning("file %s: line %d (%s): assertion \"%s\" failed.\n", __FILE__, \
-                __LINE__, __PRETTY_FUNCTION__, #expr);                         \
-      return;                                                                  \
-    };                                                                         \
-  }                                                                            \
-  G_STMT_END
+  if (!(expr)) {                                                               \
+    g_warning("file %s: line %d: assertion. \"%s\" failed.\n", __FILE__,       \
+              __LINE__, #expr);                                                \
+    return;                                                                    \
+  };
 
 #define g_return_val_if_fail(expr, val)                                        \
-  G_STMT_START {                                                               \
-    if (!(expr)) {                                                             \
-      g_warning("file %s: line %d (%s): assertion \"%s\" failed.\n", __FILE__, \
-                __LINE__, __PRETTY_FUNCTION__, #expr);                         \
-      return val;                                                              \
-    };                                                                         \
-  }                                                                            \
-  G_STMT_END
-
-#else /* !__GNUC__ */
-
-#define g_return_if_fail(expr)                                                 \
-  G_STMT_START {                                                               \
-    if (!(expr)) {                                                             \
-      g_warning("file %s: line %d: assertion. \"%s\" failed.\n", __FILE__,     \
-                __LINE__, #expr);                                              \
-      return;                                                                  \
-    };                                                                         \
-  }                                                                            \
-  G_STMT_END
-
-#define g_return_val_if_fail(expr, val)                                        \
-  G_STMT_START {                                                               \
-    if (!(expr)) {                                                             \
-      g_warning("file %s: line %d: assertion \"%s\" failed.\n", __FILE__,      \
-                __LINE__, #expr);                                              \
-      return val;                                                              \
-    };                                                                         \
-  }                                                                            \
-  G_STMT_END
-
-#endif /* !__GNUC__ */
+  if (!(expr)) {                                                               \
+    g_warning("file %s: line %d: assertion \"%s\" failed.\n", __FILE__,        \
+              __LINE__, #expr);                                                \
+    return val;                                                                \
+  };
 
 #endif /* G_DISABLE_CHECKS */
 
@@ -179,13 +99,7 @@ extern "C" {
 #pragma }
 #endif /* __cplusplus */
 
-/* Provide type definitions for commonly used types.
- *  These are useful because a "gint8" can be adjusted
- *  to be 1 byte (8 bits) on all platforms. Similarly and
- *  more importantly, "gint32" can be adjusted to be
- *  4 bytes (32 bits) on all platforms.
- */
-
+// Provide type definitions for commonly used types.
 typedef char gchar;
 typedef short gshort;
 typedef long glong;
@@ -242,182 +156,22 @@ typedef gwchar *gwstring;
 typedef const gchar *gconststring;
 typedef const gwchar *gconstwstring;
 
-/* Define macros for storing integers inside pointers */
-
 #if (SIZEOF_INT == SIZEOF_VOID_P)
-
-#define GPOINTER_TO_INT(p) ((gint)(p))
-#define GPOINTER_TO_UINT(p) ((guint)(p))
-
-#define GINT_TO_POINTER(i) ((gpointer)(i))
-#define GUINT_TO_POINTER(u) ((gpointer)(u))
-
+#define g_pointer_to_num(p) ((gint)(p))
+#define g_pointer_to_unum(p) ((guint)(p))
+#elif (SIZEOF_LONG == SIZEOF_VOID_P)
+#define g_pointer_to_num(p) ((glong)(p))
+#define g_pointer_to_unum(p) ((gulong)(p))
 #else
-
-#define GPOINTER_TO_INT(p) ((gint)(glong)(p))
-#define GPOINTER_TO_UINT(p) ((guint)(gulong)(p))
-
-#define GINT_TO_POINTER(i) ((gpointer)(glong)(i))
-#define GUINT_TO_POINTER(u) ((gpointer)(gulong)(u))
-
+/* This should never happen */
 #endif
 
-typedef struct _GList GList;
-typedef struct _GSList GSList;
-typedef struct _GHashNode GHashNode;
-typedef struct _GHashTable GHashTable;
-typedef struct _GString GString;
-typedef struct _GArray GArray;
-typedef struct _GPtrArray GPtrArray;
-typedef struct _GByteArray GByteArray;
-typedef struct _GTimer GTimer;
-typedef struct _GBuffer GBuffer;
-
-struct _GBuffer {
-  gint length;
-  gpointer buffer;
-};
-
-struct _GTimer {
-  ghandle handle;
-  gboolean enabled;
-  gint interval;
-  gboolean support_background_running;
-  GList *callback_list;
-  GList *data_list;
-};
-
-typedef void (*GFunc)(gpointer data, gpointer user_data);
-typedef void (*GHFunc)(gpointer key, gpointer value, gpointer user_data);
-
-typedef guint (*GHashFunc)(gconstpointer key);
-typedef gint (*GCompareFunc)(gconstpointer a, gconstpointer b);
-typedef gboolean (*GSearchFunc)(gconstpointer item, gconstpointer target);
-
-typedef void (*GTimerCallback)(GTimer *timer, gpointer data);
-
+// Memory management
+#ifdef ENABLE_MEM_RECORD
 typedef void (*GMemRecordCallback)(gulong index, gpointer memnew,
                                    gpointer memfree, gulong allocated,
                                    gulong freed, const char *__file__,
                                    const int __line__);
-
-struct _GList {
-  gpointer data;
-  GList *next;
-  GList *prev;
-};
-
-struct _GSList {
-  gpointer data;
-  GSList *next;
-};
-
-struct _GString {
-  gchar *str;
-  gint len;
-};
-
-struct _GArray {
-  gpointer data;
-};
-
-struct _GPtrArray {
-  gpointer *data;
-  gint len;
-};
-
-struct _GHashNode {
-  guint hash;
-  gpointer key;
-  gpointer value;
-};
-
-struct _GHashTable {
-  GArray *nodes;
-  GHashFunc hash_func;
-  GCompareFunc key_compare_func;
-};
-
-void g_buffer_set_length(gint len);
-gint g_buffer_get_length(void);
-gpointer g_buffer_get(void);
-void g_buffer_release(gpointer buf);
-
-/* Doubly linked lists
- */
-GList *g_list_alloc(void);
-void g_list_free(GList *list);
-void g_list_free_1(GList *list);
-GList *g_list_append(GList *list, gpointer data);
-GList *g_list_prepend(GList *list, gpointer data);
-GList *g_list_insert(GList *list, gpointer data, gint position);
-GList *g_list_insert_sorted(GList *list, gpointer data, GCompareFunc func);
-GList *g_list_concat(GList *list1, GList *list2);
-GList *g_list_remove(GList *list, gpointer data);
-GList *g_list_remove_link(GList *list, GList *link);
-GList *g_list_reverse(GList *list);
-GList *g_list_nth(GList *list, guint n);
-GList *g_list_find(GList *list, gpointer data);
-GList *g_list_find_custom(GList *list, gpointer data, GCompareFunc func);
-gint g_list_position(GList *list, GList *link);
-gint g_list_index(GList *list, gpointer data);
-GList *g_list_last(GList *list);
-GList *g_list_first(GList *list);
-guint g_list_length(GList *list);
-void g_list_foreach(GList *list, GFunc func, gpointer user_data);
-gpointer g_list_nth_data(GList *list, guint n);
-
-#define g_list_previous(list) ((list) ? (((GList *)(list))->prev) : NULL)
-#define g_list_next(list) ((list) ? (((GList *)(list))->next) : NULL)
-
-/* Singly linked lists
- */
-GSList *g_slist_alloc(void);
-void g_slist_free(GSList *list);
-void g_slist_free_1(GSList *list);
-GSList *g_slist_append(GSList *list, gpointer data);
-GSList *g_slist_prepend(GSList *list, gpointer data);
-GSList *g_slist_insert(GSList *list, gpointer data, gint position);
-GSList *g_slist_insert_sorted(GSList *list, gpointer data, GCompareFunc func);
-GSList *g_slist_concat(GSList *list1, GSList *list2);
-GSList *g_slist_remove(GSList *list, gpointer data);
-GSList *g_slist_remove_link(GSList *list, GSList *link);
-GSList *g_slist_reverse(GSList *list);
-GSList *g_slist_nth(GSList *list, guint n);
-GSList *g_slist_find(GSList *list, gpointer data);
-GSList *g_slist_find_custom(GSList *list, gpointer data, GCompareFunc func);
-gint g_slist_position(GSList *list, GSList *link);
-gint g_slist_index(GSList *list, gpointer data);
-GSList *g_slist_last(GSList *list);
-guint g_slist_length(GSList *list);
-void g_slist_foreach(GSList *list, GFunc func, gpointer user_data);
-gpointer g_slist_nth_data(GSList *list, guint n);
-
-#define g_slist_next(slist) ((slist) ? (((GSList *)(slist))->next) : NULL)
-
-/* Hash tables
- */
-GHashTable *g_hash_table_new(GHashFunc hash_func,
-                             GCompareFunc key_compare_func);
-#define g_hash_table_new_with_string_key()                                     \
-  g_hash_table_new(g_str_hash, g_str_equal)
-void g_hash_table_destroy(GHashTable *hash_table);
-void g_hash_table_deep_destroy(GHashTable *hash_table);
-void g_hash_table_insert(GHashTable *hash_table, gpointer key, gpointer value);
-void g_hash_table_remove(GHashTable *hash_table, gconstpointer key);
-gpointer g_hash_table_lookup(GHashTable *hash_table, gconstpointer key);
-gboolean g_hash_table_lookup_extended(GHashTable *hash_table,
-                                      gconstpointer lookup_key,
-                                      gpointer *orig_key, gpointer *value);
-void g_hash_table_foreach(GHashTable *hash_table, GHFunc func,
-                          gpointer user_data);
-gint g_hash_table_size(GHashTable *hash_table);
-void g_hash_table_clear(GHashTable *hash_table);
-
-/* Memory
- */
-
-#ifdef ENABLE_MEM_RECORD
 void g_mem_record_default_callback(gulong index, gpointer memnew,
                                    gpointer memfree, gulong allocated,
                                    gulong freed, const char *__file__,
@@ -463,6 +217,187 @@ void _g_free(gpointer mem);
 #ifdef ENABLE_MEM_PROFILE
 void g_mem_profile(gulong *allocated, gulong *freed);
 #endif
+
+// General callbacks and handlers
+typedef void (*GCallback)(gpointer data, gpointer user_data);
+typedef guint (*GHashHandler)(gconstpointer key);
+typedef gint (*GCompareHandler)(gconstpointer a, gconstpointer b);
+typedef gboolean (*GSearchHandler)(gconstpointer item, gconstpointer target);
+
+// Array
+typedef struct _GArray {
+  gpointer data;
+} GArray;
+
+typedef struct _GPtrArray {
+  gpointer *data;
+  gint len;
+} GPtrArray;
+
+GArray *g_array_new(gint item_size);
+#define g_array_new_of(type) g_array_new(sizeof(type))
+void g_array_free(GArray *self);
+#define g_array(self, type) ((type *)(self->data))
+#define g_array_get(self, type, index) ((type *)(self->data))[index]
+#define g_array_set(self, type, index, val)                                   \
+  ((type *)(self->data))[index] = val
+gint g_array_length(GArray *self);
+void g_array_set_length(GArray *self, gint length);
+void g_array_set_capacity(GArray *self, gint length);
+#define g_array_add_ref(self, ref)                                              \
+  g_array_insert_ref(self, g_array_length(self), ref)
+#define g_array_add(self, type, val)                                            \
+  g_array_insert(self, type, g_array_length(self), val)
+void g_array_remove(GArray *self, gint index);
+void g_array_insert_ref(GArray *self, gint index, gpointer ref);
+#define g_array_insert(self, type, index, val)                                  \
+  {                                                                            \
+    type __tmp__ = val;                                                        \
+    g_array_insert_ref(self, index, &__tmp__);                                  \
+  }
+void g_array_append_items(GArray *self, gpointer items, gint count);
+void g_array_prepend_items(GArray *self, gpointer items, gint count);
+
+GPtrArray *g_ptr_array_new(void);
+void g_ptr_array_free(GPtrArray *self);
+#define g_ptr_array(self, type) ((type *)(array->data))
+#define g_ptr_array_get(self, index) self->data[index]
+#define g_ptr_array_set(self, index, val) self->data[index] = val
+#define g_ptr_array_length(self) (self->len)
+void g_ptr_array_set_length(GPtrArray *self, gint length);
+void g_ptr_array_set_capacity(GPtrArray *self, gint capacity);
+#define g_ptr_array_add(self, data)                                           \
+  g_ptr_array_insert(self, g_ptr_array_length(self), data)
+void g_ptr_array_remove(GPtrArray *self, gint index);
+void g_ptr_array_insert(GPtrArray *self, gint index, gpointer data);
+void g_ptr_array_append_items(GPtrArray *self, gpointer *items, gint count);
+void g_ptr_array_prepend_items(GPtrArray *self, gpointer *items, gint count);
+gint g_ptr_array_index_of(GPtrArray *self, gpointer item);
+gint g_ptr_array_search(GPtrArray *self, GSearchHandler func, gpointer item);
+
+// HashTable
+typedef struct _GHashNode {
+  guint hash;
+  gpointer key;
+  gpointer value;
+} GHashNode;
+
+typedef struct _GHashTable {
+  GArray *nodes;
+  GHashHandler hash_func;
+  GCompareHandler key_compare_func;
+} GHashTable;
+typedef void (*GHashTableVisitCallback)(gpointer key, gpointer value,
+                                        gpointer user_data);
+// Hash handlers
+guint g_ptr_hash(gconstpointer v);
+guint g_str_hash(gconstpointer v);
+guint g_str_ihash(gconstpointer v);
+guint g_str_aphash(gconstpointer v);
+
+gint g_ptr_equal(gconstpointer v1, gconstpointer v2);
+gint g_str_equal(gconstpointer v1, gconstpointer v2);
+gint g_str_iequal(gconstpointer v1, gconstpointer v2);
+
+GHashTable *g_hash_table_new(GHashHandler hash_func,
+                             GCompareHandler key_compare_func);
+#define g_hash_table_new_str() g_hash_table_new(g_str_hash, g_str_equal)
+void g_hash_table_destroy(GHashTable *hash_table);
+void g_hash_table_deep_destroy(GHashTable *hash_table);
+void g_hash_table_insert(GHashTable *hash_table, gpointer key, gpointer value);
+void g_hash_table_remove(GHashTable *hash_table, gconstpointer key);
+gpointer g_hash_table_lookup(GHashTable *hash_table, gconstpointer key);
+gboolean g_hash_table_lookup_extended(GHashTable *hash_table,
+                                      gconstpointer lookup_key,
+                                      gpointer *orig_key, gpointer *value);
+void g_hash_table_foreach(GHashTable *hash_table, GHashTableVisitCallback func,
+                          gpointer user_data);
+gint g_hash_table_size(GHashTable *hash_table);
+void g_hash_table_clear(GHashTable *hash_table);
+
+typedef struct _GList GList;
+typedef struct _GSList GSList;
+typedef struct _GString GString;
+typedef struct _GBuffer GBuffer;
+
+struct _GList {
+  gpointer data;
+  GList *next;
+  GList *prev;
+};
+
+struct _GSList {
+  gpointer data;
+  GSList *next;
+};
+
+struct _GString {
+  gchar *str;
+  gint len;
+};
+
+struct _GBuffer {
+  gint length;
+  gpointer buffer;
+};
+
+void g_buffer_set_length(gint len);
+gint g_buffer_get_length(void);
+gpointer g_buffer_get(void);
+void g_buffer_release(gpointer buf);
+
+/* Doubly linked lists
+ */
+GList *g_list_alloc(void);
+void g_list_free(GList *list);
+void g_list_free_1(GList *list);
+GList *g_list_append(GList *list, gpointer data);
+GList *g_list_prepend(GList *list, gpointer data);
+GList *g_list_insert(GList *list, gpointer data, gint position);
+GList *g_list_insert_sorted(GList *list, gpointer data, GCompareHandler func);
+GList *g_list_concat(GList *list1, GList *list2);
+GList *g_list_remove(GList *list, gpointer data);
+GList *g_list_remove_link(GList *list, GList *link);
+GList *g_list_reverse(GList *list);
+GList *g_list_nth(GList *list, guint n);
+GList *g_list_find(GList *list, gpointer data);
+GList *g_list_find_custom(GList *list, gpointer data, GCompareHandler func);
+gint g_list_position(GList *list, GList *link);
+gint g_list_index(GList *list, gpointer data);
+GList *g_list_last(GList *list);
+GList *g_list_first(GList *list);
+guint g_list_length(GList *list);
+void g_list_foreach(GList *list, GCallback func, gpointer user_data);
+gpointer g_list_nth_data(GList *list, guint n);
+
+#define g_list_previous(list) ((list) ? (((GList *)(list))->prev) : NULL)
+#define g_list_next(list) ((list) ? (((GList *)(list))->next) : NULL)
+
+/* Singly linked lists
+ */
+GSList *g_slist_alloc(void);
+void g_slist_free(GSList *list);
+void g_slist_free_1(GSList *list);
+GSList *g_slist_append(GSList *list, gpointer data);
+GSList *g_slist_prepend(GSList *list, gpointer data);
+GSList *g_slist_insert(GSList *list, gpointer data, gint position);
+GSList *g_slist_insert_sorted(GSList *list, gpointer data,
+                              GCompareHandler func);
+GSList *g_slist_concat(GSList *list1, GSList *list2);
+GSList *g_slist_remove(GSList *list, gpointer data);
+GSList *g_slist_remove_link(GSList *list, GSList *link);
+GSList *g_slist_reverse(GSList *list);
+GSList *g_slist_nth(GSList *list, guint n);
+GSList *g_slist_find(GSList *list, gpointer data);
+GSList *g_slist_find_custom(GSList *list, gpointer data, GCompareHandler func);
+gint g_slist_position(GSList *list, GSList *link);
+gint g_slist_index(GSList *list, gpointer data);
+GSList *g_slist_last(GSList *list);
+guint g_slist_length(GSList *list);
+void g_slist_foreach(GSList *list, GCallback func, gpointer user_data);
+gpointer g_slist_nth_data(GSList *list, guint n);
+
+#define g_slist_next(slist) ((slist) ? (((GSList *)(slist))->next) : NULL)
 
 /* String utility functions
  */
@@ -554,52 +489,16 @@ int g_log_enabled(char *file, int line, char *func, char *level);
 void g_log(char *fmt, ...);
 void base64_cleanup();
 
-/* Resizable arrays
- */
-GArray *g_array_new(gint item_size);
-#define g_array_new_of(type) g_array_new(sizeof(type))
-void g_array_free(GArray *array);
-#define g_array(array, type) ((type *)(array->data))
-#define g_array_get(array, type, index) ((type *)(array->data))[index]
-#define g_array_set(array, type, index, val)                                   \
-  ((type *)(array->data))[index] = val
-gint g_array_length(GArray *array);
-void g_array_set_length(GArray *arr, gint length);
-void g_array_set_capacity(GArray *arr, gint length);
-#define g_array_add_ref(arr, ref)                                              \
-  g_array_insert_ref(arr, g_array_length(arr), ref)
-#define g_array_add(arr, type, val)                                            \
-  g_array_insert(arr, type, g_array_length(arr), val)
-void g_array_remove(GArray *arr, gint index);
-void g_array_insert_ref(GArray *arr, gint index, gpointer ref);
-#define g_array_insert(arr, type, index, val)                                  \
-  {                                                                            \
-    type __tmp__ = val;                                                        \
-    g_array_insert_ref(arr, index, &__tmp__);                                  \
-  }
-void g_array_append_items(GArray *arr, gpointer items, gint count);
-void g_array_prepend_items(GArray *arr, gpointer items, gint count);
-
-/* Resizable pointer array.
- */
-GPtrArray *g_ptr_array_new(void);
-void g_ptr_array_free(GPtrArray *array);
-#define g_ptr_array(array, type) ((type *)(array->data))
-#define g_ptr_array_get(array, index) array->data[index]
-#define g_ptr_array_set(array, index, val) array->data[index] = val
-#define g_ptr_array_length(array) (array->len)
-void g_ptr_array_set_length(GPtrArray *array, gint length);
-void g_ptr_array_set_capacity(GPtrArray *farray, gint capacity);
-#define g_ptr_array_add(array, data)                                           \
-  g_ptr_array_insert(array, g_ptr_array_length(array), data)
-void g_ptr_array_remove(GPtrArray *array, gint index);
-void g_ptr_array_insert(GPtrArray *farray, gint index, gpointer data);
-void g_ptr_array_append_items(GPtrArray *arr, gpointer *items, gint count);
-void g_ptr_array_prepend_items(GPtrArray *arr, gpointer *items, gint count);
-gint g_ptr_array_index_of(GPtrArray *array, gpointer item);
-gint g_ptr_array_search(GPtrArray *array, GSearchFunc func, gpointer item);
-
-#ifdef GLIB_HASE_TIME
+#ifdef HAVE_TIMER
+typedef struct _GTimer {
+  ghandle handle;
+  gboolean enabled;
+  gint interval;
+  gboolean support_background_running;
+  GList *callback_list;
+  GList *data_list;
+} GTimer;
+typedef void (*GTimerCallback)(GTimer *timer, gpointer data);
 GTimer *g_timer_new(gint interval);
 GTimer *g_timer_new_ex(gint interval, gboolean background);
 void g_timer_destroy(GTimer *timer);
@@ -612,28 +511,6 @@ void g_timer_add_listener(GTimer *timer, GTimerCallback callback,
 void g_timer_remove_listener(GTimer *timer, GTimerCallback callback,
                              gpointer data);
 #endif
-
-/* Hash Functions
- */
-gint g_str_equal(gconstpointer v, gconstpointer v2);
-guint g_str_hash(gconstpointer v);
-
-gint g_str_iequal(gconstpointer v, gconstpointer v2);
-guint g_str_ihash(gconstpointer v);
-
-gint g_int_equal(gconstpointer v, gconstpointer v2);
-guint g_int_hash(gconstpointer v);
-
-guint g_str_aphash(gconstpointer v);
-
-guint g_str_aphash_with_length(gconstpointer v, guint len);
-
-/* This "hash" function will just return the key's adress as an
- * unsigned integer. Useful for hashing on plain adresses or
- * simple integer values.
- */
-guint g_direct_hash(gconstpointer v);
-gint g_direct_equal(gconstpointer v, gconstpointer v2);
 
 // gulong g_mktime(GDateTime* time);
 

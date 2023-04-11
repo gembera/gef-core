@@ -24,7 +24,7 @@ gint g_file_rename(gstring oldpath, gstring newpath);
  * @param {user_data} 用户上下文
  * @return: 
  */
-gint g_dir_travel(gstring root, GFunc func, gpointer user_data);
+gint g_dir_travel(gstring root, GCallback func, gpointer user_data);
 /**
  * @description: 返回指定目录的文件数 (不支持递归子目录)
  * @param {root} 根目录
@@ -46,7 +46,7 @@ gint g_dir_file_size(gstring root);
  * @param {user_data} 用户上下文
  * @return: -1 失败, 0 或 大于 0 表示找到匹配文件的总数
  */
-gint g_file_glob(gstring pattern, GFunc func, gpointer user_data);
+gint g_file_glob(gstring pattern, GCallback func, gpointer user_data);
 
 /**
  * @description: 根据 pattern 遍历指定目录的文件, 并返回第一个匹配文件

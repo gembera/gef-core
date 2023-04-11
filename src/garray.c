@@ -6,14 +6,12 @@
 
 #include "glib.h"
 
-typedef struct _GRealArray GRealArray;
-
-struct _GRealArray {
+typedef struct _GRealArray {
   guint8 *data;
   guint len;
   guint alloc;
   guint item_size;
-};
+} GRealArray;
 
 static void g_array_maybe_expand(GRealArray *array, gint len);
 
@@ -32,25 +30,25 @@ GArray *g_array_new(gint item_size) {
   return (GArray *)array;
 }
 
-void g_array_free(GArray *array) {
-  g_free(array->data);
-  g_free(array);
+void g_array_free(GArray *self) {
+  g_free(self->data);
+  g_free(self);
 }
 
-void g_array_append_items(GArray *arr, gpointer data, gint count) {
-  g_return_if_fail(arr != NULL);
+void g_array_append_items(GArray *self, gpointer data, gint count) {
+  g_return_if_fail(self != NULL);
   g_return_if_fail(count > 0);
-  GRealArray *array = (GRealArray *)arr;
+  GRealArray *array = (GRealArray *)self;
   gint size = array->item_size;
   g_array_maybe_expand(array, size * count);
   memcpy(array->data + array->len, data, size * count);
   array->len += size * count;
 }
 
-void g_array_prepend_items(GArray *arr, gpointer data, gint count) {
-  g_return_if_fail(arr != NULL);
+void g_array_prepend_items(GArray *self, gpointer data, gint count) {
+  g_return_if_fail(self != NULL);
   g_return_if_fail(count > 0);
-  GRealArray *array = (GRealArray *)arr;
+  GRealArray *array = (GRealArray *)self;
   gint size = array->item_size;
   g_array_maybe_expand(array, size * count);
   g_memmove(array->data + size * count, array->data, array->len);
@@ -58,19 +56,19 @@ void g_array_prepend_items(GArray *arr, gpointer data, gint count) {
   array->len += size * count;
 }
 
-void g_array_set_length(GArray *arr, gint length) {
-  g_return_if_fail(arr != NULL);
-  GRealArray *array = (GRealArray *)arr;
+void g_array_set_length(GArray *self, gint length) {
+  g_return_if_fail(self != NULL);
+  GRealArray *array = (GRealArray *)self;
   gint size = array->item_size;
   g_array_maybe_expand(array, length * size - array->len);
   array->len = length * size;
 }
 
-void g_array_remove(GArray *arr, gint index) {
-  g_return_if_fail(arr != NULL);
-  gint length = g_array_length(arr);
+void g_array_remove(GArray *self, gint index) {
+  g_return_if_fail(self != NULL);
+  gint length = g_array_length(self);
   g_return_if_fail(index >= 0 && index < length);
-  GRealArray *array = (GRealArray *)arr;
+  GRealArray *array = (GRealArray *)self;
   gint size = array->item_size;
   if (array->data && index < array->len / size - 1)
     g_memmove(array->data + index * size, array->data + (index + 1) * size,
@@ -78,11 +76,11 @@ void g_array_remove(GArray *arr, gint index) {
   array->len -= size;
 }
 
-void g_array_insert_ref(GArray *arr, gint index, gpointer data) {
-  g_return_if_fail(arr != NULL);
-  gint length = g_array_length(arr);
+void g_array_insert_ref(GArray *self, gint index, gpointer data) {
+  g_return_if_fail(self != NULL);
+  gint length = g_array_length(self);
   g_return_if_fail(index >= 0 && index <= length);
-  GRealArray *array = (GRealArray *)arr;
+  GRealArray *array = (GRealArray *)self;
   gint size = array->item_size;
   g_array_maybe_expand(array, size);
   array->len += size;
@@ -93,14 +91,14 @@ void g_array_insert_ref(GArray *arr, gint index, gpointer data) {
 
   memcpy(array->data + index * size, data, size);
 }
-gint g_array_length(GArray *arr) {
-  g_return_val_if_fail(arr != NULL, 0);
-  GRealArray *array = (GRealArray *)arr;
+gint g_array_length(GArray *self) {
+  g_return_val_if_fail(self != NULL, 0);
+  GRealArray *array = (GRealArray *)self;
   return array->len / array->item_size;
 }
-void g_array_set_capacity(GArray *arr, gint capacity) {
-  g_return_if_fail(arr != NULL);
-  GRealArray *array = (GRealArray *)arr;
+void g_array_set_capacity(GArray *self, gint capacity) {
+  g_return_if_fail(self != NULL);
+  GRealArray *array = (GRealArray *)self;
   gint size = array->item_size;
   if (capacity * size > array->len)
     g_array_maybe_expand(array, capacity * size - array->len);
@@ -115,16 +113,11 @@ static void g_array_maybe_expand(GRealArray *array, gint len) {
   }
 }
 
-/* Pointer Array
- */
-
-typedef struct _GRealPtrArray GRealPtrArray;
-
-struct _GRealPtrArray {
+typedef struct _GRealPtrArray {
   gpointer *data;
   gint len;
   gint alloc;
-};
+} GRealPtrArray;
 
 static void g_ptr_array_maybe_expand(GRealPtrArray *array, gint len);
 
@@ -133,10 +126,10 @@ GPtrArray *g_ptr_array_new() {
   array = g_new0(GRealPtrArray, 1);
   return (GPtrArray *)array;
 }
-void g_ptr_array_free(GPtrArray *array) {
-  g_return_if_fail(array);
-  g_free(array->data);
-  g_free(array);
+void g_ptr_array_free(GPtrArray *self) {
+  g_return_if_fail(self);
+  g_free(self->data);
+  g_free(self);
 }
 
 static void g_ptr_array_maybe_expand(GRealPtrArray *array, gint len) {
@@ -152,21 +145,21 @@ static void g_ptr_array_maybe_expand(GRealPtrArray *array, gint len) {
   }
 }
 
-void g_ptr_array_set_capacity(GPtrArray *farray, gint length) {
-  GRealPtrArray *array = (GRealPtrArray *)farray;
+void g_ptr_array_set_capacity(GPtrArray *self, gint length) {
+  GRealPtrArray *array = (GRealPtrArray *)self;
   g_return_if_fail(array);
   if (length > array->len)
     g_ptr_array_maybe_expand(array, (length - array->len));
 }
-void g_ptr_array_set_length(GPtrArray *farray, gint length) {
-  GRealPtrArray *array = (GRealPtrArray *)farray;
-  g_ptr_array_set_capacity(farray, length);
+void g_ptr_array_set_length(GPtrArray *self, gint length) {
+  GRealPtrArray *array = (GRealPtrArray *)self;
+  g_ptr_array_set_capacity(self, length);
   array->len = length;
 }
 
-void g_ptr_array_remove(GPtrArray *farray, gint index) {
+void g_ptr_array_remove(GPtrArray *self, gint index) {
   int i;
-  GRealPtrArray *array = (GRealPtrArray *)farray;
+  GRealPtrArray *array = (GRealPtrArray *)self;
 
   g_return_if_fail(array);
   g_return_if_fail(index >= 0 && index < array->len);
@@ -178,9 +171,9 @@ void g_ptr_array_remove(GPtrArray *farray, gint index) {
 
   array->len -= 1;
 }
-void g_ptr_array_insert(GPtrArray *farray, gint index, gpointer item) {
+void g_ptr_array_insert(GPtrArray *self, gint index, gpointer item) {
   int i;
-  GRealPtrArray *array = (GRealPtrArray *)farray;
+  GRealPtrArray *array = (GRealPtrArray *)self;
 
   g_return_if_fail(array);
   g_return_if_fail(index >= 0 && index <= array->len);
@@ -198,37 +191,37 @@ void g_ptr_array_insert(GPtrArray *farray, gint index, gpointer item) {
     array->data[index] = item;
   }
 }
-gint g_ptr_array_search(GPtrArray *ar, GSearchFunc func, gpointer item) {
+gint g_ptr_array_search(GPtrArray *self, GSearchHandler func, gpointer item) {
   gint i;
-  for (i = 0; i < g_ptr_array_length(ar); i++) {
-    if (func(g_ptr_array_get(ar, i), item))
+  for (i = 0; i < g_ptr_array_length(self); i++) {
+    if (func(g_ptr_array_get(self, i), item))
       return i;
   }
   return -1;
 }
-gint g_ptr_array_index_of(GPtrArray *ar, gpointer item) {
+gint g_ptr_array_index_of(GPtrArray *self, gpointer item) {
   gint i;
-  for (i = 0; i < g_ptr_array_length(ar); i++) {
-    if (item == g_ptr_array_get(ar, i))
+  for (i = 0; i < g_ptr_array_length(self); i++) {
+    if (item == g_ptr_array_get(self, i))
       return i;
   }
   return -1;
 }
 
-void g_ptr_array_append_items(GPtrArray *arr, gpointer *data, gint count) {
-  g_return_if_fail(arr != NULL);
+void g_ptr_array_append_items(GPtrArray *self, gpointer *data, gint count) {
+  g_return_if_fail(self != NULL);
   g_return_if_fail(count > 0);
-  GRealPtrArray *array = (GRealPtrArray *)arr;
+  GRealPtrArray *array = (GRealPtrArray *)self;
   gint size = sizeof(gpointer);
   g_ptr_array_maybe_expand(array, count);
   memcpy(array->data + array->len, data, size * count);
   array->len += count;
 }
 
-void g_ptr_array_prepend_items(GPtrArray *arr, gpointer *data, gint count) {
-  g_return_if_fail(arr != NULL);
+void g_ptr_array_prepend_items(GPtrArray *self, gpointer *data, gint count) {
+  g_return_if_fail(self != NULL);
   g_return_if_fail(count > 0);
-  GRealPtrArray *array = (GRealPtrArray *)arr;
+  GRealPtrArray *array = (GRealPtrArray *)self;
   gint size = sizeof(gpointer);
   g_ptr_array_maybe_expand(array, count);
   g_memmove((guint8 *)(array->data + count), (guint8 *)array->data,

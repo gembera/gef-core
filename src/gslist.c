@@ -255,7 +255,7 @@ g_slist_find (GSList   *list,
 GSList*
 g_slist_find_custom (GSList      *list,
 		     gpointer     data,
-		     GCompareFunc func)
+		     GCompareHandler func)
 {
   g_return_val_if_fail (func != NULL, list);
 
@@ -334,7 +334,7 @@ g_slist_length (GSList *list)
 
 void
 g_slist_foreach (GSList   *list,
-		 GFunc     func,
+		 GCallback     func,
 		 gpointer  user_data)
 {
   while (list)
@@ -347,7 +347,7 @@ g_slist_foreach (GSList   *list,
 GSList*
 g_slist_insert_sorted (GSList       *list,
                        gpointer      data,
-                       GCompareFunc  func)
+                       GCompareHandler  func)
 {
   GSList *tmp_list = list;
   GSList *prev_list = NULL;

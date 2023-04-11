@@ -11,15 +11,12 @@ gboolean search_callback(gconstpointer item, gconstpointer name) {
 };
 
 int test_array(int, char *[]) {
-  //g_mem_record(g_mem_record_default_callback);
+  // g_mem_record(g_mem_record_default_callback);
   g_mem_record_begin();
   gint val1 = 111;
   gint val2 = 222;
   gint val3 = 333;
   gint vals[] = {444, 555, 666};
-  gchar *VAL_A = "aaa";
-  gchar *VAL_B = "bbb";
-  gchar *VAL_C = "ccc";
   gint g_ptr_int = 0;
   // test Array
   GArray *arr = g_array_new_of(gint);
@@ -77,6 +74,9 @@ int test_array(int, char *[]) {
   Person p1 = {"one", 10};
   Person p2 = {"two", 20};
   Person p3 = {"three", 30};
+  Person *pp4 = g_new(Person, 1);
+  pp4->name = "four";
+  pp4->age = 40;
 
   GPtrArray *parr1 = g_ptr_array_new();
   assert(parr1 != NULL);
@@ -116,6 +116,10 @@ int test_array(int, char *[]) {
   assert(parr2->data[2] == &p1);
   gint i3 = g_ptr_array_search(parr2, search_callback, "three");
   assert(i3 == 0);
+  g_ptr_array_add(parr2, pp4);
+  assert(g_ptr_array_length(parr2) == 4);
+  assert(parr2->data[3] == pp4);
+  g_free(pp4);
 
   g_ptr_array_free(parr1);
   g_ptr_array_free(parr2);

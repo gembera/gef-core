@@ -5,13 +5,15 @@
 #define KEY_B "key-b"
 
 int test_hashtable(int, char *[]) {
+  g_mem_record(g_mem_record_default_callback);
+  g_mem_record_begin();
   gpointer hvalue = NULL;
   gpointer orig_key;
   gpointer orig_value;
   gboolean ret;
   gint h_size;
 
-  GHashTable *ht = g_hash_table_new_with_string_key();
+  GHashTable *ht = g_hash_table_new_str();
   assert(ht != NULL);
 
   g_hash_table_insert(ht, KEY_A, "1");
@@ -32,5 +34,11 @@ int test_hashtable(int, char *[]) {
 
   g_hash_table_destroy(ht);
 
+  gulong allocated = 0;
+  gulong freed = 0;
+  g_mem_profile(&allocated, &freed);
+  printf("\nallocated memory: %d  \nfreed memory: %d\n", allocated, freed);
+  assert(allocated == freed);
+  g_mem_record_end();
   return 0;
 }

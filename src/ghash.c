@@ -10,13 +10,13 @@ static GHashNode *g_hash_table_lookup_node(GHashTable *hash_table,
                                            gconstpointer key);
 static int g_hash_table_lookup_index(GHashTable *hash_table, gconstpointer key);
 
-GHashTable *g_hash_table_new(GHashFunc hash_func,
-                             GCompareFunc key_compare_func) {
+GHashTable *g_hash_table_new(GHashHandler hash_func,
+                             GCompareHandler key_compare_func) {
   GHashTable *hash_table;
 
   hash_table = g_new0(GHashTable, 1);
   g_return_val_if_fail(hash_table != NULL, NULL);
-  hash_table->hash_func = hash_func ? hash_func : g_direct_hash;
+  hash_table->hash_func = hash_func ? hash_func : g_ptr_hash;
   hash_table->key_compare_func = key_compare_func;
   hash_table->nodes = g_array_new(sizeof(GHashNode));
 
@@ -77,7 +77,7 @@ gboolean g_hash_table_lookup_extended(GHashTable *hash_table,
     return FALSE;
 }
 
-void g_hash_table_foreach(GHashTable *hash_table, GHFunc func,
+void g_hash_table_foreach(GHashTable *hash_table, GHashTableVisitCallback func,
                           gpointer user_data) {
   gint i;
   gint size;

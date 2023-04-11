@@ -119,7 +119,7 @@ gint g_file_make_full_directory(gstring path)
 
 
 #define MAXLEN 1024
-int g_dir_travel(gstring root, GFunc func, gpointer user_data) {
+int g_dir_travel(gstring root, GCallback func, gpointer user_data) {
 	struct dirent* ent = NULL;
 	DIR* dir = NULL;
 	dir = opendir(root);
@@ -187,7 +187,7 @@ gint g_dir_file_size(gstring root) {
 	return ret;
 }
 
-gint g_file_glob(gstring pattern, GFunc func, gpointer user_data) {
+gint g_file_glob(gstring pattern, GCallback func, gpointer user_data) {
 	g_return_val_if_fail(pattern != NULL, -1);
 	g_return_val_if_fail(func != NULL, -1);
 

@@ -27,7 +27,7 @@ gint g_file_stream_open(gpointer self, gstring name, GFileMode mode)
 {
 	GFileStream * s = GFILESTREAM(self);
 	if(!(self != NULL && !g_file_stream_is_open(self))) {
-		g_log_error("g_file_stream_open error: %x %s %d\n", GPOINTER_TO_INT(self) , name, mode);
+		g_log_error("g_file_stream_open error: %x %s %d\n", g_pointer_to_num(self) , name, mode);
 	}
 	g_return_val_if_fail(self != NULL && !g_file_stream_is_open(self), -1);
 	if (GFILESTREAM(self)->file_name)
