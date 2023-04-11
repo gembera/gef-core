@@ -21,7 +21,7 @@ int test_array(int, char *[]) {
   // test Array
   GArray *arr = g_array_new_of(gint);
   assert(arr != NULL);
-  g_array_set_length(arr, 2);
+  g_array_set_size(arr, 2);
   gint *data = g_array(arr, gint);
 
   data[0] = val1;
@@ -38,7 +38,7 @@ int test_array(int, char *[]) {
   assert(g_array_get(arr, gint, 1) == 555);
   assert(data[2] == 666);
   assert(data[3] == val1);
-  assert(g_array_length(arr) == 5);
+  assert(g_array_size(arr) == 5);
 
   g_array_set(arr, gint, 4, val2);
   // 444, 555, 666, 111, 222
@@ -47,7 +47,7 @@ int test_array(int, char *[]) {
   g_array_remove(arr, 1);
   // 444, 666, 111, 222
   // g_array_remove should never cause array reallocation
-  assert(g_array_length(arr) == 4);
+  assert(g_array_size(arr) == 4);
   assert(data[0] == 444);
   g_array_set_capacity(arr, 100);
   g_array_insert(arr, gint, 3, val3);
@@ -55,10 +55,10 @@ int test_array(int, char *[]) {
   data = g_array(
       arr,
       gint); // g_array_set_capacity & g_array_insert may cause reallocation
-  assert(g_array_length(arr) == 5);
+  assert(g_array_size(arr) == 5);
   g_array_add(arr, gint, 999); // g_array_add may cause reallocation, but in
                                // this case the capacity is enough
-  assert(g_array_length(arr) == 6);
+  assert(g_array_size(arr) == 6);
   assert(data[0] == 444);
   assert(data[1] == 666);
   assert(data[2] == 111);
@@ -68,7 +68,7 @@ int test_array(int, char *[]) {
 
   g_array_insert(arr, gint, 30,
                  val3); // nothing will happen since 30 > array current length
-  assert(g_array_length(arr) == 6);
+  assert(g_array_size(arr) == 6);
   g_array_free(arr);
 
   Person p1 = {"one", 10};
@@ -84,8 +84,8 @@ int test_array(int, char *[]) {
   GPtrArray *parr2 = g_ptr_array_new();
   assert(parr2 != NULL);
 
-  g_ptr_array_set_length(parr1, 1);
-  assert(parr1->len == 1);
+  g_ptr_array_set_size(parr1, 1);
+  assert(parr1->size == 1);
   assert(parr1->data[0] == NULL);
 
   g_ptr_array_set(parr1, 0, &p1);
@@ -96,7 +96,7 @@ int test_array(int, char *[]) {
   // parr2 = p2
   g_ptr_array_insert(parr2, 0, &p3);
   // parr2 = p3, p2
-  g_ptr_array_append_items(parr1, parr2->data, parr2->len);
+  g_ptr_array_append_items(parr1, parr2->data, parr2->size);
   // parr1 = p1, p3, p2
   assert(parr1->data[0] == &p1);
   assert(parr1->data[1] == &p3);
@@ -112,12 +112,12 @@ int test_array(int, char *[]) {
   i1 = g_ptr_array_index_of(parr1, &p2);
   assert(i1 == -1);
   g_ptr_array_add(parr2, &p1);
-  assert(g_ptr_array_length(parr2) == 3);
+  assert(g_ptr_array_size(parr2) == 3);
   assert(parr2->data[2] == &p1);
   gint i3 = g_ptr_array_search(parr2, search_callback, "three");
   assert(i3 == 0);
   g_ptr_array_add(parr2, pp4);
-  assert(g_ptr_array_length(parr2) == 4);
+  assert(g_ptr_array_size(parr2) == 4);
   assert(parr2->data[3] == pp4);
   g_free(pp4);
 

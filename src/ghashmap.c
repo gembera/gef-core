@@ -48,7 +48,7 @@ void g_hash_table_deep_destroy(GHashTable *hash_table) {
 
 void g_hash_table_clear(GHashTable *hash_table) {
   g_return_if_fail(hash_table != NULL);
-  g_array_set_length(hash_table->nodes, 0);
+  g_array_set_size(hash_table->nodes, 0);
 }
 
 void g_hash_table_destroy(GHashTable *hash_table) {
@@ -105,7 +105,7 @@ void g_hash_table_foreach(GHashTable *hash_table, GHashTableVisitCallback func,
 gint g_hash_table_size(GHashTable *hash_table) {
   g_return_val_if_fail(hash_table != NULL, 0);
 
-  return g_array_length(hash_table->nodes);
+  return g_array_size(hash_table->nodes);
 }
 
 static int g_hash_table_lookup_index(GHashTable *hash_table,

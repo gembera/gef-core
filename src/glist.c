@@ -320,7 +320,7 @@ g_list_first (GList *list)
 }
 
 guint
-g_list_length (GList *list)
+g_list_size (GList *list)
 {
   guint length;
   

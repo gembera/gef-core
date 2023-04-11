@@ -50,7 +50,7 @@ g_value_destroy_data(GValue * value){
 	{
 		int i;
 		GPtrArray* a = (GPtrArray*)value->data.v_pointer;
-		for(i = 0; i < g_ptr_array_length(a); i++)
+		for(i = 0; i < g_ptr_array_size(a); i++)
 		{
 			GValue * vi = g_ptr_array_get(a, i);
 			g_value_destroy(vi);
@@ -337,10 +337,10 @@ GValue * g_value_get_by_index(GValue * value, gint index)
 	GPtrArray * ar = g_value_get_array(value);
 	return ar == NULL ? NULL : (GValue *)g_ptr_array_get(ar, index);
 }
-gint g_value_array_length(GValue * value)
+gint g_value_array_size(GValue * value)
 {
 	GPtrArray * ar = g_value_get_array(value);
-	return ar == NULL ? 0 : g_ptr_array_length(ar);
+	return ar == NULL ? 0 : g_ptr_array_size(ar);
 }
 
 void g_value_array_add(GValue * value, GValue * item)

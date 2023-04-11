@@ -318,7 +318,7 @@ g_slist_last (GSList *list)
 }
 
 guint
-g_slist_length (GSList *list)
+g_slist_size (GSList *list)
 {
   guint length;
 
