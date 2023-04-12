@@ -5,7 +5,7 @@
  */
 
 #include "gevent.h"
-
+/*
 GEvent * g_event_new(gpointer sender)
 {
 	GEvent * self = g_new(GEvent);
@@ -93,3 +93,4 @@ void g_event_fire(GEvent * self, gpointer args)
 		g_ptr_array_set_size(self->items_to_free, 0);
 	}
 }
+*/

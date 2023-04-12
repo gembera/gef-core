@@ -1,7 +1,7 @@
 #include "glib.h"
 #include <assert.h>
 
-static void print_and_count_callback(GSList *self, GSListNode *item,
+static void print_and_count_callback(GList *self, GListNode *item,
                                      gconstpointer user_data) {
   gchar *str = (gchar *)item->data;
   gint *index = (gint *)user_data;
@@ -9,14 +9,14 @@ static void print_and_count_callback(GSList *self, GSListNode *item,
   (*index)++;
 }
 
-static gbool search_handler(GSList *self, GSListNode *item,
+static gbool search_handler(GList *self, GListNode *item,
                             gconstpointer user_data) {
   gchar *v1 = (gchar *)item->data;
   gchar *v2 = (gchar *)user_data;
   return g_strequal(v1, v2);
 }
 
-int test_slist(int, char *[]) {
+int test_list(int, char *[]) {
   g_mem_record(g_mem_record_default_callback);
   g_mem_record_begin();
 
@@ -27,33 +27,33 @@ int test_slist(int, char *[]) {
   gchar *str4 = "four";
   gchar *str5 = "five";
   gchar *str6 = g_strdup("dynamic");
-  GSList *list1 = g_slist_new();
-  g_slist_append(list1, str1);
-  g_slist_append(list1, str2);
-  g_slist_append(list1, str3);
-  g_slist_prepend(list1, str4);
-  g_slist_prepend(list1, str5);
-  g_slist_prepend(list1, str6);
+  GList *list1 = g_list_new();
+  g_list_append(list1, str1);
+  g_list_append(list1, str2);
+  g_list_append(list1, str3);
+  g_list_prepend(list1, str4);
+  g_list_prepend(list1, str5);
+  g_list_prepend(list1, str6);
   // 6, 5, 4, 1, 2, 3
   i = 0;
-  g_slist_visit(list1, print_and_count_callback, &i);
+  g_list_visit(list1, print_and_count_callback, &i);
   assert(i == 6);
-  assert(g_slist_size(list1) == 6);
-  assert(g_slist_get(list1, 1)->data == str5);
-  assert(g_slist_get(list1, 4)->data == str2);
+  assert(g_list_size(list1) == 6);
+  assert(g_list_get(list1, 1)->data == str5);
+  assert(g_list_get(list1, 4)->data == str2);
 
-  GSListNode *node = g_slist_search(list1, search_handler, "four");
+  GListNode *node = g_list_search(list1, search_handler, "four");
   assert(node && node->data == str4);
 
-  g_slist_remove(list1, str4);
-  g_slist_remove(list1, str6);
-  g_slist_remove(list1, str3);
+  g_list_remove(list1, str4);
+  g_list_remove(list1, str6);
+  g_list_remove(list1, str3);
   // 5, 1, 2
-  assert(g_slist_size(list1) == 3);
-  assert(g_slist_index_of(list1, str1) == 1);
+  assert(g_list_size(list1) == 3);
+  assert(g_list_index_of(list1, str1) == 1);
 
   g_free(str6);
-  g_slist_free(list1);
+  g_list_free(list1);
 
   gulong allocated = 0;
   gulong freed = 0;

@@ -14,7 +14,7 @@ typedef struct
 } GCoroutineRunner;
 
 static gbool coroutine_initialized = FALSE;
-static GSList * coroutine_funcs = NULL;
+static GList * coroutine_funcs = NULL;
 
 gbool g_coroutine_is_ready(void);
 void g_coroutine_initialize(void);
@@ -39,14 +39,14 @@ GCoroutineSemaphore * g_coroutine_semaphore_new(guint count)
 
 static void _on_coroutine_process(gint tid)
 {
-	GSList * func = coroutine_funcs;
+	GList * func = coroutine_funcs;
 	while(func != NULL)
 	{
 		GCoroutineRunner * runner = (GCoroutineRunner *)func->data;
-		func = g_slist_next(func);
+		func = g_list_next(func);
 		if (!g_coroutine_is_alive(runner->func(runner->co)))			
 		{
-			coroutine_funcs = g_slist_remove(coroutine_funcs, runner);
+			coroutine_funcs = g_list_remove(coroutine_funcs, runner);
 			g_free(runner->co);
 			g_free(runner);
 		}
@@ -59,14 +59,14 @@ static void _on_coroutine_process(gint tid)
 }
 void g_coroutine_stop(GCoroutine* co)
 {
-	GSList * func = coroutine_funcs;
+	GList * func = coroutine_funcs;
 	while(func != NULL)
 	{
 		GCoroutineRunner * runner = (GCoroutineRunner *)func->data;
-		func = g_slist_next(func);
+		func = g_list_next(func);
 		if (runner->co == co)
 		{
-			coroutine_funcs = g_slist_remove(coroutine_funcs, runner);
+			coroutine_funcs = g_list_remove(coroutine_funcs, runner);
 			g_free(runner->co);
 			g_free(runner);
 			break;
@@ -81,7 +81,7 @@ void g_coroutine_run(GCoroutine* co, COROUTINE_FUNC func)
 	runner = g_new(GCoroutineRunner);
 	runner->func = func;
 	runner->co = co;
-	coroutine_funcs = g_slist_append(coroutine_funcs, runner);
+	coroutine_funcs = g_list_append(coroutine_funcs, runner);
 }
 
 gbool g_coroutine_is_ready()
