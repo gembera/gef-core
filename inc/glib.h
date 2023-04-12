@@ -229,10 +229,8 @@ void g_array_insert_ref(GArray *self, guint index, gpointer ref);
   }
 void g_array_append_items(GArray *self, gpointer items, guint count);
 void g_array_prepend_items(GArray *self, gpointer items, guint count);
-gint g_array_search(GArray *self, GArraySearchHandler func,
-                        gpointer user_data);
-void g_array_visit(GArray *self, GArrayVisitCallback func,
-                       gpointer user_data);
+gint g_array_search(GArray *self, GArraySearchHandler func, gpointer user_data);
+void g_array_visit(GArray *self, GArrayVisitCallback func, gpointer user_data);
 
 typedef gbool (*GPtrArraySearchHandler)(GPtrArray *self, guint index,
                                         gconstpointer item,
@@ -270,6 +268,10 @@ typedef struct _GSList {
   GSListNode *head;
 } GSList;
 
+typedef gbool (*GSListSearchHandler)(GSList *self, GSListNode *item,
+                                     gconstpointer user_data);
+typedef void (*GSListVisitCallback)(GSList *self, GSListNode *item,
+                                    gconstpointer user_data);
 GSList *g_slist_new();
 GSListNode *g_slist_node_new(gpointer data);
 void g_slist_free(GSList *self);
@@ -278,15 +280,11 @@ guint g_slist_size(GSList *self);
 void g_slist_append(GSList *self, gpointer data);
 void g_slist_prepend(GSList *self, gpointer data);
 void g_slist_remove(GSList *self, gpointer data);
+gint g_slist_index_of(GSList *self, gpointer data);
 GSListNode *g_slist_get(GSList *self, guint n);
-/*
-GSList *g_slist_find(GSList *list, gpointer data);
-GSList *g_slist_find_custom(GSList *list, gpointer data, GCompareHandler func);
-gint g_slist_position(GSList *list, GSList *link);
-gint g_slist_index(GSList *list, gpointer data);
-void g_slist_foreach(GSList *list, GCallback func, gpointer user_data);
-gpointer g_slist_nth_data(GSList *list, guint n);
-*/
+GSListNode *g_slist_search(GSList *self, GSListSearchHandler func,
+                           gpointer user_data);
+void g_slist_visit(GSList *self, GSListVisitCallback func, gpointer user_data);
 
 // Hash handlers
 guint g_ptr_hash(gconstpointer v);

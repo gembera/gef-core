@@ -55,7 +55,7 @@ void g_slist_prepend(GSList *self, gpointer data) {
 
 GSListNode *g_slist_last(GSList *self) {
   g_return_val_if_fail(self, NULL);
-  GSListNode * current = self->head;
+  GSListNode *current = self->head;
   if (current) {
     while (current->next)
       current = current->next;
@@ -67,7 +67,7 @@ GSListNode *g_slist_last(GSList *self) {
 guint g_slist_size(GSList *self) {
   g_return_val_if_fail(self, 0);
   guint size = 0;
-  GSListNode * current = self->head;
+  GSListNode *current = self->head;
   while (current) {
     size++;
     current = current->next;
@@ -94,57 +94,42 @@ void g_slist_remove(GSList *self, gpointer data) {
     tmp = tmp->next;
   }
 }
-GSListNode * g_slist_get(GSList *self, guint n){
+GSListNode *g_slist_get(GSList *self, guint n) {
   g_return_val_if_fail(self, NULL);
-  GSListNode * current = self->head;
+  GSListNode *current = self->head;
   while ((n-- > 0) && current)
     current = current->next;
   return current;
 }
-/*
 
-
-GSList *g_slist_find(GSList *list, gpointer data) {
-  while (list) {
-    if (list->data == data)
-      break;
-    list = list->next;
-  }
-
-  return list;
-}
-
-GSList *g_slist_find_custom(GSList *list, gpointer data, GCompareHandler func) {
-  g_return_val_if_fail(func != NULL, list);
-
-  while (list) {
-    if (!func(list->data, data))
-      return list;
-    list = list->next;
-  }
-
-  return NULL;
-}
-
-gint g_slist_index(GSList *list, gpointer data) {
-  gint i;
-
-  i = 0;
-  while (list) {
-    if (list->data == data)
+gint g_slist_index_of(GSList *self, gpointer data) {
+  g_return_val_if_fail(self, -1);
+  GSListNode *current = self->head;
+  gint i = 0;
+  for (; current; i++, current = current->next) {
+    if (current->data == data)
       return i;
-    i++;
-    list = list->next;
   }
-
   return -1;
 }
 
+GSListNode *g_slist_search(GSList *self, GSListSearchHandler func,
+                           gpointer user_data) {
+  g_return_val_if_fail(self, NULL);
+  g_return_val_if_fail(func, NULL);
+  GSListNode *current = self->head;
+  for (; current; current = current->next) {
+    if (func(self, current, user_data))
+      return current;
+  }
+  return NULL;
+}
 
-void g_slist_foreach(GSList *list, GCallback func, gpointer user_data) {
-  while (list) {
-    (*func)(list->data, user_data);
-    list = list->next;
+void g_slist_visit(GSList *self, GSListVisitCallback func, gpointer user_data) {
+  g_return_if_fail(self);
+  g_return_if_fail(func);
+  GSListNode *current = self->head;
+  for (; current; current = current->next) {
+    func(self, current, user_data);
   }
 }
-*/
