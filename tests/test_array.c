@@ -5,14 +5,37 @@ typedef struct _Person {
   gchar *name;
   gint age;
 } Person;
+gbool array_search_handler(GArray *self, guint index, gconstpointer item,
+                           gconstpointer user_data) {
+  gint v1 = *(gint *)item;
+  gint v2 = *(gint *)user_data;
+  return v1 == v2;
+};
 
-gbool search_callback(gconstpointer item, gconstpointer name) {
-  return g_strequal(((Person *)item)->name, (gchar *)name);
+void array_visit_callback(GArray *self, guint index, gconstpointer item,
+                          gconstpointer user_data) {
+  gint v = *(gint *)item;
+  gint *count = (gint *)user_data;
+  if (v > 300)
+    (*count)++;
+};
+
+gbool ptr_array_search_handler(GPtrArray *self, guint index, gconstpointer item,
+                               gconstpointer user_data) {
+  return g_strequal(((Person *)item)->name, (gchar *)user_data);
+};
+
+void ptr_array_visit_callback(GPtrArray *self, guint index, gconstpointer item,
+                              gconstpointer user_data) {
+  gint *age_gt_20_count = (gint *)user_data;
+  if (((Person *)item)->age > 20)
+    (*age_gt_20_count)++;
 };
 
 int test_array(int, char *[]) {
   // g_mem_record(g_mem_record_default_callback);
   g_mem_record_begin();
+  gint i, i1, i2, i3, i4;
   gint val1 = 111;
   gint val2 = 222;
   gint val3 = 333;
@@ -43,6 +66,13 @@ int test_array(int, char *[]) {
   g_array_set(arr, gint, 4, val2);
   // 444, 555, 666, 111, 222
   assert(data[4] == val2);
+
+  i = g_array_search(arr, array_search_handler, &val2);
+  assert(i == 4);
+
+  i = 0;
+  g_array_visit(arr, array_visit_callback, &i);
+  assert(i == 3);
 
   g_array_remove(arr, 1);
   // 444, 666, 111, 222
@@ -104,23 +134,31 @@ int test_array(int, char *[]) {
   assert(parr2->data[0] == &p3);
   assert(parr2->data[1] == &p2);
 
-  gint i1 = g_ptr_array_index_of(parr1, &p2);
-  gint i2 = g_ptr_array_index_of(parr2, &p2);
+  i1 = g_ptr_array_index_of(parr1, &p2);
+  i2 = g_ptr_array_index_of(parr2, &p2);
   assert(i1 == 2);
   assert(i2 == 1);
+
   g_ptr_array_remove(parr1, i1);
   i1 = g_ptr_array_index_of(parr1, &p2);
   assert(i1 == -1);
+
   g_ptr_array_add(parr2, &p1);
   assert(g_ptr_array_size(parr2) == 3);
   assert(parr2->data[2] == &p1);
-  gint i3 = g_ptr_array_search(parr2, search_callback, "three");
+
+  i3 = g_ptr_array_search(parr2, ptr_array_search_handler, "three");
   assert(i3 == 0);
+
   g_ptr_array_add(parr2, pp4);
   assert(g_ptr_array_size(parr2) == 4);
   assert(parr2->data[3] == pp4);
-  g_free(pp4);
 
+  i4 = 0;
+  g_ptr_array_visit(parr2, ptr_array_visit_callback, &i4);
+  assert(i4 == 2);
+
+  g_free(pp4);
   g_ptr_array_free(parr1);
   g_ptr_array_free(parr2);
 
@@ -128,7 +166,8 @@ int test_array(int, char *[]) {
   gulong freed = 0;
   gulong peak = 0;
   g_mem_profile(&allocated, &freed, &peak);
-  printf("\nallocated memory: %d  \nfreed memory: %d\npeak memory: %d\n", allocated, freed, peak);
+  printf("\nallocated memory: %d  \nfreed memory: %d\npeak memory: %d\n",
+         allocated, freed, peak);
   assert(allocated == freed);
   g_mem_record_end();
   return 0;

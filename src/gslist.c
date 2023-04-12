@@ -6,179 +6,103 @@
 
 #include "glib.h"
 
-// static GSList    *free_list = NULL;
-
-GSList *g_slist_new(gpointer data) {
+GSList *g_slist_new() {
   GSList *new_list = g_new(GSList);
-  g_return_val_if_fail(new_list != NULL, NULL);
+  g_return_val_if_fail(new_list, NULL);
+  new_list->head = NULL;
+  return new_list;
+}
+
+GSListNode *g_slist_node_new(gpointer data) {
+  GSListNode *new_list = g_new(GSListNode);
+  g_return_val_if_fail(new_list, NULL);
   new_list->data = data;
   new_list->next = NULL;
   return new_list;
 }
 
-void g_slist_free(GSList *list) {
-  GSList *next;
-  for (; list != NULL; list = next) {
-    next = list->next;
-    g_free(list);
+void g_slist_free(GSList *self) {
+  g_return_if_fail(self);
+  GSListNode *next;
+  GSListNode *current = self->head;
+  for (; current != NULL; current = next) {
+    next = current->next;
+    g_free(current);
   }
+  g_free(self);
 }
 
-void g_slist_free_1(GSList *list) {
-  if (list) {
-    g_free(list);
-  }
-}
-
-GSList *g_slist_append(GSList *list, gpointer data) {
-  GSList *new_list;
-  GSList *last;
-  new_list = g_slist_new(data);
-  if (list) {
-    last = g_slist_last(list);
-    last->next = new_list;
-    return list;
-  } else
-    return new_list;
-}
-
-GSList *g_slist_prepend(GSList *list, gpointer data) {
-  GSList *new_list;
-  new_list = g_slist_new(data);
-  new_list->next = list;
-  return new_list;
-}
-
-GSList *g_slist_insert(GSList *list, gpointer data, gint position) {
-  GSList *prev_list;
-  GSList *tmp_list;
-  GSList *new_list;
-
-  if (position < 0)
-    return g_slist_append(list, data);
-  else if (position == 0)
-    return g_slist_prepend(list, data);
-
-  new_list = g_slist_new(data);
-
-  if (!list)
-    return new_list;
-
-  prev_list = NULL;
-  tmp_list = list;
-
-  while ((position-- > 0) && tmp_list) {
-    prev_list = tmp_list;
-    tmp_list = tmp_list->next;
-  }
-
-  if (prev_list) {
-    new_list->next = prev_list->next;
-    prev_list->next = new_list;
+void g_slist_append(GSList *self, gpointer data) {
+  g_return_if_fail(self);
+  GSListNode *new_node;
+  GSListNode *last;
+  new_node = g_slist_node_new(data);
+  if (self->head) {
+    last = g_slist_last(self);
+    last->next = new_node;
   } else {
-    new_list->next = list;
-    list = new_list;
+    self->head = new_node;
   }
-
-  return list;
 }
 
-GSList *g_slist_concat(GSList *list1, GSList *list2) {
-  if (list2) {
-    if (list1)
-      g_slist_last(list1)->next = list2;
-    else
-      list1 = list2;
-  }
-  return list1;
+void g_slist_prepend(GSList *self, gpointer data) {
+  g_return_if_fail(self);
+  GSListNode *new_node;
+  new_node = g_slist_node_new(data);
+  new_node->next = self->head;
+  self->head = new_node;
 }
 
-GSList *g_slist_remove(GSList *list, gpointer data) {
-  GSList *tmp;
-  GSList *prev;
+GSListNode *g_slist_last(GSList *self) {
+  g_return_val_if_fail(self, NULL);
+  GSListNode * current = self->head;
+  if (current) {
+    while (current->next)
+      current = current->next;
+  }
 
+  return current;
+}
+
+guint g_slist_size(GSList *self) {
+  g_return_val_if_fail(self, 0);
+  guint size = 0;
+  GSListNode * current = self->head;
+  while (current) {
+    size++;
+    current = current->next;
+  }
+  return size;
+}
+void g_slist_remove(GSList *self, gpointer data) {
+  g_return_if_fail(self);
+  GSListNode *tmp;
+  GSListNode *prev;
   prev = NULL;
-  tmp = list;
-
+  tmp = self->head;
   while (tmp) {
     if (tmp->data == data) {
       if (prev)
         prev->next = tmp->next;
-      if (list == tmp)
-        list = list->next;
-
+      if (self->head == tmp)
+        self->head = tmp->next;
       tmp->next = NULL;
-      g_slist_free(tmp);
-
+      g_free(tmp);
       break;
     }
-
     prev = tmp;
     tmp = tmp->next;
   }
-
-  return list;
 }
-
-GSList *g_slist_remove_link(GSList *list, GSList *link) {
-  GSList *tmp;
-  GSList *prev;
-
-  prev = NULL;
-  tmp = list;
-
-  while (tmp) {
-    if (tmp == link) {
-      if (prev)
-        prev->next = tmp->next;
-      if (list == tmp)
-        list = list->next;
-
-      tmp->next = NULL;
-      break;
-    }
-
-    prev = tmp;
-    tmp = tmp->next;
-  }
-
-  return list;
+GSListNode * g_slist_get(GSList *self, guint n){
+  g_return_val_if_fail(self, NULL);
+  GSListNode * current = self->head;
+  while ((n-- > 0) && current)
+    current = current->next;
+  return current;
 }
+/*
 
-GSList *g_slist_reverse(GSList *list) {
-  GSList *tmp;
-  GSList *prev;
-  GSList *last;
-
-  last = NULL;
-  prev = NULL;
-
-  while (list) {
-    last = list;
-
-    tmp = list->next;
-    list->next = prev;
-
-    prev = list;
-    list = tmp;
-  }
-
-  return last;
-}
-
-GSList *g_slist_nth(GSList *list, guint n) {
-  while ((n-- > 0) && list)
-    list = list->next;
-
-  return list;
-}
-
-gpointer g_slist_nth_data(GSList *list, guint n) {
-  while ((n-- > 0) && list)
-    list = list->next;
-
-  return list ? list->data : NULL;
-}
 
 GSList *g_slist_find(GSList *list, gpointer data) {
   while (list) {
@@ -202,20 +126,6 @@ GSList *g_slist_find_custom(GSList *list, gpointer data, GCompareHandler func) {
   return NULL;
 }
 
-gint g_slist_position(GSList *list, GSList *link) {
-  gint i;
-
-  i = 0;
-  while (list) {
-    if (list == link)
-      return i;
-    i++;
-    list = list->next;
-  }
-
-  return -1;
-}
-
 gint g_slist_index(GSList *list, gpointer data) {
   gint i;
 
@@ -230,26 +140,6 @@ gint g_slist_index(GSList *list, gpointer data) {
   return -1;
 }
 
-GSList *g_slist_last(GSList *list) {
-  if (list) {
-    while (list->next)
-      list = list->next;
-  }
-
-  return list;
-}
-
-guint g_slist_size(GSList *list) {
-  guint length;
-
-  length = 0;
-  while (list) {
-    length++;
-    list = list->next;
-  }
-
-  return length;
-}
 
 void g_slist_foreach(GSList *list, GCallback func, gpointer user_data) {
   while (list) {
@@ -257,42 +147,4 @@ void g_slist_foreach(GSList *list, GCallback func, gpointer user_data) {
     list = list->next;
   }
 }
-
-GSList *g_slist_insert_sorted(GSList *list, gpointer data,
-                              GCompareHandler func) {
-  GSList *tmp_list = list;
-  GSList *prev_list = NULL;
-  GSList *new_list;
-  gint cmp;
-
-  g_return_val_if_fail(func != NULL, list);
-
-  if (!list) {
-    new_list = g_slist_new(data);
-    return new_list;
-  }
-
-  cmp = (*func)(data, tmp_list->data);
-
-  while ((tmp_list->next) && (cmp > 0)) {
-    prev_list = tmp_list;
-    tmp_list = tmp_list->next;
-    cmp = (*func)(data, tmp_list->data);
-  }
-
-  new_list = g_slist_new(data);
-
-  if ((!tmp_list->next) && (cmp > 0)) {
-    tmp_list->next = new_list;
-    return list;
-  }
-
-  if (prev_list) {
-    prev_list->next = new_list;
-    new_list->next = tmp_list;
-    return list;
-  } else {
-    new_list->next = list;
-    return new_list;
-  }
-}
+*/

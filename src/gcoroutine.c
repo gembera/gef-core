@@ -6,6 +6,7 @@
 
 #include "gcoroutine.h"
 
+/*
 typedef struct  
 {
 	COROUTINE_FUNC func;
@@ -23,14 +24,12 @@ GCoroutine* g_coroutine_new()
 	GCoroutine * co = g_new(GCoroutine);
 	return co;
 }
-/*
 void g_coroutine_free(GCoroutine* co)
 {
 	g_return_if_fail(co != NULL);
 	g_coroutine_stop(co);
 	g_free(co);
 }
-*/
 GCoroutineSemaphore * g_coroutine_semaphore_new(guint count)
 {
 	GCoroutineSemaphore * cs = g_new(GCoroutineSemaphore);
@@ -52,13 +51,11 @@ static void _on_coroutine_process(gint tid)
 			g_free(runner);
 		}
 	}
-	/*
 	if (coroutine_funcs == NULL)
 	{
 		vm_delete_timer(coroutine_timer_id);
 		coroutine_timer_id = -1;
 	}
-	*/
 }
 void g_coroutine_stop(GCoroutine* co)
 {
@@ -96,10 +93,7 @@ void g_coroutine_initialize(void)
 	//g_log_debug("g_coroutine_initialize %d", coroutine_initialized);
 	if (!coroutine_initialized)
 	{
-		/*
-		VMINT coroutine_timer_id = vm_create_timer(20, _on_coroutine_process);
-		g_log_debug("g_coroutine_initialize : %d", coroutine_timer_id);
-		*/
 		coroutine_initialized = TRUE;
 	}
 }
+*/

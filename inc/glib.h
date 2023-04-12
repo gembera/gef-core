@@ -43,32 +43,9 @@
 #undef MININT
 #define MININT ((gint)~MAXINT)
 
-#ifdef G_DISABLE_ASSERT
-
-#define g_assert(expr)
-#define g_assert_not_reached()
-
-#else /* G_DISABLE_ASSERT */
-
-#define g_assert(expr)                                                         \
-  if (!(expr))                                                                 \
-    g_error("file %s: line %d: \"%s\"", __FILE__, __LINE__, #expr);
-
-#define g_assert_not_reached()                                                 \
-  g_error("file %s: line %d: \"should not be reached\"", __FILE__, __LINE__);
-
-#endif /* G_DISABLE_ASSERT */
-
-#ifdef G_DISABLE_CHECKS
-
-#define g_return_if_fail(expr)
-#define g_return_val_if_fail(expr, val)
-
-#else /* !G_DISABLE_CHECKS */
-
 #define g_return_if_fail(expr)                                                 \
   if (!(expr)) {                                                               \
-    g_warning("file %s: line %d: assertion. \"%s\" failed.\n", __FILE__,       \
+    g_warning("file %s: line %d: assertion \"%s\" failed.\n", __FILE__,        \
               __LINE__, #expr);                                                \
     return;                                                                    \
   };
@@ -79,8 +56,6 @@
               __LINE__, #expr);                                                \
     return val;                                                                \
   };
-
-#endif /* G_DISABLE_CHECKS */
 
 #ifdef __cplusplus
 extern "C" {
@@ -215,7 +190,6 @@ void g_mem_profile(gulong *allocated, gulong *freed, gulong *ppeak);
 typedef void (*GCallback)(gpointer data, gpointer user_data);
 typedef guint (*GHashHandler)(gconstpointer key);
 typedef gint (*GCompareHandler)(gconstpointer a, gconstpointer b);
-typedef gbool (*GSearchHandler)(gconstpointer item, gconstpointer target);
 
 // Array
 typedef struct _GArray {
@@ -227,6 +201,12 @@ typedef struct _GPtrArray {
   guint size;
 } GPtrArray;
 
+typedef gbool (*GArraySearchHandler)(GArray *self, guint index,
+                                     gconstpointer item,
+                                     gconstpointer user_data);
+typedef void (*GArrayVisitCallback)(GArray *self, guint index,
+                                    gconstpointer item,
+                                    gconstpointer user_data);
 GArray *g_array_new(guint item_len);
 #define g_array_new_of(type) g_array_new(sizeof(type))
 void g_array_free(GArray *self);
@@ -249,10 +229,19 @@ void g_array_insert_ref(GArray *self, guint index, gpointer ref);
   }
 void g_array_append_items(GArray *self, gpointer items, guint count);
 void g_array_prepend_items(GArray *self, gpointer items, guint count);
+gint g_array_search(GArray *self, GArraySearchHandler func,
+                        gpointer user_data);
+void g_array_visit(GArray *self, GArrayVisitCallback func,
+                       gpointer user_data);
 
+typedef gbool (*GPtrArraySearchHandler)(GPtrArray *self, guint index,
+                                        gconstpointer item,
+                                        gconstpointer user_data);
+typedef void (*GPtrArrayVisitCallback)(GPtrArray *self, guint index,
+                                       gconstpointer item,
+                                       gconstpointer user_data);
 GPtrArray *g_ptr_array_new(void);
 void g_ptr_array_free(GPtrArray *self);
-#define g_ptr_array(self, type) ((type *)(array->data))
 #define g_ptr_array_get(self, index) self->data[index]
 #define g_ptr_array_set(self, index, val) self->data[index] = val
 #define g_ptr_array_size(self) (self->size)
@@ -265,37 +254,39 @@ void g_ptr_array_insert(GPtrArray *self, guint index, gpointer data);
 void g_ptr_array_append_items(GPtrArray *self, gpointer *items, guint count);
 void g_ptr_array_prepend_items(GPtrArray *self, gpointer *items, guint count);
 gint g_ptr_array_index_of(GPtrArray *self, gpointer item);
-gint g_ptr_array_search(GPtrArray *self, GSearchHandler func, gpointer item);
+gint g_ptr_array_search(GPtrArray *self, GPtrArraySearchHandler func,
+                        gpointer user_data);
+void g_ptr_array_visit(GPtrArray *self, GPtrArrayVisitCallback func,
+                       gpointer user_data);
 
 // Singly linked list
-typedef struct _GSList GSList;
-struct _GSList {
+typedef struct _GSListNode GSListNode;
+struct _GSListNode {
   gpointer data;
-  GSList *next;
+  GSListNode *next;
 };
-GSList *g_slist_new(gpointer data);
-void g_slist_free(GSList *list);
-void g_slist_free_1(GSList *list);
-GSList *g_slist_append(GSList *list, gpointer data);
-GSList *g_slist_prepend(GSList *list, gpointer data);
-GSList *g_slist_insert(GSList *list, gpointer data, gint position);
-GSList *g_slist_insert_sorted(GSList *list, gpointer data,
-                              GCompareHandler func);
-GSList *g_slist_concat(GSList *list1, GSList *list2);
-GSList *g_slist_remove(GSList *list, gpointer data);
-GSList *g_slist_remove_link(GSList *list, GSList *link);
-GSList *g_slist_reverse(GSList *list);
-GSList *g_slist_nth(GSList *list, guint n);
+
+typedef struct _GSList {
+  GSListNode *head;
+} GSList;
+
+GSList *g_slist_new();
+GSListNode *g_slist_node_new(gpointer data);
+void g_slist_free(GSList *self);
+GSListNode *g_slist_last(GSList *self);
+guint g_slist_size(GSList *self);
+void g_slist_append(GSList *self, gpointer data);
+void g_slist_prepend(GSList *self, gpointer data);
+void g_slist_remove(GSList *self, gpointer data);
+GSListNode *g_slist_get(GSList *self, guint n);
+/*
 GSList *g_slist_find(GSList *list, gpointer data);
 GSList *g_slist_find_custom(GSList *list, gpointer data, GCompareHandler func);
 gint g_slist_position(GSList *list, GSList *link);
 gint g_slist_index(GSList *list, gpointer data);
-GSList *g_slist_last(GSList *list);
-guint g_slist_size(GSList *list);
 void g_slist_foreach(GSList *list, GCallback func, gpointer user_data);
 gpointer g_slist_nth_data(GSList *list, guint n);
-
-#define g_slist_next(slist) ((slist) ? (((GSList *)(slist))->next) : NULL)
+*/
 
 // Hash handlers
 guint g_ptr_hash(gconstpointer v);
