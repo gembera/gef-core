@@ -5,7 +5,6 @@
  */
 
 #include "gfilestream.h"
-#include "gfile.h"
 
 #include <stdio.h>
 #include <unistd.h>
@@ -32,7 +31,8 @@ gint g_file_stream_open(gpointer self, gstring name, GFileMode mode)
 	g_return_val_if_fail(self != NULL && !g_file_stream_is_open(self), -1);
 	if (GFILESTREAM(self)->file_name)
 		g_free(GFILESTREAM(self)->file_name);
-	s->file_name = g_file_get_normalize_path(name);
+	//s->file_name = g_file_get_normalize_path(name);
+	s->file_name = g_strdup(name);
 	s->file_mode = mode;
 	s->file_handle = (ghandle)fopen(s->file_name,  GET_MODE(s->file_mode));
 	if(s->file_handle == NULL) {

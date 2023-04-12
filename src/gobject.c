@@ -5,7 +5,7 @@
  */
 
 #include "gobject.h"
-
+/*
 static GHashTable *name_to_class_table = NULL;
 
 GObject *g_new_object(GObjectClass *clazz)
@@ -126,3 +126,4 @@ void static_clean_gobject()
 {
 	g_finalize_class_system();
 }
+*/

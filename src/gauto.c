@@ -5,3 +5,5 @@
  */
 
 #include "glib.h"
+
+static GList* holder = NULL;

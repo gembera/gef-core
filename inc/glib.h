@@ -190,6 +190,7 @@ void g_mem_profile(gulong *allocated, gulong *freed, gulong *ppeak);
 typedef void (*GCallback)(gpointer data, gpointer user_data);
 typedef guint (*GHashHandler)(gconstpointer key);
 typedef gint (*GCompareHandler)(gconstpointer a, gconstpointer b);
+typedef void (*GFreeCallback)(gpointer data);
 
 // Array
 typedef struct _GArray {
@@ -269,9 +270,9 @@ typedef struct _GList {
 } GList;
 
 typedef gbool (*GListSearchHandler)(GList *self, GListNode *item,
-                                     gconstpointer user_data);
-typedef void (*GListVisitCallback)(GList *self, GListNode *item,
                                     gconstpointer user_data);
+typedef void (*GListVisitCallback)(GList *self, GListNode *item,
+                                   gconstpointer user_data);
 GList *g_list_new();
 GListNode *g_list_node_new(gpointer data);
 void g_list_free(GList *self);
@@ -283,79 +284,43 @@ void g_list_remove(GList *self, gpointer data);
 gint g_list_index_of(GList *self, gpointer data);
 GListNode *g_list_get(GList *self, guint n);
 GListNode *g_list_search(GList *self, GListSearchHandler func,
-                           gpointer user_data);
+                         gpointer user_data);
 void g_list_visit(GList *self, GListVisitCallback func, gpointer user_data);
 
-// Hash handlers
-guint g_ptr_hash(gconstpointer v);
-guint g_str_hash(gconstpointer v);
-guint g_str_ihash(gconstpointer v);
-guint g_str_aphash(gconstpointer v);
-
+// Compare handlers
 gint g_ptr_equal(gconstpointer v1, gconstpointer v2);
 gint g_str_equal(gconstpointer v1, gconstpointer v2);
 gint g_str_iequal(gconstpointer v1, gconstpointer v2);
 
 // HashMap
-typedef struct _GHashMapNode {
+typedef struct _GMapPair {
   gpointer key;
   gpointer value;
-} GHashMapNode;
+} GMapPair;
 
-typedef struct _GHashMap {
-  GPtrArray *slots;
-} GHashMap;
-typedef void (*GHashMapVisitCallback)(gpointer key, gpointer value,
-                                      gpointer user_data);
+typedef struct _GMap {
+  GArray *data;
+  GCompareHandler key_compare_handler;
+} GMap;
 
-GHashMap *g_hash_map_new(GHashHandler hash_func,
-                         GCompareHandler key_compare_func);
-#define g_hash_map_new_str() g_hash_map_new(g_str_hash, g_str_equal)
-void g_hash_map_free(GHashMap *self, gbool free_key, gbool free_val);
-gpointer g_hash_map_get(GHashMap *self, gconstpointer key);
-gpointer g_hash_map_set(GHashMap *self, gpointer key, gpointer value);
-GHashMapNode g_hash_map_remove(GHashMap *self, gconstpointer key);
-void g_hash_map_visit(GHashMap *self, GHashMapVisitCallback func,
-                      gpointer user_data);
-GPtrArray *g_hash_map_keys(GHashMap *self);
-GPtrArray *g_hash_map_values(GHashMap *self);
-GPtrArray *g_hash_map_remove_all(GHashMap *self);
-guint g_hash_map_size(GHashMap *self);
+typedef gbool (*GMapSearchHandler)(GMap *self, gpointer key, gpointer value,
+                                   gpointer user_data);
+typedef void (*GMapVisitCallback)(GMap *self, gpointer key, gpointer value,
+                                  gpointer user_data);
 
-// HashTable
-typedef struct _GHashNode {
-  guint hash;
-  gpointer key;
-  gpointer value;
-} GHashNode;
-
-typedef struct _GHashTable {
-  GArray *nodes;
-  GHashHandler hash_func;
-  GCompareHandler key_compare_func;
-} GHashTable;
-typedef void (*GHashTableVisitCallback)(gpointer key, gpointer value,
-                                        gpointer user_data);
-
-GHashTable *g_hash_table_new(GHashHandler hash_func,
-                             GCompareHandler key_compare_func);
-#define g_hash_table_new_str() g_hash_table_new(g_str_hash, g_str_equal)
-void g_hash_table_destroy(GHashTable *hash_table);
-void g_hash_table_deep_destroy(GHashTable *hash_table);
-void g_hash_table_insert(GHashTable *hash_table, gpointer key, gpointer value);
-void g_hash_table_remove(GHashTable *hash_table, gconstpointer key);
-gpointer g_hash_table_lookup(GHashTable *hash_table, gconstpointer key);
-gbool g_hash_table_lookup_extended(GHashTable *hash_table,
-                                   gconstpointer lookup_key, gpointer *orig_key,
-                                   gpointer *value);
-void g_hash_table_foreach(GHashTable *hash_table, GHashTableVisitCallback func,
-                          gpointer user_data);
-gint g_hash_table_size(GHashTable *hash_table);
-void g_hash_table_clear(GHashTable *hash_table);
+GMap *g_map_new(GCompareHandler key_compare_func);
+#define g_map_new_str() g_map_new(g_strcasecmp)
+void g_map_free(GMap *self);
+GMapPair *g_map_get(GMap *self, gconstpointer key);
+void g_map_set(GMap *self, gpointer key, gpointer value);
+void g_map_remove(GMap *self, gconstpointer key);
+void g_map_remove_all(GMap *self);
+guint g_map_size(GMap *self);
+GMapPair *g_map_search(GMap *self, GMapSearchHandler func, gpointer user_data);
+void g_map_visit(GMap *self, GMapVisitCallback func, gpointer user_data);
 
 typedef struct _GString GString;
 typedef struct _GBuffer GBuffer;
-
 
 struct _GString {
   gchar *str;
