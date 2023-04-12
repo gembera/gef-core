@@ -20,7 +20,7 @@ void g_coroutine_initialize(void);
 
 GCoroutine* g_coroutine_new()
 {
-	GCoroutine * co = g_new0(GCoroutine, 1);
+	GCoroutine * co = g_new(GCoroutine);
 	return co;
 }
 /*
@@ -33,7 +33,7 @@ void g_coroutine_free(GCoroutine* co)
 */
 GCoroutineSemaphore * g_coroutine_semaphore_new(guint count)
 {
-	GCoroutineSemaphore * cs = g_new0(GCoroutineSemaphore, 1);
+	GCoroutineSemaphore * cs = g_new(GCoroutineSemaphore);
 	cs->count = count;
 	return cs;
 }
@@ -81,7 +81,7 @@ void g_coroutine_run(GCoroutine* co, COROUTINE_FUNC func)
 	GCoroutineRunner * runner = NULL;
 	g_return_if_fail(co != NULL && func != NULL);
 	g_coroutine_initialize();
-	runner = g_new(GCoroutineRunner, 1);
+	runner = g_new(GCoroutineRunner);
 	runner->func = func;
 	runner->co = co;
 	coroutine_funcs = g_slist_append(coroutine_funcs, runner);

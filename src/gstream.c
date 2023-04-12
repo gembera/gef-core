@@ -29,7 +29,7 @@ gstring g_stream_read_string_with_length(gpointer self)
 	gstring fn = NULL;
 	fnlen = g_stream_read_int16(self);
 	if (fnlen < 0) return fn;
-	fn = g_new(gchar, fnlen + 1);
+	fn = g_malloc(fnlen + 1);
 	fn[fnlen] = '\0';
 	g_stream_virtual_read(self, fn, fnlen);
 	return fn;

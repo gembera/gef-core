@@ -12,7 +12,7 @@
 GList*
 g_list_alloc (void)
 {
-  GList *new_list = g_new (GList, 1);
+  GList *new_list = g_new (GList);
   
   new_list->data = NULL;
   new_list->next = NULL;

@@ -43,18 +43,6 @@
 #undef MININT
 #define MININT ((gint)~MAXINT)
 
-#ifdef __DMALLOC_H__
-
-#define g_new(type, count) ALLOC(type, count)
-#define g_new0(type, count) CALLOC(type, count)
-
-#else /* __DMALLOC_H__ */
-
-#define g_new(type, count) ((type *)g_malloc((unsigned)sizeof(type) * (count)))
-#define g_new0(type, count)                                                    \
-  ((type *)g_malloc0((unsigned)sizeof(type) * (count)))
-#endif /* __DMALLOC_H__ */
-
 #ifdef G_DISABLE_ASSERT
 
 #define g_assert(expr)
@@ -167,6 +155,11 @@ typedef const gwchar *gconstwstring;
 #endif
 
 // Memory management
+
+#define g_new(type) ((type *)g_malloc0((unsigned)sizeof(type)))
+#define g_new_many(type, count)                                                \
+  ((type *)g_malloc0((unsigned)sizeof(type) * (count)))
+
 #ifdef ENABLE_MEM_RECORD
 typedef void (*GMemRecordCallback)(gulong index, gpointer memnew,
                                    gpointer memfree, gulong allocated,
@@ -215,7 +208,7 @@ void _g_free(gpointer mem);
 #endif
 
 #ifdef ENABLE_MEM_PROFILE
-void g_mem_profile(gulong *allocated, gulong *freed);
+void g_mem_profile(gulong *allocated, gulong *freed, gulong *ppeak);
 #endif
 
 // General callbacks and handlers
@@ -273,6 +266,36 @@ void g_ptr_array_append_items(GPtrArray *self, gpointer *items, guint count);
 void g_ptr_array_prepend_items(GPtrArray *self, gpointer *items, guint count);
 gint g_ptr_array_index_of(GPtrArray *self, gpointer item);
 gint g_ptr_array_search(GPtrArray *self, GSearchHandler func, gpointer item);
+
+// Singly linked list
+typedef struct _GSList GSList;
+struct _GSList {
+  gpointer data;
+  GSList *next;
+};
+GSList *g_slist_new(gpointer data);
+void g_slist_free(GSList *list);
+void g_slist_free_1(GSList *list);
+GSList *g_slist_append(GSList *list, gpointer data);
+GSList *g_slist_prepend(GSList *list, gpointer data);
+GSList *g_slist_insert(GSList *list, gpointer data, gint position);
+GSList *g_slist_insert_sorted(GSList *list, gpointer data,
+                              GCompareHandler func);
+GSList *g_slist_concat(GSList *list1, GSList *list2);
+GSList *g_slist_remove(GSList *list, gpointer data);
+GSList *g_slist_remove_link(GSList *list, GSList *link);
+GSList *g_slist_reverse(GSList *list);
+GSList *g_slist_nth(GSList *list, guint n);
+GSList *g_slist_find(GSList *list, gpointer data);
+GSList *g_slist_find_custom(GSList *list, gpointer data, GCompareHandler func);
+gint g_slist_position(GSList *list, GSList *link);
+gint g_slist_index(GSList *list, gpointer data);
+GSList *g_slist_last(GSList *list);
+guint g_slist_size(GSList *list);
+void g_slist_foreach(GSList *list, GCallback func, gpointer user_data);
+gpointer g_slist_nth_data(GSList *list, guint n);
+
+#define g_slist_next(slist) ((slist) ? (((GSList *)(slist))->next) : NULL)
 
 // Hash handlers
 guint g_ptr_hash(gconstpointer v);
@@ -342,7 +365,6 @@ gint g_hash_table_size(GHashTable *hash_table);
 void g_hash_table_clear(GHashTable *hash_table);
 
 typedef struct _GList GList;
-typedef struct _GSList GSList;
 typedef struct _GString GString;
 typedef struct _GBuffer GBuffer;
 
@@ -350,11 +372,6 @@ struct _GList {
   gpointer data;
   GList *next;
   GList *prev;
-};
-
-struct _GSList {
-  gpointer data;
-  GSList *next;
 };
 
 struct _GString {
@@ -398,32 +415,6 @@ gpointer g_list_nth_data(GList *list, guint n);
 
 #define g_list_previous(list) ((list) ? (((GList *)(list))->prev) : NULL)
 #define g_list_next(list) ((list) ? (((GList *)(list))->next) : NULL)
-
-/* Singly linked lists
- */
-GSList *g_slist_alloc(void);
-void g_slist_free(GSList *list);
-void g_slist_free_1(GSList *list);
-GSList *g_slist_append(GSList *list, gpointer data);
-GSList *g_slist_prepend(GSList *list, gpointer data);
-GSList *g_slist_insert(GSList *list, gpointer data, gint position);
-GSList *g_slist_insert_sorted(GSList *list, gpointer data,
-                              GCompareHandler func);
-GSList *g_slist_concat(GSList *list1, GSList *list2);
-GSList *g_slist_remove(GSList *list, gpointer data);
-GSList *g_slist_remove_link(GSList *list, GSList *link);
-GSList *g_slist_reverse(GSList *list);
-GSList *g_slist_nth(GSList *list, guint n);
-GSList *g_slist_find(GSList *list, gpointer data);
-GSList *g_slist_find_custom(GSList *list, gpointer data, GCompareHandler func);
-gint g_slist_position(GSList *list, GSList *link);
-gint g_slist_index(GSList *list, gpointer data);
-GSList *g_slist_last(GSList *list);
-guint g_slist_size(GSList *list);
-void g_slist_foreach(GSList *list, GCallback func, gpointer user_data);
-gpointer g_slist_nth_data(GSList *list, guint n);
-
-#define g_slist_next(slist) ((slist) ? (((GSList *)(slist))->next) : NULL)
 
 /* String utility functions
  */

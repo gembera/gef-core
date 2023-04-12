@@ -74,7 +74,7 @@ int test_array(int, char *[]) {
   Person p1 = {"one", 10};
   Person p2 = {"two", 20};
   Person p3 = {"three", 30};
-  Person *pp4 = g_new(Person, 1);
+  Person *pp4 = g_new(Person);
   pp4->name = "four";
   pp4->age = 40;
 
@@ -126,8 +126,9 @@ int test_array(int, char *[]) {
 
   gulong allocated = 0;
   gulong freed = 0;
-  g_mem_profile(&allocated, &freed);
-  printf("\nallocated memory: %d  \nfreed memory: %d\n", allocated, freed);
+  gulong peak = 0;
+  g_mem_profile(&allocated, &freed, &peak);
+  printf("\nallocated memory: %d  \nfreed memory: %d\npeak memory: %d\n", allocated, freed, peak);
   assert(allocated == freed);
   g_mem_record_end();
   return 0;

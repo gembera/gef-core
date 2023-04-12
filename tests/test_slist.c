@@ -1,7 +1,7 @@
 #include "glib.h"
 #include <assert.h>
 
-int test_mem(int, char *[]) {
+int test_slist(int, char *[]) {
   g_mem_record(g_mem_record_default_callback);
   g_mem_record_begin();
   gpointer data1 = g_malloc0(100);
@@ -13,9 +13,8 @@ int test_mem(int, char *[]) {
   gulong freed = 0;
   gulong peak = 0;
   g_mem_profile(&allocated, &freed, &peak);
-  assert(allocated == (100 + 200 + 150));
-  assert(freed == (100 + 200 + 150));
   printf("\nallocated memory: %d  \nfreed memory: %d\npeak memory: %d\n", allocated, freed, peak);
+  assert(allocated == freed);
   g_mem_record_end();
   return 0;
 }

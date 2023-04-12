@@ -26,7 +26,7 @@ GHashTable *g_hash_table_new(GHashHandler hash_func,
                              GCompareHandler key_compare_func) {
   GHashTable *hash_table;
 
-  hash_table = g_new0(GHashTable, 1);
+  hash_table = g_new(GHashTable);
   g_return_val_if_fail(hash_table != NULL, NULL);
   hash_table->hash_func = hash_func ? hash_func : g_ptr_hash;
   hash_table->key_compare_func = key_compare_func;

@@ -19,7 +19,7 @@ GArray *g_array_new(guint item_len) {
   GRealArray *array;
   g_return_val_if_fail(item_len > 0, NULL);
 
-  array = g_new(GRealArray, 1);
+  array = g_new(GRealArray);
   g_return_val_if_fail(array != NULL, NULL);
 
   array->data = NULL;
@@ -123,7 +123,7 @@ static void g_ptr_array_maybe_expand(GRealPtrArray *array, guint size);
 
 GPtrArray *g_ptr_array_new() {
   GRealPtrArray *array;
-  array = g_new0(GRealPtrArray, 1);
+  array = g_new(GRealPtrArray);
   return (GPtrArray *)array;
 }
 void g_ptr_array_free(GPtrArray *self) {
@@ -140,7 +140,7 @@ static void g_ptr_array_maybe_expand(GRealPtrArray *array, guint size) {
     if (array->data)
       array->data = g_realloc(array->data, sizeof(gpointer) * array->alloc);
     else
-      array->data = g_new0(gpointer, array->alloc);
+      array->data = g_new_many(gpointer, array->alloc);
     memset(array->data + old_alloc, 0, array->alloc - old_alloc);
   }
 }

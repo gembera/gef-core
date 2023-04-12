@@ -24,8 +24,18 @@ char *_memmove(char *dst, register char *src, register int n) {
 
 #ifdef ENABLE_MEM_PROFILE
 #define SIZE_META SIZEOF_LONG
-static gulong allocated_mem = 0;
-static gulong freed_mem = 0;
+static gulong total_allocated_mem = 0;
+static gulong total_freed_mem = 0;
+static gulong current_mem = 0;
+static gulong peak_mem = 0;
+
+static void _g_mem_record_alloc_free(gulong allocated, gulong freed) {
+  total_allocated_mem += allocated;
+  total_freed_mem += freed;
+  current_mem += allocated - freed;
+  if (current_mem > peak_mem)
+    peak_mem = current_mem;
+}
 #endif
 
 gpointer _g_malloc(gulong size) {
@@ -47,7 +57,7 @@ gpointer _g_malloc(gulong size) {
   t = p;
   p = ((guchar *)p + SIZE_META);
   *t = size;
-  allocated_mem += size;
+  _g_mem_record_alloc_free(size, 0);
 #endif
 
   return p;
@@ -72,7 +82,7 @@ gpointer _g_malloc0(gulong size) {
   t = p;
   p = ((guchar *)p + SIZE_META);
   *t = size;
-  allocated_mem += size;
+  _g_mem_record_alloc_free(size, 0);
 #endif
 
   return p;
@@ -93,7 +103,7 @@ gpointer _g_realloc(gpointer mem, gulong size) {
   else {
 #ifdef ENABLE_MEM_PROFILE
     t = (gulong *)((guchar *)mem - SIZE_META);
-    freed_mem += *t;
+    _g_mem_record_alloc_free(0, *t);
     mem = t;
 #endif
     p = (gpointer)realloc(mem, size);
@@ -107,7 +117,7 @@ gpointer _g_realloc(gpointer mem, gulong size) {
   t = p;
   p = ((guchar *)p + SIZE_META);
   *t = size;
-  allocated_mem += size;
+  _g_mem_record_alloc_free(size, 0);
 #endif
 
   return p;
@@ -120,7 +130,7 @@ void _g_free(gpointer mem) {
     gulong size;
     t = (gulong *)((guchar *)mem - SIZE_META);
     size = *t;
-    freed_mem += size;
+    _g_mem_record_alloc_free(0, size);
     mem = t;
 #endif
     free(mem);
@@ -200,17 +210,18 @@ void g_mem_record_free(gpointer mem, const char *__file__, const int __line__) {
 }
 
 void g_mem_record_default_callback(gulong index, gpointer memnew,
-                                 gpointer memfree, gulong allocated,
-                                 gulong freed, const char *__file__,
-                                 const int __line__) {
+                                   gpointer memfree, gulong allocated,
+                                   gulong freed, const char *__file__,
+                                   const int __line__) {
   printf("\n%ld\t%lx\t%lx\t%ld\t%ld\t%s(%d)", index, memnew, memfree, allocated,
          freed, __file__, __line__);
 }
 #endif
 
 #ifdef ENABLE_MEM_PROFILE
-void g_mem_profile(gulong *pallocated, gulong *pfreed) {
-  *pallocated = allocated_mem;
-  *pfreed = freed_mem;
+void g_mem_profile(gulong *pallocated, gulong *pfreed, gulong *ppeak) {
+  *pallocated = total_allocated_mem;
+  *pfreed = total_freed_mem;
+  *ppeak = peak_mem;
 }
 #endif

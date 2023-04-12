@@ -71,7 +71,7 @@ gchar *g_strconcat(const gchar *string1, ...) {
   }
   va_end(args);
 
-  concat = g_new(gchar, l);
+  concat = g_malloc(l);
   concat[0] = 0;
 
   strcat(concat, string1);

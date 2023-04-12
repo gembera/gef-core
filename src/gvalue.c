@@ -13,7 +13,7 @@ g_value_new()
 {
 	GValue * val;
 
-	val = g_new (GValue, 1);
+	val = g_new (GValue);
 	val->g_type = G_TYPE_NULL;
 	return val;
 }

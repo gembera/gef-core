@@ -8,7 +8,7 @@
 
 GEvent * g_event_new(gpointer sender)
 {
-	GEvent * self = g_new(GEvent, 1);
+	GEvent * self = g_new(GEvent);
 	self->sender = sender;
 	self->callback_list = NULL;
 	self->data_list = NULL;
