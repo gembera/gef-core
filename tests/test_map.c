@@ -22,18 +22,39 @@ int test_map(int, char *[]) {
   Student *pp4 = g_new(Student);
   pp4->name = "four";
   pp4->score = 100;
+  Student p5 = {"five", 75};
 
-  GMap *map1 = g_map_new_str();
-  g_map_set(map1, keya, &p3);
+  GMap *map1 = g_map_new();
   g_map_set(map1, keyb, &p2);
-  g_map_set(map1, keyc, &p1);
+  g_map_set(map1, keya, &p3);
   g_map_set(map1, keyd, pp4);
-  GMapPair * pair;
+  g_map_set(map1, keyc, &p1);
+  g_map_set(map1, keye, &p5);
+  GMapEntry *pair;
   pair = g_map_get(map1, keyc);
   assert(pair && pair->value == &p1);
 
   g_map_free(map1);
   g_free(pp4);
+
+  // map2 owns the value memory, but not key memory
+  GMap *map2 = g_map_new_ex(g_free_callback, NULL, NULL);
+  g_map_set(map2, keyb, g_new(Student));
+  g_map_set(map2, keya, g_new(Student));
+  g_map_set(map2, keyd, g_new(Student));
+  g_map_set(map2, keya, g_new(Student));
+  g_map_set(map2, keyb, g_new(Student));
+  g_map_free(map2);
+
+  // map3 owns both key and value memory
+  GMap *map3 = g_map_new_ex(g_free_callback, g_free_callback, NULL);
+  g_map_set(map3, g_strdup("a"), g_new(Student));
+  g_map_set(map3, g_strdup("b"), g_new(Student));
+  g_map_set(map3, g_strdup("c"), g_new(Student));
+  g_map_set(map3, g_strdup("a"), g_new(Student));
+  g_map_set(map3, g_strdup("b"), g_new(Student));
+  g_map_free(map3);
+
   gulong allocated = 0;
   gulong freed = 0;
   gulong peak = 0;

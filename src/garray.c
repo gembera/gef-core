@@ -137,17 +137,25 @@ typedef struct _GRealPtrArray {
   gpointer *data;
   guint size;
   guint alloc;
+  GFreeCallback free_callback;
 } GRealPtrArray;
 
 static void g_ptr_array_maybe_expand(GRealPtrArray *array, guint size);
 
-GPtrArray *g_ptr_array_new() {
+GPtrArray *g_ptr_array_new_ex(GFreeCallback free_callback) {
   GRealPtrArray *array = g_new(GRealPtrArray);
   g_return_val_if_fail(array, NULL);
+  array->free_callback = free_callback;
   return (GPtrArray *)array;
 }
 void g_ptr_array_free(GPtrArray *self) {
   g_return_if_fail(self);
+  GRealPtrArray *array = (GRealPtrArray *)self;
+  if (array->free_callback) {
+    for (gint i = 0; i < g_ptr_array_size(self); i++) {
+      array->free_callback(g_ptr_array_get(self, i));
+    }
+  }
   g_free(self->data);
   g_free(self);
 }
@@ -207,8 +215,7 @@ gint g_ptr_array_search(GPtrArray *self, GPtrArraySearchHandler func,
                         gpointer user_data) {
   g_return_val_if_fail(self, -1);
   g_return_val_if_fail(func, -1);
-  gint i;
-  for (i = 0; i < g_ptr_array_size(self); i++) {
+  for (gint i = 0; i < g_ptr_array_size(self); i++) {
     if (func(self, i, g_ptr_array_get(self, i), user_data))
       return i;
   }
@@ -219,16 +226,14 @@ void g_ptr_array_visit(GPtrArray *self, GPtrArrayVisitCallback func,
                        gpointer user_data) {
   g_return_if_fail(self);
   g_return_if_fail(func);
-  gint i;
-  for (i = 0; i < g_ptr_array_size(self); i++) {
+  for (gint i = 0; i < g_ptr_array_size(self); i++) {
     func(self, i, g_ptr_array_get(self, i), user_data);
   }
 }
 
 gint g_ptr_array_index_of(GPtrArray *self, gpointer item) {
   g_return_val_if_fail(self, -1);
-  gint i;
-  for (i = 0; i < g_ptr_array_size(self); i++) {
+  for (gint i = 0; i < g_ptr_array_size(self); i++) {
     if (item == g_ptr_array_get(self, i))
       return i;
   }

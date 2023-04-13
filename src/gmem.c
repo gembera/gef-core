@@ -225,3 +225,7 @@ void g_mem_profile(gulong *pallocated, gulong *pfreed, gulong *ppeak) {
   *ppeak = peak_mem;
 }
 #endif
+
+void g_free_callback(gpointer data){
+  g_free(data);
+}

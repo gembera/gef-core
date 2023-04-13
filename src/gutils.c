@@ -33,10 +33,6 @@
 // 	return ret;
 // }
 
-guint g_ptr_hash(gconstpointer v) { return g_pointer_to_unum(v); }
-
-gint g_ptr_equal(gconstpointer v, gconstpointer v2) { return v == v2; }
-
 static char encoding_table[] = {
     'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
     'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',

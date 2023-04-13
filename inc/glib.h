@@ -192,6 +192,8 @@ typedef guint (*GHashHandler)(gconstpointer key);
 typedef gint (*GCompareHandler)(gconstpointer a, gconstpointer b);
 typedef void (*GFreeCallback)(gpointer data);
 
+void g_free_callback(gpointer data);
+
 // Array
 typedef struct _GArray {
   gpointer data;
@@ -239,7 +241,8 @@ typedef gbool (*GPtrArraySearchHandler)(GPtrArray *self, guint index,
 typedef void (*GPtrArrayVisitCallback)(GPtrArray *self, guint index,
                                        gconstpointer item,
                                        gconstpointer user_data);
-GPtrArray *g_ptr_array_new(void);
+#define g_ptr_array_new() g_ptr_array_new_ex(NULL)
+GPtrArray *g_ptr_array_new_ex(GFreeCallback free_func);
 void g_ptr_array_free(GPtrArray *self);
 #define g_ptr_array_get(self, index) self->data[index]
 #define g_ptr_array_set(self, index, val) self->data[index] = val
@@ -267,13 +270,15 @@ struct _GListNode {
 
 typedef struct _GList {
   GListNode *head;
+  GFreeCallback node_data_free_callback;
 } GList;
 
 typedef gbool (*GListSearchHandler)(GList *self, GListNode *item,
                                     gconstpointer user_data);
 typedef void (*GListVisitCallback)(GList *self, GListNode *item,
                                    gconstpointer user_data);
-GList *g_list_new();
+#define g_list_new() g_list_new_ex(NULL)
+GList *g_list_new_ex(GFreeCallback node_data_free_callback);
 GListNode *g_list_node_new(gpointer data);
 void g_list_free(GList *self);
 GListNode *g_list_last(GList *self);
@@ -287,20 +292,17 @@ GListNode *g_list_search(GList *self, GListSearchHandler func,
                          gpointer user_data);
 void g_list_visit(GList *self, GListVisitCallback func, gpointer user_data);
 
-// Compare handlers
-gint g_ptr_equal(gconstpointer v1, gconstpointer v2);
-gint g_str_equal(gconstpointer v1, gconstpointer v2);
-gint g_str_iequal(gconstpointer v1, gconstpointer v2);
-
 // HashMap
-typedef struct _GMapPair {
+typedef struct _GMapEntry {
   gpointer key;
   gpointer value;
-} GMapPair;
+} GMapEntry;
 
 typedef struct _GMap {
   GArray *data;
   GCompareHandler key_compare_handler;
+  GFreeCallback key_free_callback;
+  GFreeCallback value_free_callback;
 } GMap;
 
 typedef gbool (*GMapSearchHandler)(GMap *self, gpointer key, gpointer value,
@@ -308,15 +310,17 @@ typedef gbool (*GMapSearchHandler)(GMap *self, gpointer key, gpointer value,
 typedef void (*GMapVisitCallback)(GMap *self, gpointer key, gpointer value,
                                   gpointer user_data);
 
-GMap *g_map_new(GCompareHandler key_compare_func);
-#define g_map_new_str() g_map_new(g_strcasecmp)
+#define g_map_new() g_map_new_ex(NULL, NULL, NULL)
+GMap *g_map_new_ex(GFreeCallback value_free_callback,
+                   GFreeCallback key_free_callback,
+                   GCompareHandler key_compare_func);
 void g_map_free(GMap *self);
-GMapPair *g_map_get(GMap *self, gconstpointer key);
+GMapEntry *g_map_get(GMap *self, gconstpointer key);
 void g_map_set(GMap *self, gpointer key, gpointer value);
 void g_map_remove(GMap *self, gconstpointer key);
 void g_map_remove_all(GMap *self);
 guint g_map_size(GMap *self);
-GMapPair *g_map_search(GMap *self, GMapSearchHandler func, gpointer user_data);
+GMapEntry *g_map_search(GMap *self, GMapSearchHandler func, gpointer user_data);
 void g_map_visit(GMap *self, GMapVisitCallback func, gpointer user_data);
 
 typedef struct _GString GString;

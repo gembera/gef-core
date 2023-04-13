@@ -6,13 +6,19 @@
 
 #include "glib.h"
 
+static void g_map_free_key_value(GMap *self, GMapEntry *entry) {
+  if (self->key_free_callback)
+    self->key_free_callback(entry->key);
+  if (self->value_free_callback)
+    self->value_free_callback(entry->value);
+}
 static void g_map_lookup(GMap *self, gconstpointer key, gint *left,
                          gint *right) {
   *left = -1;
   *right = -1;
   g_return_if_fail(self);
   gint size, l, r, m;
-  GMapPair node;
+  GMapEntry node;
   size = g_map_size(self);
   if (size == 0)
     return;
@@ -20,7 +26,7 @@ static void g_map_lookup(GMap *self, gconstpointer key, gint *left,
   r = size - 1;
   while (l <= r) {
     m = (l + r) / 2;
-    node = g_array_get(self->data, GMapPair, m);
+    node = g_array_get(self->data, GMapEntry, m);
     gint comp = self->key_compare_handler(key, node.key);
     if (comp == 0) {
       *left = *right = m;
@@ -35,16 +41,23 @@ static void g_map_lookup(GMap *self, gconstpointer key, gint *left,
   *right = l;
 }
 
-GMap *g_map_new(GCompareHandler key_compare_func) {
+GMap *g_map_new_ex(GFreeCallback value_free_callback,
+                   GFreeCallback key_free_callback,
+                   GCompareHandler key_compare_func) {
   GMap *map = g_new(GMap);
   g_return_val_if_fail(map, NULL);
-  map->key_compare_handler = key_compare_func;
-  map->data = g_array_new_of(GMapPair);
+  map->key_compare_handler = key_compare_func == NULL
+                                 ? (GCompareHandler)g_strcasecmp
+                                 : key_compare_func;
+  map->key_free_callback = key_free_callback;
+  map->value_free_callback = value_free_callback;
+  map->data = g_array_new_of(GMapEntry);
   return map;
 }
 
 void g_map_free(GMap *self) {
   g_return_if_fail(self);
+  g_map_remove_all(self);
   g_array_free(self->data);
   g_free(self);
 }
@@ -58,37 +71,44 @@ void g_map_visit(GMap *self, GMapVisitCallback func, gpointer user_data) {
   g_return_if_fail(self);
   guint size = g_map_size(self);
   for (gint i = 0; i < size; i++) {
-    GMapPair *node = g_array(self->data, GMapPair) + i;
+    GMapEntry *node = g_array(self->data, GMapEntry) + i;
     func(self, node->key, node->value, user_data);
   }
 }
 void g_map_remove_all(GMap *self) {
   g_return_if_fail(self);
+  guint size = g_map_size(self);
+  for (gint i = 0; i < size; i++) {
+    GMapEntry *node = g_array(self->data, GMapEntry) + i;
+    g_map_free_key_value(self, node);
+  }
   g_array_set_size(self->data, 0);
 }
-
 void g_map_remove(GMap *self, gconstpointer key) {
   g_return_if_fail(self);
   gint l, r;
   g_map_lookup(self, key, &l, &r);
-  if (l == r && l != -1)
+  if (l == r && l != -1) {
+    g_map_free_key_value(self, g_array(self->data, GMapEntry) + l);
     g_array_remove(self->data, l);
+  }
 }
 
-GMapPair *g_map_get(GMap *self, gconstpointer key) {
+GMapEntry *g_map_get(GMap *self, gconstpointer key) {
   g_return_val_if_fail(self, NULL);
   gint l, r;
   g_map_lookup(self, key, &l, &r);
   if (l == r && l != -1)
-    return g_array(self->data, GMapPair) + l;
+    return g_array(self->data, GMapEntry) + l;
   return NULL;
 }
 
-GMapPair *g_map_search(GMap *self, GMapSearchHandler func, gpointer user_data) {
+GMapEntry *g_map_search(GMap *self, GMapSearchHandler func,
+                        gpointer user_data) {
   g_return_val_if_fail(self, NULL);
   guint size = g_map_size(self);
   for (gint i = 0; i < size; i++) {
-    GMapPair *node = g_array(self->data, GMapPair) + i;
+    GMapEntry *node = g_array(self->data, GMapEntry) + i;
     if (func(self, node->key, node->value, user_data))
       return node;
   }
@@ -98,7 +118,7 @@ void g_map_set(GMap *self, gpointer key, gpointer value) {
   g_return_if_fail(self != NULL);
   gint l, r;
   g_map_lookup(self, key, &l, &r);
-  GMapPair nodenew;
+  GMapEntry nodenew;
   nodenew.key = key;
   nodenew.value = value;
   if (l == r) {
@@ -106,7 +126,10 @@ void g_map_set(GMap *self, gpointer key, gpointer value) {
       g_array_insert_ref(self->data, 0, &nodenew);
       return;
     }
-    g_array(self->data, GMapPair)[l].value = value;
+    GMapEntry *entry = g_array(self->data, GMapEntry) + l;
+    g_map_free_key_value(self, entry);
+    entry->key = key;
+    entry->value = value;
   } else {
     g_array_insert_ref(self->data, r, &nodenew);
   }

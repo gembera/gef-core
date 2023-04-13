@@ -6,10 +6,11 @@
 
 #include "glib.h"
 
-GList *g_list_new() {
+GList *g_list_new_ex(GFreeCallback node_data_free_callback) {
   GList *new_list = g_new(GList);
   g_return_val_if_fail(new_list, NULL);
   new_list->head = NULL;
+  new_list->node_data_free_callback = node_data_free_callback;
   return new_list;
 }
 
@@ -27,6 +28,9 @@ void g_list_free(GList *self) {
   GListNode *current = self->head;
   for (; current != NULL; current = next) {
     next = current->next;
+    if (self->node_data_free_callback) {
+      self->node_data_free_callback(current->data);
+    }
     g_free(current);
   }
   g_free(self);
@@ -114,7 +118,7 @@ gint g_list_index_of(GList *self, gpointer data) {
 }
 
 GListNode *g_list_search(GList *self, GListSearchHandler func,
-                           gpointer user_data) {
+                         gpointer user_data) {
   g_return_val_if_fail(self, NULL);
   g_return_val_if_fail(func, NULL);
   GListNode *current = self->head;
