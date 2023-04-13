@@ -197,11 +197,16 @@ void g_free_callback(gpointer data);
 // Array
 typedef struct _GArray {
   gpointer data;
+  guint len;
+  guint alloc;
+  guint item_len;
 } GArray;
 
 typedef struct _GPtrArray {
   gpointer *data;
   guint size;
+  guint alloc;
+  GFreeCallback free_callback;
 } GPtrArray;
 
 typedef gbool (*GArraySearchHandler)(GArray *self, guint index,
