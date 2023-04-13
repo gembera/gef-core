@@ -246,8 +246,8 @@ typedef gbool (*GPtrArraySearchHandler)(GPtrArray *self, guint index,
 typedef void (*GPtrArrayVisitCallback)(GPtrArray *self, guint index,
                                        gconstpointer item,
                                        gconstpointer user_data);
-#define g_ptr_array_new() g_ptr_array_new_ex(NULL)
-GPtrArray *g_ptr_array_new_ex(GFreeCallback free_func);
+#define g_ptr_array_new() g_ptr_array_new_with(NULL)
+GPtrArray *g_ptr_array_new_with(GFreeCallback free_func);
 void g_ptr_array_free(GPtrArray *self);
 #define g_ptr_array_get(self, index) self->data[index]
 #define g_ptr_array_set(self, index, val) self->data[index] = val
@@ -282,8 +282,8 @@ typedef gbool (*GListSearchHandler)(GList *self, GListNode *item,
                                     gconstpointer user_data);
 typedef void (*GListVisitCallback)(GList *self, GListNode *item,
                                    gconstpointer user_data);
-#define g_list_new() g_list_new_ex(NULL)
-GList *g_list_new_ex(GFreeCallback node_data_free_callback);
+#define g_list_new() g_list_new_with(NULL)
+GList *g_list_new_with(GFreeCallback node_data_free_callback);
 GListNode *g_list_node_new(gpointer data);
 void g_list_free(GList *self);
 GListNode *g_list_last(GList *self);
@@ -315,8 +315,8 @@ typedef gbool (*GMapSearchHandler)(GMap *self, gpointer key, gpointer value,
 typedef void (*GMapVisitCallback)(GMap *self, gpointer key, gpointer value,
                                   gpointer user_data);
 
-#define g_map_new() g_map_new_ex(NULL, NULL, NULL)
-GMap *g_map_new_ex(GFreeCallback value_free_callback,
+#define g_map_new() g_map_new_with(NULL, NULL, NULL)
+GMap *g_map_new_with(GFreeCallback value_free_callback,
                    GFreeCallback key_free_callback,
                    GCompareHandler key_compare_func);
 void g_map_free(GMap *self);

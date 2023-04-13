@@ -55,7 +55,7 @@ int test_list(int, char *[]) {
   g_free(str6);
   g_list_free(list1);
 
-  GList *list2 = g_list_new_ex(g_free_callback);
+  GList *list2 = g_list_new_with(g_free_callback);
   g_list_append(list2, g_strdup("one"));
   g_list_append(list2, g_strdup("two"));
   g_list_append(list2, g_strdup("three"));

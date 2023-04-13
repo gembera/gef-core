@@ -164,7 +164,7 @@ int test_array(int, char *[]) {
   g_ptr_array_free(parr1);
   g_ptr_array_free(parr2);
 
-  GPtrArray *parr3 = g_ptr_array_new_ex(g_free_callback);
+  GPtrArray *parr3 = g_ptr_array_new_with(g_free_callback);
   g_ptr_array_add(parr3, g_new(Person));
   g_ptr_array_add(parr3, g_new(Person));
   g_ptr_array_add(parr3, g_new(Person));

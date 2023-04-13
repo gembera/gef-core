@@ -6,7 +6,7 @@
 
 #include "glib.h"
 
-GList *g_list_new_ex(GFreeCallback node_data_free_callback) {
+GList *g_list_new_with(GFreeCallback node_data_free_callback) {
   GList *new_list = g_new(GList);
   g_return_val_if_fail(new_list, NULL);
   new_list->head = NULL;

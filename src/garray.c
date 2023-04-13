@@ -24,7 +24,6 @@ GArray *g_array_new(guint item_len) {
   self->len = 0;
   self->alloc = 0;
   self->item_len = item_len;
-
   return self;
 }
 
@@ -127,7 +126,7 @@ static void g_ptr_array_maybe_expand(GPtrArray *self, guint size) {
   }
 }
 
-GPtrArray *g_ptr_array_new_ex(GFreeCallback free_callback) {
+GPtrArray *g_ptr_array_new_with(GFreeCallback free_callback) {
   GPtrArray *self = g_new(GPtrArray);
   g_return_val_if_fail(self, NULL);
   self->free_callback = free_callback;
@@ -158,9 +157,8 @@ void g_ptr_array_set_size(GPtrArray *self, guint size) {
 
 void g_ptr_array_remove(GPtrArray *self, guint index) {
   g_return_if_fail(self);
-  int i;
   g_return_if_fail(index >= 0 && index < self->size);
-  for (i = index; i < self->size - 1; i++)
+  for (gint i = index; i < self->size - 1; i++)
     self->data[i] = self->data[i + 1];
   self->data[self->size - 1] = NULL;
   self->size -= 1;
