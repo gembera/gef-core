@@ -195,14 +195,14 @@ typedef void (*GFreeCallback)(gpointer data);
 void g_free_callback(gpointer data);
 
 // Array
-typedef struct _GArray {
+typedef struct {
   gpointer data;
   guint len;
   guint alloc;
   guint item_len;
 } GArray;
 
-typedef struct _GPtrArray {
+typedef struct {
   gpointer *data;
   guint size;
   guint alloc;
@@ -273,7 +273,7 @@ struct _GListNode {
   GListNode *next;
 };
 
-typedef struct _GList {
+typedef struct {
   GListNode *head;
   GFreeCallback node_data_free_callback;
 } GList;
@@ -298,12 +298,12 @@ GListNode *g_list_search(GList *self, GListSearchHandler func,
 void g_list_visit(GList *self, GListVisitCallback func, gpointer user_data);
 
 // HashMap
-typedef struct _GMapEntry {
+typedef struct {
   gpointer key;
   gpointer value;
 } GMapEntry;
 
-typedef struct _GMap {
+typedef struct {
   GArray *data;
   GCompareHandler key_compare_handler;
   GFreeCallback key_free_callback;
@@ -317,8 +317,8 @@ typedef void (*GMapVisitCallback)(GMap *self, gpointer key, gpointer value,
 
 #define g_map_new() g_map_new_with(NULL, NULL, NULL)
 GMap *g_map_new_with(GFreeCallback value_free_callback,
-                   GFreeCallback key_free_callback,
-                   GCompareHandler key_compare_func);
+                     GFreeCallback key_free_callback,
+                     GCompareHandler key_compare_func);
 void g_map_free(GMap *self);
 GMapEntry *g_map_get(GMap *self, gconstpointer key);
 void g_map_set(GMap *self, gpointer key, gpointer value);
@@ -328,23 +328,10 @@ guint g_map_size(GMap *self);
 GMapEntry *g_map_search(GMap *self, GMapSearchHandler func, gpointer user_data);
 void g_map_visit(GMap *self, GMapVisitCallback func, gpointer user_data);
 
-typedef struct _GString GString;
-typedef struct _GBuffer GBuffer;
-
-struct _GString {
+typedef struct {
   gchar *str;
   gint len;
-};
-
-struct _GBuffer {
-  gint length;
-  gpointer buffer;
-};
-
-void g_buffer_set_length(gint len);
-gint g_buffer_get_length(void);
-gpointer g_buffer_get(void);
-void g_buffer_release(gpointer buf);
+} GString;
 
 /* String utility functions
  */
