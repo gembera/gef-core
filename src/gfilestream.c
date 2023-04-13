@@ -32,7 +32,7 @@ gint g_file_stream_open(gpointer self, gstring name, GFileMode mode)
 	if (GFILESTREAM(self)->file_name)
 		g_free(GFILESTREAM(self)->file_name);
 	//s->file_name = g_file_get_normalize_path(name);
-	s->file_name = g_strdup(name);
+	s->file_name = g_dup(name);
 	s->file_mode = mode;
 	s->file_handle = (ghandle)fopen(s->file_name,  GET_MODE(s->file_mode));
 	if(s->file_handle == NULL) {

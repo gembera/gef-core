@@ -47,7 +47,7 @@ GMap *g_map_new_with(GFreeCallback value_free_callback,
   GMap *map = g_new(GMap);
   g_return_val_if_fail(map, NULL);
   map->key_compare_handler = key_compare_func == NULL
-                                 ? (GCompareHandler)g_strcasecmp
+                                 ? (GCompareHandler)g_cmp
                                  : key_compare_func;
   map->key_free_callback = key_free_callback;
   map->value_free_callback = value_free_callback;

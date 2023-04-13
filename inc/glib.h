@@ -131,6 +131,13 @@ typedef const gwchar *gconstwstring;
 
 // Memory management
 
+#ifdef HAVE_MEMMOVE
+#define g_memmove memmove
+#else
+char *_memmove(char *dst, register char *src, register int n);
+#define g_memmove _memmove
+#endif
+
 #define g_new(type) ((type *)g_malloc0((unsigned)sizeof(type)))
 #define g_new_many(type, count)                                                \
   ((type *)g_malloc0((unsigned)sizeof(type) * (count)))
@@ -188,11 +195,20 @@ void g_mem_profile(gulong *allocated, gulong *freed, gulong *ppeak);
 
 // General callbacks and handlers
 typedef void (*GCallback)(gpointer data, gpointer user_data);
-typedef guint (*GHashHandler)(gconstpointer key);
 typedef gint (*GCompareHandler)(gconstpointer a, gconstpointer b);
 typedef void (*GFreeCallback)(gpointer data);
-
 void g_free_callback(gpointer data);
+
+// Auto memory management
+#define g_auto(data) g_auto_with(data, g_free_callback)
+#define g_auto_of(data, type) (type *)g_auto_with(data, g_free_callback)
+gpointer g_auto_with(gpointer data, GFreeCallback free_callback);
+#define g_auto_push() g_auto_push_with(NULL, NULL)
+gint g_auto_push_with(GCallback monitor_callback, gpointer user_data);
+void g_auto_pop();
+void g_auto_pop_to(gint mark);
+void g_auto_pop_all();
+void g_auto_free();
 
 // Array
 typedef struct {
@@ -328,45 +344,27 @@ guint g_map_size(GMap *self);
 GMapEntry *g_map_search(GMap *self, GMapSearchHandler func, gpointer user_data);
 void g_map_visit(GMap *self, GMapVisitCallback func, gpointer user_data);
 
-typedef struct {
-  gchar *str;
-  gint len;
-} GString;
-
-/* String utility functions
- */
-#define G_STR_DELIMITERS "_-|> <."
-void g_strdelimit(gchar *string, const gchar *delimiters, gchar new_delimiter);
-gchar *g_strdup(const gchar *str);
-gchar *g_strconcat(const gchar *string1, ...); /* NULL terminated */
-gint g_strcasecmp(const gchar *s1, const gchar *s2);
-void g_strdown(gchar *string);
-void g_strup(gchar *string);
-void g_strreverse(gchar *string);
-void g_strcpy(gchar *dst, gchar *src);
-gbool g_strstartwith(gchar *string, gchar *sub);
-gbool g_strendwith(gchar *string, gchar *sub);
-gint g_strindexof(gstring fstring, gchar *str, gint index);
-gint g_strlastindexof(gstring fstring, gchar *str);
-gstring g_strsubstring(gstring fstring, gint st, gint len);
-gint g_strgethex(gchar c);
-gint g_strparseinteger(gstring fstring, gchar chend, gint base);
-#define g_strtointeger(str) g_strparseinteger(str, '\0', 10)
-#define g_strequal(s1, s2) (g_strcasecmp(s1, s2) == 0)
-gchar *g_strreplace(gchar *source, gchar *sub, gchar *rep);
-gchar *g_strreplaceandfree(gchar *source, gchar *sub, gchar *rep);
-gchar *g_strtrim(gchar *str);
-
-#ifdef HAVE_MEMMOVE
-#define g_memmove memmove
-#else
-char *_memmove(char *dst, register char *src, register int n);
-#define g_memmove _memmove
-#endif
-
-/* Strings
- */
-
+// String utility
+void g_delimit(gchar *string, const gchar *delimiters, gchar new_delimiter);
+gchar *g_dup(const gchar *str);
+gchar *g_concat(const gchar *string1, ...); /* NULL terminated */
+gint g_cmp(const gchar *s1, const gchar *s2);
+void g_down(gchar *string);
+void g_up(gchar *string);
+void g_reverse(gchar *string);
+void g_cpy(gchar *dst, gchar *src);
+gbool g_start_with(gchar *string, gchar *sub);
+gbool g_end_with(gchar *string, gchar *sub);
+gint g_index_of(gstring fstring, gchar *str, gint index);
+gint g_last_index_of(gstring fstring, gchar *str);
+gstring g_substring(gstring fstring, gint st, gint len);
+gint g_hex(gchar c);
+gint g_parse_num(gstring fstring, gchar chend, gint base);
+#define g_to_num(str) g_parse_num(str, '\0', 10)
+#define g_equal(s1, s2) (g_cmp(s1, s2) == 0)
+gchar *g_replace(gchar *source, gchar *sub, gchar *rep);
+gchar *g_replace_free(gchar *source, gchar *sub, gchar *rep);
+gchar *g_trim(gchar *str);
 gstring g_limit(gstring str, gint len);
 gstring g_format(const gstring format, ...);
 gwstring g_unicode(gconststring str);
@@ -392,6 +390,12 @@ int g_unichar_to_utf8(gwchar c, gchar *outbuf);
 
 gbool g_is_space(gwchar c);
 #define g_is_cjk(c) ((c) >= 8192)
+
+// String
+typedef struct {
+  gchar *str;
+  gint len;
+} GString;
 
 GString *g_string_new(const gchar *init);
 GString *g_string_wrap(gchar *init);

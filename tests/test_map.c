@@ -48,11 +48,11 @@ int test_map(int, char *[]) {
 
   // map3 owns both key and value memory
   GMap *map3 = g_map_new_with(g_free_callback, g_free_callback, NULL);
-  g_map_set(map3, g_strdup("a"), g_new(Student));
-  g_map_set(map3, g_strdup("b"), g_new(Student));
-  g_map_set(map3, g_strdup("c"), g_new(Student));
-  g_map_set(map3, g_strdup("a"), g_new(Student));
-  g_map_set(map3, g_strdup("b"), g_new(Student));
+  g_map_set(map3, g_dup("a"), g_new(Student));
+  g_map_set(map3, g_dup("b"), g_new(Student));
+  g_map_set(map3, g_dup("c"), g_new(Student));
+  g_map_set(map3, g_dup("a"), g_new(Student));
+  g_map_set(map3, g_dup("b"), g_new(Student));
   g_map_free(map3);
 
   gulong allocated = 0;

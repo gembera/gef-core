@@ -23,7 +23,7 @@ static void array_visit_callback(GArray *self, guint index, gconstpointer item,
 static gbool ptr_array_search_handler(GPtrArray *self, guint index,
                                       gconstpointer item,
                                       gconstpointer user_data) {
-  return g_strequal(((Person *)item)->name, (gchar *)user_data);
+  return g_equal(((Person *)item)->name, (gchar *)user_data);
 };
 
 static void ptr_array_visit_callback(GPtrArray *self, guint index,

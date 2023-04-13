@@ -13,7 +13,7 @@ static gbool search_handler(GList *self, GListNode *item,
                             gconstpointer user_data) {
   gchar *v1 = (gchar *)item->data;
   gchar *v2 = (gchar *)user_data;
-  return g_strequal(v1, v2);
+  return g_equal(v1, v2);
 }
 
 int test_list(int, char *[]) {
@@ -26,7 +26,7 @@ int test_list(int, char *[]) {
   gchar *str3 = "three";
   gchar *str4 = "four";
   gchar *str5 = "five";
-  gchar *str6 = g_strdup("dynamic");
+  gchar *str6 = g_dup("dynamic");
   GList *list1 = g_list_new();
   g_list_append(list1, str1);
   g_list_append(list1, str2);
@@ -56,9 +56,9 @@ int test_list(int, char *[]) {
   g_list_free(list1);
 
   GList *list2 = g_list_new_with(g_free_callback);
-  g_list_append(list2, g_strdup("one"));
-  g_list_append(list2, g_strdup("two"));
-  g_list_append(list2, g_strdup("three"));
+  g_list_append(list2, g_dup("one"));
+  g_list_append(list2, g_dup("two"));
+  g_list_append(list2, g_dup("three"));
   g_list_free(list2); // it will free list node data too
 
   gulong allocated = 0;

@@ -87,10 +87,10 @@ gint g_stream_get_length(gstring uri)
 	// 	}
 	// }
 	// else 
-	if (g_strstartwith(uri, PREFIX_FILE))
+	if (g_start_with(uri, PREFIX_FILE))
 	{
 		GFileStream * fs = (GFileStream *)g_new_object(CLASS(GFileStream));
-		path = g_strsubstring(uri, strlen(PREFIX_FILE), -1);
+		path = g_substring(uri, strlen(PREFIX_FILE), -1);
 		g_file_stream_open(fs, path, FILE_MODE_READ_ONLY);
 		if (!g_file_stream_is_open(fs))
 		{
@@ -155,10 +155,10 @@ void g_stream_read_all(gstring uri, gpointer* retbuffer, gint* retbuflen, gbool 
 	// 	}
 	// }
 	// else 
-	if (g_strstartwith(uri, PREFIX_FILE))
+	if (g_start_with(uri, PREFIX_FILE))
 	{
 		GFileStream * fs = (GFileStream *)g_new_object(CLASS(GFileStream));
-		path = g_strsubstring(uri, strlen(PREFIX_FILE), -1);
+		path = g_substring(uri, strlen(PREFIX_FILE), -1);
 		g_file_stream_open(fs, path, FILE_MODE_READ_ONLY);
 		if (!g_file_stream_is_open(fs))
 		{

@@ -2,13 +2,13 @@
 #include "glib.h"
 #include <assert.h>
 
-void click_count(GEvent *event, gpointer args, gpointer user_data) {
+static void click_count(GEvent *event, gpointer args, gpointer user_data) {
   gint *num = (gint *)args;
   gint *count = (gint *)user_data;
   *count += *num;
 }
 
-void click_toggle(GEvent *event, gpointer args, gpointer user_data) {
+static void click_toggle(GEvent *event, gpointer args, gpointer user_data) {
   gbool *enabled = (gbool *)user_data;
   *enabled = !*enabled;
 
@@ -16,7 +16,8 @@ void click_toggle(GEvent *event, gpointer args, gpointer user_data) {
   g_event_fire(event, args);
 }
 
-void click_remove_listener(GEvent *event, gpointer args, gpointer user_data) {
+static void click_remove_listener(GEvent *event, gpointer args,
+                                  gpointer user_data) {
   gint *token = (gint *)user_data;
   g_event_remove_listener(event, *token);
 }

@@ -9,6 +9,7 @@ create_test_sourcelist(tests
     test_array.c
     test_map.c
     test_event.c
+    test_auto.c
 )
 
 add_executable(all-gef-tests ${tests})

@@ -86,7 +86,7 @@ GObjectClass *g_register_class(const gchar *classname, GObjectClass *baseclazz, 
 		memset(clazz, 0, class_size);
 		clazz->g_base_class = baseclazz;
 		clazz->g_class_finalize = class_finalize;
-		clazz->g_class_name = g_strdup(classname);
+		clazz->g_class_name = g_dup(classname);
 		clazz->instance_size = instance_size;
 		clazz->init = init;
 		clazz->finalize = finalize;

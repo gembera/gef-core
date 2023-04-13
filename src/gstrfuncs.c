@@ -6,8 +6,10 @@
 
 #include "glib.h"
 
-void g_strcpy(gchar *dst, gchar *src) { strcpy(dst, src); }
-gchar *g_strdup(const gchar *str) {
+#define G_STR_DELIMITERS "_-|> <."
+
+void g_cpy(gchar *dst, gchar *src) { strcpy(dst, src); }
+gchar *g_dup(const gchar *str) {
   gchar *new_str;
 
   new_str = NULL;
@@ -18,12 +20,12 @@ gchar *g_strdup(const gchar *str) {
 
   return new_str;
 }
-gchar *g_strreplaceandfree(gchar *source, gchar *sub, gchar *rep) {
-  gstring dst = g_strreplace(source, sub, rep);
+gchar *g_replace_free(gchar *source, gchar *sub, gchar *rep) {
+  gstring dst = g_replace(source, sub, rep);
   g_free(source);
   return dst;
 }
-gchar *g_strreplace(gchar *source, gchar *sub, gchar *rep) {
+gchar *g_replace(gchar *source, gchar *sub, gchar *rep) {
   gchar *result;
   gchar *pc1, *pc2, *pc3;
   int isource, isub, irep;
@@ -31,7 +33,7 @@ gchar *g_strreplace(gchar *source, gchar *sub, gchar *rep) {
   irep = strlen(rep);
   isource = strlen(source);
   if (0 == *sub)
-    return g_strdup(source);
+    return g_dup(source);
   result = (gchar *)g_malloc(
       (irep > isub ? irep * strlen(source) / isub + 1 : isource) + 1);
   pc1 = result;
@@ -54,13 +56,13 @@ gchar *g_strreplace(gchar *source, gchar *sub, gchar *rep) {
   return result;
 }
 
-gchar *g_strconcat(const gchar *string1, ...) {
+gchar *g_concat(const gchar *string1, ...) {
   guint l;
   va_list args;
   gchar *s;
   gchar *concat;
 
-  g_return_val_if_fail(string1 != NULL, NULL);
+  g_return_val_if_fail(string1, NULL);
 
   l = 1 + strlen(string1);
   va_start(args, string1);
@@ -86,44 +88,34 @@ gchar *g_strconcat(const gchar *string1, ...) {
   return concat;
 }
 
-void g_strdown(gchar *string) {
+void g_down(gchar *string) {
   register gchar *s;
-
-  g_return_if_fail(string != NULL);
-
+  g_return_if_fail(string);
   s = string;
-
   while (*s) {
     *s = tolower(*s);
     s++;
   }
 }
 
-void g_strup(gchar *string) {
+void g_up(gchar *string) {
   register gchar *s;
-
-  g_return_if_fail(string != NULL);
-
+  g_return_if_fail(string);
   s = string;
-
   while (*s) {
     *s = toupper(*s);
     s++;
   }
 }
 
-void g_strreverse(gchar *string) {
+void g_reverse(gchar *string) {
   g_return_if_fail(string != NULL);
-
   if (*string) {
     register gchar *h, *t;
-
     h = string;
     t = string + strlen(string) - 1;
-
     while (h < t) {
       register gchar c;
-
       c = *h;
       *h = *t;
       h++;
@@ -132,7 +124,7 @@ void g_strreverse(gchar *string) {
     }
   }
 }
-gint g_strcasecmp(const gchar *s1, const gchar *s2) {
+gint g_cmp(const gchar *s1, const gchar *s2) {
 #ifdef HAVE_STRCASECMP
   return strcasecmp(s1, s2);
 #else
@@ -142,9 +134,6 @@ gint g_strcasecmp(const gchar *s1, const gchar *s2) {
     return FALSE;
 
   while (*s1 && *s2) {
-    /* According to A. Cox, some platforms have islower's that
-     * don't work right on non-uppercase
-     */
     c1 = isupper((guchar)*s1) ? tolower((guchar)*s1) : *s1;
     c2 = isupper((guchar)*s2) ? tolower((guchar)*s2) : *s2;
     if (c1 != c2)
@@ -157,7 +146,7 @@ gint g_strcasecmp(const gchar *s1, const gchar *s2) {
 #endif
 }
 
-void g_strdelimit(gchar *string, const gchar *delimiters, gchar new_delim) {
+void g_delimit(gchar *string, const gchar *delimiters, gchar new_delim) {
   register gchar *c;
 
   g_return_if_fail(string != NULL);
@@ -171,7 +160,7 @@ void g_strdelimit(gchar *string, const gchar *delimiters, gchar new_delim) {
   }
 }
 
-gbool g_strstartwith(gchar *string, gchar *sub) {
+gbool g_start_with(gchar *string, gchar *sub) {
   gint i, len = strlen(sub);
   if ((gint)strlen(string) < len)
     return FALSE;
@@ -181,7 +170,7 @@ gbool g_strstartwith(gchar *string, gchar *sub) {
   }
   return TRUE;
 }
-gbool g_strendwith(gchar *string, gchar *sub) {
+gbool g_end_with(gchar *string, gchar *sub) {
   gint i, len = strlen(sub);
   gint lensrc = strlen(string);
   if (lensrc < len)
@@ -193,7 +182,7 @@ gbool g_strendwith(gchar *string, gchar *sub) {
   }
   return TRUE;
 }
-gint g_strindexof(gstring fstring, gchar *str, gint index) {
+gint g_index_of(gstring fstring, gchar *str, gint index) {
   char *l;
   if (index < 0)
     index = 0;
@@ -202,7 +191,7 @@ gint g_strindexof(gstring fstring, gchar *str, gint index) {
   l = strstr(fstring + index, str);
   return l == NULL ? -1 : l - fstring;
 }
-gint g_strlastindexof(gstring fstring, gchar *str) {
+gint g_last_index_of(gstring fstring, gchar *str) {
   gint pos = -1;
   gint posnext;
   gint len;
@@ -212,13 +201,13 @@ gint g_strlastindexof(gstring fstring, gchar *str) {
   if (len == 0)
     return -1;
   do {
-    posnext = g_strindexof(fstring, str, pos);
+    posnext = g_index_of(fstring, str, pos);
     if (posnext == -1)
       return pos == -1 ? -1 : pos - len;
     pos = posnext + len;
   } while (TRUE);
 }
-gstring g_strsubstring(gstring fstring, gint st, gint len) {
+gstring g_substring(gstring fstring, gint st, gint len) {
   gint i;
   gstring r;
   gint fslen = strlen(fstring);
@@ -233,7 +222,7 @@ gstring g_strsubstring(gstring fstring, gint st, gint len) {
   return r;
 }
 
-gint g_strgethex(gchar c) {
+gint g_hex(gchar c) {
   if ('0' <= c && c <= '9')
     return c - '0';
   if ('A' <= c && c <= 'F')
@@ -242,7 +231,7 @@ gint g_strgethex(gchar c) {
     return c - 'a' + 10;
   return -1;
 }
-gint g_strparseinteger(gstring fstring, gchar chend, gint base) {
+gint g_parse_num(gstring fstring, gchar chend, gint base) {
   gchar *s = fstring;
   gbool negate = FALSE;
   gint result = 0;
@@ -258,7 +247,7 @@ gint g_strparseinteger(gstring fstring, gchar chend, gint base) {
   }
 
   while (*s != chend) {
-    int i = g_strgethex(*s);
+    int i = g_hex(*s);
     if (i == -1)
       break;
     result = result * base + i;
@@ -272,7 +261,7 @@ gint g_strparseinteger(gstring fstring, gchar chend, gint base) {
   return result;
 }
 
-gchar *g_strtrim(gchar *str) {
+gchar *g_trim(gchar *str) {
   gint i;
   gint len;
   gchar *result;
@@ -287,65 +276,6 @@ gchar *g_strtrim(gchar *str) {
   g_memmove(result, str + i, len - i);
   result[len - i] = '\0';
   return result;
-}
-
-gint g_str_equal(gconstpointer v, gconstpointer v2) {
-  return strcmp((const gchar *)v, (const gchar *)v2) == 0;
-}
-
-static guint g_str_aphash_with_length(gconstpointer v, guint len) {
-  const unsigned char *str = (unsigned char *)v;
-  unsigned int hash = 0xAAAAAAAA;
-  unsigned int i = 0;
-
-  for (i = 0; i < len; str++, i++) {
-    hash ^= ((i & 1) == 0)
-                ? ((hash << 7) ^ ((unsigned int)*str) * (hash >> 3))
-                : (~((hash << 11) + (((unsigned int)*str) ^ (hash >> 5))));
-  }
-  return hash;
-}
-
-guint g_str_aphash(gconstpointer v) {
-  const char *str = (char *)v;
-  guint len = strlen(str);
-  return g_str_aphash_with_length(v, len);
-}
-/* a char* hash function from ASU */
-guint g_str_hash(gconstpointer v) {
-  const char *s = (char *)v;
-  const char *p;
-  guint h = 0, g;
-
-  for (p = s; *p != '\0'; p += 1) {
-    h = (h << 4) + *p;
-    if ((g = h & 0xf0000000)) {
-      h = h ^ (g >> 24);
-      h = h ^ g;
-    }
-  }
-
-  return h /* % M */;
-}
-
-gint g_str_iequal(gconstpointer v, gconstpointer v2) {
-  return g_strcasecmp((const gchar *)v, (const gchar *)v2) == 0;
-}
-
-/* a char* hash function from ASU */
-guint g_str_ihash(gconstpointer v) {
-  const char *p;
-  guint h = 0, g;
-
-  for (p = (char *)v; *p != '\0'; p += 1) {
-    h = (h << 4) + tolower(*p);
-    if ((g = h & 0xf0000000)) {
-      h = h ^ (g >> 24);
-      h = h ^ g;
-    }
-  }
-
-  return h /* % M */;
 }
 
 gbool g_is_space(gwchar c) {

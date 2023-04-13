@@ -265,7 +265,7 @@ GString *g_string_erase(GString *fstring, gint pos, gint len) {
 }
 
 gint g_string_index_of(GString *fstring, gchar *str, int index) {
-  return g_strindexof(fstring->str, str, index);
+  return g_index_of(fstring->str, str, index);
 }
 GString *g_string_trim(GString *fstring) {
   gint i;
@@ -292,10 +292,10 @@ GPtrArray *g_string_split(GString *fstring, gchar *str) {
   return ar;
 }
 gint g_string_parse_integer(GString *fstring, gchar chend, gint base) {
-  return g_strparseinteger(fstring->str, chend, base);
+  return g_parse_num(fstring->str, chend, base);
 }
 GString *g_string_substring(GString *fstring, gint st, gint len) {
-  return g_string_wrap(g_strsubstring(fstring->str, st, len));
+  return g_string_wrap(g_substring(fstring->str, st, len));
 }
 GString *g_string_down(GString *fstring) {
   GRealString *string = (GRealString *)fstring;
