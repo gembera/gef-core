@@ -55,8 +55,7 @@ GObjectClass *g_register_class(const gstr classname, GObjectClass *baseclazz,
 
   clazz = g_class(classname);
   if (clazz == NULL) {
-    clazz = (GObjectClass *)g_malloc(class_size);
-    memset(clazz, 0, class_size);
+    clazz = (GObjectClass *)g_malloc0(class_size);
     clazz->g_base_class = baseclazz;
     clazz->g_class_finalize = class_finalize;
     clazz->g_class_name = g_dup(classname);

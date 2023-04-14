@@ -349,7 +349,7 @@ void g_map_visit(GMap *self, GMapVisitCallback func, gpointer user_data);
 #define g_equal(str1, str2) (g_cmp(str1, str2) == 0)
 void g_delimit(gstr str, gcstr delimiters, gchar new_delimiter);
 gstr g_dup(gcstr str);
-gstr g_concat(gcstr str1, ...); /* NULL terminated */
+gstr g_concat(gcstr str1, ...); 
 gint g_cmp(gcstr str1, gcstr str2);
 void g_down(gstr str);
 void g_up(gstr str);
@@ -364,8 +364,9 @@ gint g_parse(gstr str, gchar chend, gint base);
 gstr g_replace(gstr source, gstr sub, gstr rep);
 gstr g_replace_free(gstr source, gstr sub, gstr rep);
 gstr g_trim(gstr str);
-gstr g_limit(gstr str, gint len);
-gstr g_format(gcstr format, ...);
+gint g_format_max_length(gcstr fmt, va_list args);
+gstr g_format(gcstr fmt, ...);
+void g_format_to(gstr buffer, gcstr fmt, ...);
 gwstr g_unicode(gcstr str);
 gwstr g_unicode_dup(gcstr str);
 

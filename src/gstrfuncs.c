@@ -121,23 +121,17 @@ void g_reverse(gstr str) {
   }
 }
 gint g_cmp(gcstr str1, gcstr str2) {
-#ifdef HAVE_STRCASECMP
-  return strcasecmp(str1, str2);
-#else
   g_return_val_if_fail(str1 && str2, 0);
   gint c1, c2;
-
   while (*str1 && *str2) {
-    c1 = isupper((guchar)*str1) ? tolower((guchar)*str1) : *str1;
-    c2 = isupper((guchar)*str1) ? tolower((guchar)*str2) : *str2;
+    c1 = *str1;
+    c2 = *str2;
     if (c1 != c2)
       return (c1 - c2);
     str1++;
     str2++;
   }
-
   return (((gint)(guchar)*str1) - ((gint)(guchar)*str2));
-#endif
 }
 
 void g_delimit(gstr str, gcstr delimiters, gchar new_delim) {
@@ -273,4 +267,127 @@ gstr g_trim(gstr str) {
 
 gbool g_is_space(gwchar c) {
   return c == ' ' || c == '\t' || c == '\r' || c == '\n';
+}
+
+gint g_format_max_length(gcstr fmt, va_list args) {
+  int len = 0;
+  int short_int;
+  int long_int;
+  int done;
+  gstr tmp;
+
+  while (*fmt) {
+    gchar c = *fmt++;
+
+    short_int = FALSE;
+    long_int = FALSE;
+
+    if (c == '%') {
+      done = FALSE;
+      while (*fmt && !done) {
+        switch (*fmt++) {
+        case '*':
+          len += va_arg(args, int);
+          break;
+        case '1':
+        case '2':
+        case '3':
+        case '4':
+        case '5':
+        case '6':
+        case '7':
+        case '8':
+        case '9':
+          fmt -= 1;
+          len += strtol(fmt, (char **)&fmt, 10);
+          break;
+        case 'h':
+          short_int = TRUE;
+          break;
+        case 'l':
+          long_int = TRUE;
+          break;
+
+          /* I ignore 'q' and 'L', they're not portable anyway. */
+
+        case 's':
+          tmp = va_arg(args, char *);
+          if (tmp)
+            len += g_len(tmp);
+          else
+            len += g_len("(null)");
+          done = TRUE;
+          break;
+        case 'd':
+        case 'i':
+        case 'o':
+        case 'u':
+        case 'x':
+        case 'X':
+          if (long_int)
+            (void)va_arg(args, long);
+          else if (short_int)
+            (void)va_arg(args, int);
+          else
+            (void)va_arg(args, int);
+          len += 32;
+          done = TRUE;
+          break;
+        case 'D':
+        case 'O':
+        case 'U':
+          (void)va_arg(args, long);
+          len += 32;
+          done = TRUE;
+          break;
+        case 'e':
+        case 'E':
+        case 'f':
+        case 'g':
+          (void)va_arg(args, double);
+          len += 32;
+          done = TRUE;
+          break;
+        case 'c':
+          (void)va_arg(args, int);
+          len += 1;
+          done = TRUE;
+          break;
+        case 'p':
+        case 'n':
+          (void)va_arg(args, void *);
+          len += 32;
+          done = TRUE;
+          break;
+        case '%':
+          len += 1;
+          done = TRUE;
+          break;
+        default:
+          break;
+        }
+      }
+    } else
+      len += 1;
+  }
+
+  return len;
+}
+
+gstr g_format(gcstr fmt, ...) {
+  va_list args;
+  va_start(args, fmt);
+  gint length = g_format_max_length(fmt, args);
+  va_end(args);
+  gstr buffer = g_malloc0(length + 1);
+  va_start(args, fmt);
+  vsprintf(buffer, fmt, args);
+  va_end(args);
+  return buffer;
+}
+void g_format_to(gstr buffer, gcstr fmt, ...){
+  va_list args;
+  va_start(args, fmt);
+  vsprintf(buffer, fmt, args);
+  va_end(args);
 }

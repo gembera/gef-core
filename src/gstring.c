@@ -504,19 +504,6 @@ void g_log(char *fmt, ...) {
           g_log___func__, g_log___file__, g_log___line__);
   // _vm_log_debug("%s", g_limit(global_string_buf, 100));
 }
-gstr g_format(gcstr fmt, ...) {
-  va_list args, args2;
-
-  va_start(args, fmt);
-  va_start(args2, fmt);
-
-  g_vsprintf(fmt, &args, &args2);
-
-  va_end(args);
-  va_end(args2);
-
-  return global_string_buf;
-}
 gstr g_limit(gstr str, gint len) {
   if (global_string_buf != str)
     g_format("%s", str);
