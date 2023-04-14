@@ -12,7 +12,7 @@ static void g_map_free_key_value(GMap *self, GMapEntry *entry) {
   if (self->value_free_callback)
     self->value_free_callback(entry->value);
 }
-static void g_map_lookup(GMap *self, gconstpointer key, gint *left,
+static void g_map_lookup(GMap *self, gcpointer key, gint *left,
                          gint *right) {
   *left = -1;
   *right = -1;
@@ -84,7 +84,7 @@ void g_map_remove_all(GMap *self) {
   }
   g_array_set_size(self->data, 0);
 }
-void g_map_remove(GMap *self, gconstpointer key) {
+void g_map_remove(GMap *self, gcpointer key) {
   g_return_if_fail(self);
   gint l, r;
   g_map_lookup(self, key, &l, &r);
@@ -94,7 +94,7 @@ void g_map_remove(GMap *self, gconstpointer key) {
   }
 }
 
-GMapEntry *g_map_get(GMap *self, gconstpointer key) {
+GMapEntry *g_map_get(GMap *self, gcpointer key) {
   g_return_val_if_fail(self, NULL);
   gint l, r;
   g_map_lookup(self, key, &l, &r);

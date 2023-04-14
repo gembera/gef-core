@@ -8,34 +8,34 @@
 
 #define G_STR_DELIMITERS "_-|> <."
 
-void g_cpy(gchar *dst, gchar *src) { strcpy(dst, src); }
-gchar *g_dup(const gchar *str) {
-  gchar *new_str;
+void g_cpy(gstring dst, gstring src) { strcpy(dst, src); }
+gstring g_dup(gcstring str) {
+  gstring new_str;
 
   new_str = NULL;
   if (str) {
-    new_str = g_malloc(strlen(str) + 1);
-    strncpy(new_str, str, strlen(str));
+    new_str = g_malloc(g_len(str) + 1);
+    strncpy(new_str, str, g_len(str));
   }
 
   return new_str;
 }
-gchar *g_replace_free(gchar *source, gchar *sub, gchar *rep) {
+gstring g_replace_free(gstring source, gstring sub, gstring rep) {
   gstring dst = g_replace(source, sub, rep);
   g_free(source);
   return dst;
 }
-gchar *g_replace(gchar *source, gchar *sub, gchar *rep) {
-  gchar *result;
-  gchar *pc1, *pc2, *pc3;
+gstring g_replace(gstring source, gstring sub, gstring rep) {
+  gstring result;
+  gstring pc1, pc2, pc3;
   int isource, isub, irep;
-  isub = strlen(sub);
-  irep = strlen(rep);
-  isource = strlen(source);
+  isub = g_len(sub);
+  irep = g_len(rep);
+  isource = g_len(source);
   if (0 == *sub)
     return g_dup(source);
-  result = (gchar *)g_malloc(
-      (irep > isub ? irep * strlen(source) / isub + 1 : isource) + 1);
+  result = (gstring)g_malloc(
+      (irep > isub ? irep * g_len(source) / isub + 1 : isource) + 1);
   pc1 = result;
   while (*source != 0) {
     pc2 = source;
@@ -56,20 +56,20 @@ gchar *g_replace(gchar *source, gchar *sub, gchar *rep) {
   return result;
 }
 
-gchar *g_concat(const gchar *string1, ...) {
+gstring g_concat(gcstring string1, ...) {
   guint l;
   va_list args;
-  gchar *s;
-  gchar *concat;
+  gstring s;
+  gstring concat;
 
   g_return_val_if_fail(string1, NULL);
 
-  l = 1 + strlen(string1);
+  l = 1 + g_len(string1);
   va_start(args, string1);
-  s = va_arg(args, gchar *);
+  s = va_arg(args, gstring);
   while (s) {
-    l += strlen(s);
-    s = va_arg(args, gchar *);
+    l += g_len(s);
+    s = va_arg(args, gstring);
   }
   va_end(args);
 
@@ -78,18 +78,18 @@ gchar *g_concat(const gchar *string1, ...) {
 
   strcat(concat, string1);
   va_start(args, string1);
-  s = va_arg(args, gchar *);
+  s = va_arg(args, gstring);
   while (s) {
     strcat(concat, s);
-    s = va_arg(args, gchar *);
+    s = va_arg(args, gstring);
   }
   va_end(args);
 
   return concat;
 }
 
-void g_down(gchar *string) {
-  register gchar *s;
+void g_down(gstring string) {
+  register gstring s;
   g_return_if_fail(string);
   s = string;
   while (*s) {
@@ -98,8 +98,8 @@ void g_down(gchar *string) {
   }
 }
 
-void g_up(gchar *string) {
-  register gchar *s;
+void g_up(gstring string) {
+  register gstring s;
   g_return_if_fail(string);
   s = string;
   while (*s) {
@@ -108,12 +108,12 @@ void g_up(gchar *string) {
   }
 }
 
-void g_reverse(gchar *string) {
+void g_reverse(gstring string) {
   g_return_if_fail(string != NULL);
   if (*string) {
-    register gchar *h, *t;
+    register gstring h, t;
     h = string;
-    t = string + strlen(string) - 1;
+    t = string + g_len(string) - 1;
     while (h < t) {
       register gchar c;
       c = *h;
@@ -124,7 +124,7 @@ void g_reverse(gchar *string) {
     }
   }
 }
-gint g_cmp(const gchar *s1, const gchar *s2) {
+gint g_cmp(gcstring s1, gcstring s2) {
 #ifdef HAVE_STRCASECMP
   return strcasecmp(s1, s2);
 #else
@@ -146,8 +146,8 @@ gint g_cmp(const gchar *s1, const gchar *s2) {
 #endif
 }
 
-void g_delimit(gchar *string, const gchar *delimiters, gchar new_delim) {
-  register gchar *c;
+void g_delimit(gstring string, gcstring delimiters, gchar new_delim) {
+  register gstring c;
 
   g_return_if_fail(string != NULL);
 
@@ -160,9 +160,9 @@ void g_delimit(gchar *string, const gchar *delimiters, gchar new_delim) {
   }
 }
 
-gbool g_start_with(gchar *string, gchar *sub) {
-  gint i, len = strlen(sub);
-  if ((gint)strlen(string) < len)
+gbool g_start_with(gstring string, gstring sub) {
+  gint i, len = g_len(sub);
+  if ((gint)g_len(string) < len)
     return FALSE;
   for (i = 0; i < len; i++) {
     if (string[i] != sub[i])
@@ -170,9 +170,9 @@ gbool g_start_with(gchar *string, gchar *sub) {
   }
   return TRUE;
 }
-gbool g_end_with(gchar *string, gchar *sub) {
-  gint i, len = strlen(sub);
-  gint lensrc = strlen(string);
+gbool g_end_with(gstring string, gstring sub) {
+  gint i, len = g_len(sub);
+  gint lensrc = g_len(string);
   if (lensrc < len)
     return FALSE;
   lensrc -= len;
@@ -182,22 +182,22 @@ gbool g_end_with(gchar *string, gchar *sub) {
   }
   return TRUE;
 }
-gint g_index_of(gstring fstring, gchar *str, gint index) {
+gint g_index_of(gstring fstring, gstring str, gint index) {
   char *l;
   if (index < 0)
     index = 0;
-  else if (index >= (gint)strlen(fstring))
+  else if (index >= (gint)g_len(fstring))
     return -1;
   l = strstr(fstring + index, str);
   return l == NULL ? -1 : l - fstring;
 }
-gint g_last_index_of(gstring fstring, gchar *str) {
+gint g_last_index_of(gstring fstring, gstring str) {
   gint pos = -1;
   gint posnext;
   gint len;
   if (str == NULL)
     return -1;
-  len = strlen(str);
+  len = g_len(str);
   if (len == 0)
     return -1;
   do {
@@ -210,7 +210,7 @@ gint g_last_index_of(gstring fstring, gchar *str) {
 gstring g_substring(gstring fstring, gint st, gint len) {
   gint i;
   gstring r;
-  gint fslen = strlen(fstring);
+  gint fslen = g_len(fstring);
   if (len <= 0)
     len = fslen - st;
   if (st + len > fslen)
@@ -232,7 +232,7 @@ gint g_hex(gchar c) {
   return -1;
 }
 gint g_parse_num(gstring fstring, gchar chend, gint base) {
-  gchar *s = fstring;
+  gstring s = fstring;
   gbool negate = FALSE;
   gint result = 0;
 
@@ -261,13 +261,13 @@ gint g_parse_num(gstring fstring, gchar chend, gint base) {
   return result;
 }
 
-gchar *g_trim(gchar *str) {
+gstring g_trim(gstring str) {
   gint i;
   gint len;
-  gchar *result;
+  gstring result;
   if (str == NULL)
     return NULL;
-  len = strlen(str);
+  len = g_len(str);
   for (i = len - 1; i >= 0 && g_is_space(str[i]); i--, len--)
     ;
   for (i = 0; i < len && g_is_space(str[i]); i++)

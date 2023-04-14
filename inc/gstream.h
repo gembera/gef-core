@@ -24,13 +24,6 @@ typedef enum
 	SEEK_END = 2
 }GSeekOrigin;
 
-#define PREFIX_RES "res://"
-#define PREFIX_FILE "file://"
-//#define PREFIX_PACKAGE "pkg://"
-#define PREFIX_HTTP "http://"
-#define PREFIX_HTTPS "https://"
-#define PREFIX_MEM "mem://"
-
 struct _GStream
 {
 	GObject base;
@@ -59,16 +52,14 @@ struct _GStreamClass
 
 void g_stream_write_byte(gpointer self, gint b);
 gint g_stream_read_byte(gpointer self);
-#define g_stream_write_string(self, str) g_stream_virtual_write(self, str, strlen(str));
+#define g_stream_write_string(self, str) g_stream_virtual_write(self, str, g_len(str));
 
-gpointer g_get_class_GStream(void);
+gpointer g_class_GStream(void);
 
 void g_stream_init(gpointer self);
 void g_stream_finalize(gpointer self);
 void g_stream_class_init(gpointer clazz);
 
-gint g_stream_get_length(gstring uri);
-void g_stream_read_all(gstring uri, gpointer* buffer, gint*buflen, gbool appendzero);
 void g_stream_read_all_content(gpointer self, gpointer* buffer, gint*buflen, gbool appendzero);
 gint32 g_stream_read_int32(gpointer self, gint32* data);
 gfloat g_stream_read_float(gpointer self);

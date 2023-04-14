@@ -9,15 +9,15 @@
 typedef struct _GRealString GRealString;
 
 struct _GRealString {
-  gchar *str;
+  gstring str;
   gint len;
   gint alloc;
 };
 
-static gchar *global_string_buf = NULL;
+static gstring global_string_buf = NULL;
 static gint global_string_alloc = 0;
 
-static gchar *global_utf8_buf = NULL;
+static gstring global_utf8_buf = NULL;
 static gint global_utf8_alloc = 0;
 
 static gwchar *global_wstring_buf = NULL;
@@ -59,12 +59,12 @@ static void g_string_maybe_expand(GRealString *string, gint len) {
   }
 }
 
-GString *g_string_wrap(gchar *init) {
+GString *g_string_wrap(gstring init) {
   GRealString *string;
 
   string = g_new(GRealString);
 
-  string->len = strlen(init);
+  string->len = g_len(init);
   string->alloc = string->len + 1;
   string->str = init;
 
@@ -85,7 +85,7 @@ GString *g_string_sized_new(guint dfl_size) {
   return (GString *)string;
 }
 
-GString *g_string_new(const gchar *init) {
+GString *g_string_new(const gstring init) {
   GString *string;
 
   string = g_string_sized_new(2);
@@ -105,7 +105,7 @@ void g_string_free(GString *string) {
   g_free(string);
 }
 
-GString *g_string_assign(GString *lval, const gchar *rval) {
+GString *g_string_assign(GString *lval, const gstring rval) {
   g_string_truncate(lval, 0);
   g_string_append(lval, rval);
 
@@ -124,7 +124,7 @@ GString *g_string_truncate(GString *fstring, gint len) {
   return fstring;
 }
 
-GString *g_string_append_with_length(GString *fstring, const gchar *val,
+GString *g_string_append_with_length(GString *fstring, const gstring val,
                                      gint len) {
   GRealString *string = (GRealString *)fstring;
 
@@ -140,14 +140,14 @@ GString *g_string_append_with_length(GString *fstring, const gchar *val,
 
   return fstring;
 }
-GString *g_string_append(GString *fstring, const gchar *val) {
+GString *g_string_append(GString *fstring, const gstring val) {
   GRealString *string = (GRealString *)fstring;
   int len;
 
   g_return_val_if_fail(string != NULL, NULL);
   g_return_val_if_fail(val != NULL, fstring);
 
-  len = strlen(val);
+  len = g_len(val);
 
   return g_string_append_with_length(fstring, val, len);
 }
@@ -164,14 +164,14 @@ GString *g_string_append_c(GString *fstring, gchar c) {
   return fstring;
 }
 
-GString *g_string_prepend(GString *fstring, const gchar *val) {
+GString *g_string_prepend(GString *fstring, const gstring val) {
   GRealString *string = (GRealString *)fstring;
   gint len;
 
   g_return_val_if_fail(string != NULL, NULL);
   g_return_val_if_fail(val != NULL, fstring);
 
-  len = strlen(val);
+  len = g_len(val);
   g_string_maybe_expand(string, len);
 
   g_memmove(string->str + len, string->str, string->len);
@@ -202,7 +202,7 @@ GString *g_string_prepend_c(GString *fstring, gchar c) {
   return fstring;
 }
 
-GString *g_string_insert(GString *fstring, gint pos, const gchar *val) {
+GString *g_string_insert(GString *fstring, gint pos, const gstring val) {
   GRealString *string = (GRealString *)fstring;
   gint len;
 
@@ -211,7 +211,7 @@ GString *g_string_insert(GString *fstring, gint pos, const gchar *val) {
   g_return_val_if_fail(pos >= 0, fstring);
   g_return_val_if_fail(pos <= string->len, fstring);
 
-  len = strlen(val);
+  len = g_len(val);
   g_string_maybe_expand(string, len);
 
   g_memmove(string->str + pos + len, string->str + pos, string->len - pos);
@@ -264,7 +264,7 @@ GString *g_string_erase(GString *fstring, gint pos, gint len) {
   return fstring;
 }
 
-gint g_string_index_of(GString *fstring, gchar *str, int index) {
+gint g_string_index_of(GString *fstring, gstring str, int index) {
   return g_index_of(fstring->str, str, index);
 }
 GString *g_string_trim(GString *fstring) {
@@ -276,9 +276,9 @@ GString *g_string_trim(GString *fstring) {
     ;
   return g_string_truncate(fstring, i + 1);
 }
-GPtrArray *g_string_split(GString *fstring, gchar *str) {
+GPtrArray *g_string_split(GString *fstring, gstring str) {
   gint pos = 0;
-  gint l = strlen(str);
+  gint l = g_len(str);
   GPtrArray *ar = g_ptr_array_new();
   while (pos < fstring->len) {
     gint p = g_string_index_of(fstring, str, pos);
@@ -299,7 +299,7 @@ GString *g_string_substring(GString *fstring, gint st, gint len) {
 }
 GString *g_string_down(GString *fstring) {
   GRealString *string = (GRealString *)fstring;
-  gchar *s;
+  gstring s;
 
   g_return_val_if_fail(string != NULL, NULL);
 
@@ -315,7 +315,7 @@ GString *g_string_down(GString *fstring) {
 
 GString *g_string_up(GString *fstring) {
   GRealString *string = (GRealString *)fstring;
-  gchar *s;
+  gstring s;
 
   g_return_val_if_fail(string != NULL, NULL);
 
@@ -329,15 +329,15 @@ GString *g_string_up(GString *fstring) {
   return fstring;
 }
 
-static int get_length_upper_bound(const gchar *fmt, va_list *args) {
+static int get_length_upper_bound(gcstring fmt, va_list *args) {
   int len = 0;
   int short_int;
   int long_int;
   int done;
-  char *tmp;
+  gstring tmp;
 
   while (*fmt) {
-    char c = *fmt++;
+    gchar c = *fmt++;
 
     short_int = FALSE;
     long_int = FALSE;
@@ -373,9 +373,9 @@ static int get_length_upper_bound(const gchar *fmt, va_list *args) {
         case 's':
           tmp = va_arg(*args, char *);
           if (tmp)
-            len += strlen(tmp);
+            len += g_len(tmp);
           else
-            len += strlen("(null)");
+            len += g_len("(null)");
           done = TRUE;
           break;
         case 'd':
@@ -466,7 +466,7 @@ void _allocate_global_wstring_buf(gint len) {
     global_wstring_buf = g_new_many(gwchar, global_wstring_alloc);
   }
 }
-char *g_vsprintf(const gchar *fmt, va_list *args, va_list *args2) {
+char *g_vsprintf(gcstring fmt, va_list *args, va_list *args2) {
 
   gint len = get_length_upper_bound(fmt, args);
 
@@ -504,7 +504,7 @@ void g_log(char *fmt, ...) {
           g_log___func__, g_log___file__, g_log___line__);
   // _vm_log_debug("%s", g_limit(global_string_buf, 100));
 }
-gstring g_format(const gstring fmt, ...) {
+gstring g_format(gcstring fmt, ...) {
   va_list args, args2;
 
   va_start(args, fmt);
@@ -520,7 +520,7 @@ gstring g_format(const gstring fmt, ...) {
 gstring g_limit(gstring str, gint len) {
   if (global_string_buf != str)
     g_format("%s", str);
-  if ((gint)strlen(global_string_buf) > len)
+  if ((gint)g_len(global_string_buf) > len)
     global_string_buf[len] = '\0';
   return global_string_buf;
 }
@@ -557,9 +557,9 @@ gstring g_limit(gstring str, gint len) {
     (Result) |= ((Chars)[(Count)] & 0x3f);                                     \
   }
 
-gint g_utf8_strlen(const gchar *p, gint max) {
+gint g_utf8_strlen(gcstring p, gint max) {
   int len = 0;
-  const gchar *start = p;
+  gcstring start = p;
   /* special case for the empty string */
   if (!*p)
     return 0;
@@ -576,7 +576,7 @@ gint g_utf8_strlen(const gchar *p, gint max) {
   return len;
 }
 
-gwchar g_utf8_get_char(const gchar *p) {
+gwchar g_utf8_get_char(gcstring p) {
   int i, mask = 0, len;
   gwchar result;
   unsigned char c = (unsigned char)*p;
@@ -592,7 +592,7 @@ gwchar g_utf8_get_char(const gchar *p) {
 gwstring g_utf8_to_ucs2(gwstring wbuffer, const char *str, int len) {
   gwstring result;
   gint n_chars, i;
-  const gchar *p;
+  gcstring p;
 
   n_chars = g_utf8_strlen(str, len);
   result = wbuffer == NULL ? g_new_many(gwchar, n_chars + 1) : wbuffer;
@@ -606,17 +606,17 @@ gwstring g_utf8_to_ucs2(gwstring wbuffer, const char *str, int len) {
   return result;
 }
 
-gwstring g_unicode(gconststring str) {
+gwstring g_unicode(gcstring str) {
   if (str == NULL)
     return NULL;
-  _allocate_global_wstring_buf(g_utf8_strlen(str, strlen(str)));
-  return g_utf8_to_ucs2(global_wstring_buf, str, strlen(str));
+  _allocate_global_wstring_buf(g_utf8_strlen(str, g_len(str)));
+  return g_utf8_to_ucs2(global_wstring_buf, str, g_len(str));
 }
-gwstring g_unicode_dup(gconststring str) {
-  return g_utf8_to_ucs2(NULL, str, strlen(str));
+gwstring g_unicode_dup(gcstring str) {
+  return g_utf8_to_ucs2(NULL, str, g_len(str));
 }
 
-int g_unichar_to_utf8(gwchar c, gchar *outbuf) {
+int g_unichar_to_utf8(gwchar c, gstring outbuf) {
   size_t len = 0;
   int first;
   int i;
@@ -651,14 +651,14 @@ int g_unichar_to_utf8(gwchar c, gchar *outbuf) {
   return len;
 }
 
-gint g_unicode_strlen(gconstwstring str) {
+gint g_unicode_strlen(gcwstring str) {
   const gwchar *p = str;
   gint n_chars;
   for (n_chars = 0; *p != 0; p++)
     n_chars += g_unichar_to_utf8(*p, NULL);
   return n_chars;
 }
-gstring g_ucs2_to_utf8(gstring buffer, gconstwstring str) {
+gstring g_ucs2_to_utf8(gstring buffer, gcwstring str) {
   gstring result;
   gint n_chars, i;
   const gwchar *p = str;
@@ -674,18 +674,18 @@ gstring g_ucs2_to_utf8(gstring buffer, gconstwstring str) {
   return result;
 }
 
-gstring g_utf8(gconstwstring str) {
+gstring g_utf8(gcwstring str) {
   _allocate_global_utf8_buf(g_unicode_strlen(str));
   return g_ucs2_to_utf8(global_utf8_buf, str);
 }
-gstring g_utf8_dup(gconstwstring str) { return g_ucs2_to_utf8(NULL, str); }
+gstring g_utf8_dup(gcwstring str) { return g_ucs2_to_utf8(NULL, str); }
 
-static void g_string_sprintfa_int(GString *string, const gchar *fmt,
+static void g_string_sprintfa_int(GString *string, const gstring fmt,
                                   va_list *args, va_list *args2) {
   g_string_append(string, g_vsprintf(fmt, args, args2));
 }
 
-void g_string_sprintf(GString *string, const gchar *fmt, ...) {
+void g_string_sprintf(GString *string, const gstring fmt, ...) {
   va_list args, args2;
 
   va_start(args, fmt);
@@ -699,7 +699,7 @@ void g_string_sprintf(GString *string, const gchar *fmt, ...) {
   va_end(args2);
 }
 
-void g_string_sprintfa(GString *string, const gchar *fmt, ...) {
+void g_string_sprintfa(GString *string, const gstring fmt, ...) {
   va_list args, args2;
 
   va_start(args, fmt);

@@ -47,8 +47,8 @@ gint g_event_add_listener_with(GEvent *self, GEventCallback callback,
   return listener.token;
 }
 static gbool g_event_token_search_handler(GArray *self, guint index,
-                                          gconstpointer item,
-                                          gconstpointer user_data) {
+                                          gcpointer item,
+                                          gcpointer user_data) {
   GEventListener *listener = (GEventListener *)item;
   gint *token = (gint *)user_data;
   return listener->token == *token;

@@ -2,17 +2,17 @@
 #include <assert.h>
 
 static void print_and_count_callback(GList *self, GListNode *item,
-                                     gconstpointer user_data) {
-  gchar *str = (gchar *)item->data;
+                                     gcpointer user_data) {
+  gstring str = (gstring )item->data;
   gint *index = (gint *)user_data;
   printf("\n%d:%s\n", *index, str);
   (*index)++;
 }
 
 static gbool search_handler(GList *self, GListNode *item,
-                            gconstpointer user_data) {
-  gchar *v1 = (gchar *)item->data;
-  gchar *v2 = (gchar *)user_data;
+                            gcpointer user_data) {
+  gstring v1 = (gstring )item->data;
+  gstring v2 = (gstring )user_data;
   return g_equal(v1, v2);
 }
 
@@ -21,12 +21,12 @@ int test_list(int, char *[]) {
   g_mem_record_begin();
 
   gint i, i1, i2;
-  gchar *str1 = "one";
-  gchar *str2 = "two";
-  gchar *str3 = "three";
-  gchar *str4 = "four";
-  gchar *str5 = "five";
-  gchar *str6 = g_dup("dynamic");
+  gstring str1 = "one";
+  gstring str2 = "two";
+  gstring str3 = "three";
+  gstring str4 = "four";
+  gstring str5 = "five";
+  gstring str6 = g_dup("dynamic");
   GList *list1 = g_list_new();
   g_list_append(list1, str1);
   g_list_append(list1, str2);

@@ -78,7 +78,7 @@ typedef float gfloat;
 typedef double gdouble;
 
 typedef void *gpointer;
-typedef const void *gconstpointer;
+typedef const void *gcpointer;
 
 typedef gpointer ghandle;
 
@@ -116,8 +116,8 @@ typedef unsigned long long guint64;
 typedef guint16 gwchar;
 typedef gchar *gstring;
 typedef gwchar *gwstring;
-typedef const gchar *gconststring;
-typedef const gwchar *gconstwstring;
+typedef const gchar *gcstring;
+typedef const gwchar *gcwstring;
 
 #if (SIZEOF_INT == SIZEOF_VOID_P)
 #define g_pointer_to_num(p) ((gint)(p))
@@ -195,7 +195,7 @@ void g_mem_profile(gulong *allocated, gulong *freed, gulong *ppeak);
 
 // General callbacks and handlers
 typedef void (*GCallback)(gpointer data, gpointer user_data);
-typedef gint (*GCompareHandler)(gconstpointer a, gconstpointer b);
+typedef gint (*GCompareHandler)(gcpointer a, gcpointer b);
 typedef void (*GFreeCallback)(gpointer data);
 void g_free_callback(gpointer data);
 
@@ -225,12 +225,10 @@ typedef struct {
   GFreeCallback free_callback;
 } GPtrArray;
 
-typedef gbool (*GArraySearchHandler)(GArray *self, guint index,
-                                     gconstpointer item,
-                                     gconstpointer user_data);
-typedef void (*GArrayVisitCallback)(GArray *self, guint index,
-                                    gconstpointer item,
-                                    gconstpointer user_data);
+typedef gbool (*GArraySearchHandler)(GArray *self, guint index, gcpointer item,
+                                     gcpointer user_data);
+typedef void (*GArrayVisitCallback)(GArray *self, guint index, gcpointer item,
+                                    gcpointer user_data);
 GArray *g_array_new(guint item_len);
 #define g_array_new_of(type) g_array_new(sizeof(type))
 void g_array_free(GArray *self);
@@ -257,11 +255,9 @@ gint g_array_search(GArray *self, GArraySearchHandler func, gpointer user_data);
 void g_array_visit(GArray *self, GArrayVisitCallback func, gpointer user_data);
 
 typedef gbool (*GPtrArraySearchHandler)(GPtrArray *self, guint index,
-                                        gconstpointer item,
-                                        gconstpointer user_data);
+                                        gcpointer item, gcpointer user_data);
 typedef void (*GPtrArrayVisitCallback)(GPtrArray *self, guint index,
-                                       gconstpointer item,
-                                       gconstpointer user_data);
+                                       gcpointer item, gcpointer user_data);
 #define g_ptr_array_new() g_ptr_array_new_with(NULL)
 GPtrArray *g_ptr_array_new_with(GFreeCallback free_func);
 void g_ptr_array_free(GPtrArray *self);
@@ -295,9 +291,9 @@ typedef struct {
 } GList;
 
 typedef gbool (*GListSearchHandler)(GList *self, GListNode *item,
-                                    gconstpointer user_data);
+                                    gcpointer user_data);
 typedef void (*GListVisitCallback)(GList *self, GListNode *item,
-                                   gconstpointer user_data);
+                                   gcpointer user_data);
 #define g_list_new() g_list_new_with(NULL)
 GList *g_list_new_with(GFreeCallback node_data_free_callback);
 GListNode *g_list_node_new(gpointer data);
@@ -336,39 +332,40 @@ GMap *g_map_new_with(GFreeCallback value_free_callback,
                      GFreeCallback key_free_callback,
                      GCompareHandler key_compare_func);
 void g_map_free(GMap *self);
-GMapEntry *g_map_get(GMap *self, gconstpointer key);
+GMapEntry *g_map_get(GMap *self, gcpointer key);
 void g_map_set(GMap *self, gpointer key, gpointer value);
-void g_map_remove(GMap *self, gconstpointer key);
+void g_map_remove(GMap *self, gcpointer key);
 void g_map_remove_all(GMap *self);
 guint g_map_size(GMap *self);
 GMapEntry *g_map_search(GMap *self, GMapSearchHandler func, gpointer user_data);
 void g_map_visit(GMap *self, GMapVisitCallback func, gpointer user_data);
 
 // String utility
-void g_delimit(gchar *string, const gchar *delimiters, gchar new_delimiter);
-gchar *g_dup(const gchar *str);
-gchar *g_concat(const gchar *string1, ...); /* NULL terminated */
-gint g_cmp(const gchar *s1, const gchar *s2);
-void g_down(gchar *string);
-void g_up(gchar *string);
-void g_reverse(gchar *string);
-void g_cpy(gchar *dst, gchar *src);
-gbool g_start_with(gchar *string, gchar *sub);
-gbool g_end_with(gchar *string, gchar *sub);
-gint g_index_of(gstring fstring, gchar *str, gint index);
-gint g_last_index_of(gstring fstring, gchar *str);
-gstring g_substring(gstring fstring, gint st, gint len);
+#define g_len(str) strlen(str)
+void g_delimit(gstring str, gcstring delimiters, gchar new_delimiter);
+gstring g_dup(gcstring str);
+gstring g_concat(gcstring str1, ...); /* NULL terminated */
+gint g_cmp(gcstring str1, gcstring str2);
+void g_down(gstring str);
+void g_up(gstring str);
+void g_reverse(gstring str);
+void g_cpy(gstring strdst, gstring strsrc);
+gbool g_start_with(gstring str, gstring sub);
+gbool g_end_with(gstring str, gstring sub);
+gint g_index_of(gstring str, gstring sub, gint index);
+gint g_last_index_of(gstring str, gstring sub);
+gstring g_substring(gstring str, gint st, gint len);
 gint g_hex(gchar c);
-gint g_parse_num(gstring fstring, gchar chend, gint base);
+gint g_parse_num(gstring str, gchar chend, gint base);
 #define g_to_num(str) g_parse_num(str, '\0', 10)
-#define g_equal(s1, s2) (g_cmp(s1, s2) == 0)
-gchar *g_replace(gchar *source, gchar *sub, gchar *rep);
-gchar *g_replace_free(gchar *source, gchar *sub, gchar *rep);
-gchar *g_trim(gchar *str);
+#define g_equal(str1, str2) (g_cmp(str1, str2) == 0)
+gstring g_replace(gstring source, gstring sub, gstring rep);
+gstring g_replace_free(gstring source, gstring sub, gstring rep);
+gstring g_trim(gstring str);
 gstring g_limit(gstring str, gint len);
-gstring g_format(const gstring format, ...);
-gwstring g_unicode(gconststring str);
-gwstring g_unicode_dup(gconststring str);
+gstring g_format(gcstring format, ...);
+gwstring g_unicode(gcstring str);
+gwstring g_unicode_dup(gcstring str);
 
 #define g_utf8_length_of_wchar(c)                                              \
   ((c) < 0x80    ? 1                                                           \
@@ -382,44 +379,44 @@ gwstring g_unicode_dup(gconststring str);
    : (c) < 0xE0 ? 2                                                            \
                 : ((c) < 0xF0 ? 3 : ((c) < 0xF8 ? 4 : ((c) < 0xFC ? 5 : 6))))
 #define g_utf8_next_char(p) (char *)((p) + g_utf8_skip(*(guchar *)(p)))
-gstring g_utf8(gconstwstring str);
-gstring g_utf8_dup(gconstwstring str);
-gint g_utf8_strlen(const gchar *p, gint max);
-gwchar g_utf8_get_char(const gchar *p);
-int g_unichar_to_utf8(gwchar c, gchar *outbuf);
+gstring g_utf8(gcwstring str);
+gstring g_utf8_dup(gcwstring str);
+gint g_utf8_strlen(gcstring p, gint max);
+gwchar g_utf8_get_char(gcstring p);
+int g_unichar_to_utf8(gwchar c, gstring outbuf);
 
 gbool g_is_space(gwchar c);
 #define g_is_cjk(c) ((c) >= 8192)
 
 // String
 typedef struct {
-  gchar *str;
+  gstring str;
   gint len;
 } GString;
 
-GString *g_string_new(const gchar *init);
-GString *g_string_wrap(gchar *init);
+GString *g_string_new(const gstring init);
+GString *g_string_wrap(gstring init);
 GString *g_string_sized_new(guint dfl_size);
 void g_string_free(GString *string);
-GString *g_string_assign(GString *lval, const gchar *rval);
+GString *g_string_assign(GString *lval, const gstring rval);
 GString *g_string_truncate(GString *string, gint len);
-GString *g_string_append(GString *string, const gchar *val);
-GString *g_string_append_with_length(GString *string, const gchar *val,
+GString *g_string_append(GString *string, const gstring val);
+GString *g_string_append_with_length(GString *string, const gstring val,
                                      gint len);
 GString *g_string_append_c(GString *string, gchar c);
-GString *g_string_prepend(GString *string, const gchar *val);
+GString *g_string_prepend(GString *string, const gstring val);
 GString *g_string_prepend_c(GString *string, gchar c);
-GString *g_string_insert(GString *string, gint pos, const gchar *val);
+GString *g_string_insert(GString *string, gint pos, const gstring val);
 GString *g_string_insert_c(GString *string, gint pos, gchar c);
 GString *g_string_erase(GString *string, gint pos, gint len);
 GString *g_string_down(GString *string);
 GString *g_string_up(GString *string);
-void g_string_sprintf(GString *string, const gchar *format, ...);
-void g_string_sprintfa(GString *string, const gchar *format, ...);
+void g_string_sprintf(GString *string, const gstring format, ...);
+void g_string_sprintfa(GString *string, const gstring format, ...);
 GString *g_string_trim(GString *fstring);
-gint g_string_index_of(GString *fstring, gchar *str, int index);
+gint g_string_index_of(GString *fstring, gstring str, int index);
 GString *g_string_substring(GString *fstring, gint st, gint len);
-GPtrArray *g_string_split(GString *fstring, gchar *str);
+GPtrArray *g_string_split(GString *fstring, gstring str);
 gint g_string_parse_integer(GString *fstring, gchar chend, gint base);
 #define g_string_to_integer(str) g_string_parse_integer(str, '\0', 10)
 

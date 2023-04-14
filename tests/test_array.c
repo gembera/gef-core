@@ -2,18 +2,18 @@
 #include <assert.h>
 
 typedef struct _Person {
-  gchar *name;
+  gstring name;
   gint age;
 } Person;
-static gbool array_search_handler(GArray *self, guint index, gconstpointer item,
-                                  gconstpointer user_data) {
+static gbool array_search_handler(GArray *self, guint index, gcpointer item,
+                                  gcpointer user_data) {
   gint v1 = *(gint *)item;
   gint v2 = *(gint *)user_data;
   return v1 == v2;
 };
 
-static void array_visit_callback(GArray *self, guint index, gconstpointer item,
-                                 gconstpointer user_data) {
+static void array_visit_callback(GArray *self, guint index, gcpointer item,
+                                 gcpointer user_data) {
   gint v = *(gint *)item;
   gint *count = (gint *)user_data;
   if (v > 300)
@@ -21,14 +21,14 @@ static void array_visit_callback(GArray *self, guint index, gconstpointer item,
 };
 
 static gbool ptr_array_search_handler(GPtrArray *self, guint index,
-                                      gconstpointer item,
-                                      gconstpointer user_data) {
-  return g_equal(((Person *)item)->name, (gchar *)user_data);
+                                      gcpointer item,
+                                      gcpointer user_data) {
+  return g_equal(((Person *)item)->name, (gstring )user_data);
 };
 
 static void ptr_array_visit_callback(GPtrArray *self, guint index,
-                                     gconstpointer item,
-                                     gconstpointer user_data) {
+                                     gcpointer item,
+                                     gcpointer user_data) {
   gint *age_gt_20_count = (gint *)user_data;
   if (((Person *)item)->age > 20)
     (*age_gt_20_count)++;

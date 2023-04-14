@@ -48,7 +48,7 @@ void g_file_stream_flush(gpointer self);
 gbool g_file_stream_is_eof(gpointer self);
 gbool g_file_stream_is_open(gpointer self);
 
-gpointer g_get_class_GFileStream(void);
+gpointer g_class_GFileStream(void);
 
 void g_file_stream_init(gpointer self);
 void g_file_stream_finalize(gpointer self);
