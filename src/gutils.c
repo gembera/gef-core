@@ -33,17 +33,23 @@
 // 	return ret;
 // }
 
-static char encoding_table[] = {
+static gchar encoding_table[] = {
     'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
     'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
     'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
     'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
     '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '/'};
-static char *decoding_table = NULL;
+static gstr decoding_table = NULL;
 static int mod_table[] = {0, 2, 1};
 
-gstr g_base64_encode(const gstr input, gint input_length,
-                        gint *output_length) {
+void build_decoding_table() {
+  decoding_table = g_malloc0(256);
+  g_auto_with(decoding_table, g_free_callback, 0);
+  for (gint i = 0; i < 0x40; i++)
+    decoding_table[encoding_table[i]] = i;
+}
+
+gstr g_base64_encode(const gstr input, gint input_length, gint *output_length) {
   char *encoded_data;
   const guint8 *data = (const guint8 *)input;
   int i, j;
@@ -74,18 +80,7 @@ gstr g_base64_encode(const gstr input, gint input_length,
   return encoded_data;
 }
 
-void build_decoding_table() {
-  int i;
-  decoding_table = malloc(256);
-
-  for (i = 0; i < 0x40; i++)
-    decoding_table[encoding_table[i]] = i;
-}
-
-void base64_cleanup() { free(decoding_table); }
-
-gstr g_base64_decode(const gstr data, gint input_length,
-                        gint *output_length) {
+gstr g_base64_decode(const gstr data, gint input_length, gint *output_length) {
   char *decoded_data;
   int i, j;
   if (decoding_table == NULL)

@@ -200,14 +200,15 @@ typedef void (*GFreeCallback)(gpointer data);
 void g_free_callback(gpointer data);
 
 // Auto memory management
-#define g_auto(data) g_auto_with(data, g_free_callback)
-#define g_auto_of(data, type) (type *)g_auto_with(data, g_free_callback)
-gpointer g_auto_with(gpointer data, GFreeCallback free_callback);
+#define g_auto(data) g_auto_with(data, g_free_callback, -1)
+#define g_auto_of(data, type) (type *)g_auto_with(data, g_free_callback, -1)
+gpointer g_auto_with(gpointer data, GFreeCallback free_callback, gint stack_index);
 #define g_auto_push() g_auto_push_with(NULL, NULL)
 gint g_auto_push_with(GCallback monitor_callback, gpointer user_data);
 void g_auto_pop();
-void g_auto_pop_to(gint mark);
+void g_auto_pop_to(gint stack_index);
 void g_auto_pop_all();
+gint g_auto_current_stack();
 void g_auto_free();
 
 // Array
@@ -344,7 +345,7 @@ void g_map_visit(GMap *self, GMapVisitCallback func, gpointer user_data);
 #define g_len(str) strlen(str)
 #define g_cpy(strdst, strsrc) strcpy(strdst, strsrc)
 #define g_ncpy(strdst, strsrc, len) strncpy(strdst, strsrc, len)
-#define g_to_num(str) g_parse_num(str, '\0', 10)
+#define g_num(str) g_parse(str, '\0', 10)
 #define g_equal(str1, str2) (g_cmp(str1, str2) == 0)
 void g_delimit(gstr str, gcstr delimiters, gchar new_delimiter);
 gstr g_dup(gcstr str);
@@ -359,7 +360,7 @@ gint g_index_of(gstr str, gstr sub, gint index);
 gint g_last_index_of(gstr str, gstr sub);
 gstr g_substring(gstr str, gint st, gint len);
 gint g_hex(gchar c);
-gint g_parse_num(gstr str, gchar chend, gint base);
+gint g_parse(gstr str, gchar chend, gint base);
 gstr g_replace(gstr source, gstr sub, gstr rep);
 gstr g_replace_free(gstr source, gstr sub, gstr rep);
 gstr g_trim(gstr str);
@@ -422,7 +423,6 @@ gint g_string_parse_integer(GString *fstring, gchar chend, gint base);
 
 int g_log_enabled(char *file, int line, char *func, char *level);
 void g_log(char *fmt, ...);
-void base64_cleanup();
 
 #ifdef HAVE_TIMER
 typedef struct _GTimer {

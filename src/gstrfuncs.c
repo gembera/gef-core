@@ -224,7 +224,7 @@ gint g_hex(gchar c) {
     return c - 'a' + 10;
   return -1;
 }
-gint g_parse_num(gstr str, gchar chend, gint base) {
+gint g_parse(gstr str, gchar chend, gint base) {
   gstr s = str;
   gbool negate = FALSE;
   gint result = 0;

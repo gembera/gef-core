@@ -42,7 +42,7 @@ static void g_init_class_system() {
   if (name_to_class == NULL) {
     name_to_class =
         (GMap *)g_auto_with(g_map_new_with(g_object_class_free, NULL, NULL),
-                            (GFreeCallback)g_map_free);
+                            (GFreeCallback)g_map_free, 0);
   }
 }
 GObjectClass *g_register_class(const gstr classname, GObjectClass *baseclazz,
