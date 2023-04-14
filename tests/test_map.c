@@ -2,7 +2,7 @@
 #include <assert.h>
 
 typedef struct _Student {
-  gstring name;
+  gstr name;
   guint score;
 } Student;
 
@@ -10,11 +10,11 @@ int test_map(int, char *[]) {
   g_mem_record(g_mem_record_default_callback);
   g_mem_record_begin();
 
-  gstring keya = "aaa";
-  gstring keyb = "bbb";
-  gstring keyc = "ccc";
-  gstring keyd = "ddd";
-  gstring keye = "eee";
+  gstr keya = "aaa";
+  gstr keyb = "bbb";
+  gstr keyc = "ccc";
+  gstr keyd = "ddd";
+  gstr keye = "eee";
 
   Student p1 = {"one", 80};
   Student p2 = {"two", 90};

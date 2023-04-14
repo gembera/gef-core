@@ -3,7 +3,7 @@
 
 static void print_and_count_callback(GList *self, GListNode *item,
                                      gcpointer user_data) {
-  gstring str = (gstring )item->data;
+  gstr str = (gstr )item->data;
   gint *index = (gint *)user_data;
   printf("\n%d:%s\n", *index, str);
   (*index)++;
@@ -11,8 +11,8 @@ static void print_and_count_callback(GList *self, GListNode *item,
 
 static gbool search_handler(GList *self, GListNode *item,
                             gcpointer user_data) {
-  gstring v1 = (gstring )item->data;
-  gstring v2 = (gstring )user_data;
+  gstr v1 = (gstr )item->data;
+  gstr v2 = (gstr )user_data;
   return g_equal(v1, v2);
 }
 
@@ -21,12 +21,12 @@ int test_list(int, char *[]) {
   g_mem_record_begin();
 
   gint i, i1, i2;
-  gstring str1 = "one";
-  gstring str2 = "two";
-  gstring str3 = "three";
-  gstring str4 = "four";
-  gstring str5 = "five";
-  gstring str6 = g_dup("dynamic");
+  gstr str1 = "one";
+  gstr str2 = "two";
+  gstr str3 = "three";
+  gstr str4 = "four";
+  gstr str5 = "five";
+  gstr str6 = g_dup("dynamic");
   GList *list1 = g_list_new();
   g_list_append(list1, str1);
   g_list_append(list1, str2);

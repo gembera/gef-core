@@ -20,9 +20,9 @@ gint16 g_stream_read_int16(gpointer self) {
   g_stream_virtual_read(self, (void *)&data, 2);
   return data;
 }
-gstring g_stream_read_string_with_length(gpointer self) {
+gstr g_stream_read_string_with_length(gpointer self) {
   gint16 fnlen = 0;
-  gstring fn = NULL;
+  gstr fn = NULL;
   fnlen = g_stream_read_int16(self);
   if (fnlen < 0)
     return fn;
@@ -41,7 +41,7 @@ void g_stream_write_float(gpointer self, gfloat data) {
 void g_stream_write_int16(gpointer self, gint16 data) {
   g_stream_virtual_write(self, (void *)&data, 2);
 }
-void g_stream_write_string_with_length(gpointer self, gstring text) {
+void g_stream_write_string_with_length(gpointer self, gstr text) {
   gint16 len = g_len(text);
   g_stream_write_int16(self, len);
   g_stream_virtual_write(self, text, len);
@@ -55,7 +55,7 @@ void g_stream_read_all_content(gpointer self, gpointer *retbuffer,
   g_stream_virtual_seek(self, 0, SEEK_BEGIN);
   g_stream_virtual_read(self, buffer, buflen);
   if (appendzero)
-    ((gstring )buffer)[buflen] = '\0';
+    ((gstr )buffer)[buflen] = '\0';
   *retbuffer = buffer;
   *retbuflen = buflen;
 }

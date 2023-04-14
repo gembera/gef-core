@@ -27,7 +27,7 @@ struct _GFileStream
 {
 	GStream base;
 	ghandle file_handle;
-	gstring file_name;
+	gstr file_name;
 	GFileMode file_mode;
 };
 struct _GFileStreamClass
@@ -35,7 +35,7 @@ struct _GFileStreamClass
 	GStreamClass base;
 };
 
-gint g_file_stream_open(gpointer self, gstring name, GFileMode mode);
+gint g_file_stream_open(gpointer self, gstr name, GFileMode mode);
 void g_file_stream_reopen(gpointer self);
 void g_file_stream_close(gpointer self);
 void g_file_stream_set_length(gpointer self, gint len);

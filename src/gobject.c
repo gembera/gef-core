@@ -45,7 +45,7 @@ static void g_init_class_system() {
                             (GFreeCallback)g_map_free);
   }
 }
-GObjectClass *g_register_class(const gstring classname, GObjectClass *baseclazz,
+GObjectClass *g_register_class(const gstr classname, GObjectClass *baseclazz,
                                gint class_size, GObjectClassInitFunc class_init,
                                GObjectClassFinalizeFunc class_finalize,
                                gint instance_size, GObjectInitFunc init,
@@ -85,10 +85,10 @@ GObjectClass *g_class_GObject() {
              : g_register_class("GObjectClass", NULL, sizeof(GObjectClass),
                                 NULL, NULL, sizeof(GObject), NULL, NULL);
 }
-GObjectClass *g_class(const gstring classname) {
+GObjectClass *g_class(const gstr classname) {
   g_init_class_system();
   return (GObjectClass *)g_map_get(name_to_class, classname);
 }
-const gstring g_class_name(GObjectClass *clazz) {
+const gstr g_class_name(GObjectClass *clazz) {
   return clazz == NULL ? NULL : clazz->g_class_name;
 }

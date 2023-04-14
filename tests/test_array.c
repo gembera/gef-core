@@ -2,7 +2,7 @@
 #include <assert.h>
 
 typedef struct _Person {
-  gstring name;
+  gstr name;
   gint age;
 } Person;
 static gbool array_search_handler(GArray *self, guint index, gcpointer item,
@@ -23,7 +23,7 @@ static void array_visit_callback(GArray *self, guint index, gcpointer item,
 static gbool ptr_array_search_handler(GPtrArray *self, guint index,
                                       gcpointer item,
                                       gcpointer user_data) {
-  return g_equal(((Person *)item)->name, (gstring )user_data);
+  return g_equal(((Person *)item)->name, (gstr )user_data);
 };
 
 static void ptr_array_visit_callback(GPtrArray *self, guint index,

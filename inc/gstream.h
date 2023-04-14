@@ -64,9 +64,9 @@ void g_stream_read_all_content(gpointer self, gpointer* buffer, gint*buflen, gbo
 gint32 g_stream_read_int32(gpointer self, gint32* data);
 gfloat g_stream_read_float(gpointer self);
 gint16 g_stream_read_int16(gpointer self);
-gstring g_stream_read_string_with_length(gpointer self);
+gstr g_stream_read_string_with_length(gpointer self);
 void g_stream_write_int32(gpointer self, gint32 data);
 void g_stream_write_float(gpointer self, gfloat data);
 void g_stream_write_int16(gpointer self, gint16 data);
-void g_stream_write_string_with_length(gpointer self, gstring text);
+void g_stream_write_string_with_length(gpointer self, gstr text);
 #endif

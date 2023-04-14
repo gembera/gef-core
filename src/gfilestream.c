@@ -28,7 +28,7 @@ void g_file_stream_reopen(gpointer self) {
   // g_log_debug("reopen file %s : %x (count = %d)\n", s->file_name,
   // GPOINTER_TO_INT(s->file_handle), open_file_count);
 }
-gint g_file_stream_open(gpointer self, gstring name, GFileMode mode) {
+gint g_file_stream_open(gpointer self, gstr name, GFileMode mode) {
   GFileStream *s = GFILESTREAM(self);
   if (!(self != NULL && !g_file_stream_is_open(self))) {
     g_log_error("g_file_stream_open error: %x %s %d\n", g_pointer_to_num(self),

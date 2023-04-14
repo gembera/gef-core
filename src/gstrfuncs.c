@@ -8,33 +8,30 @@
 
 #define G_STR_DELIMITERS "_-|> <."
 
-void g_cpy(gstring dst, gstring src) { strcpy(dst, src); }
-gstring g_dup(gcstring str) {
-  gstring new_str;
-
+gstr g_dup(gcstr str) {
+  gstr new_str;
   new_str = NULL;
   if (str) {
-    new_str = g_malloc(g_len(str) + 1);
-    strncpy(new_str, str, g_len(str));
+    new_str = g_malloc0(g_len(str) + 1);
+    g_ncpy(new_str, str, g_len(str));
   }
-
   return new_str;
 }
-gstring g_replace_free(gstring source, gstring sub, gstring rep) {
-  gstring dst = g_replace(source, sub, rep);
+gstr g_replace_free(gstr source, gstr sub, gstr rep) {
+  gstr dst = g_replace(source, sub, rep);
   g_free(source);
   return dst;
 }
-gstring g_replace(gstring source, gstring sub, gstring rep) {
-  gstring result;
-  gstring pc1, pc2, pc3;
-  int isource, isub, irep;
+gstr g_replace(gstr source, gstr sub, gstr rep) {
+  gstr result;
+  gstr pc1, pc2, pc3;
+  gint isource, isub, irep;
   isub = g_len(sub);
   irep = g_len(rep);
   isource = g_len(source);
   if (0 == *sub)
     return g_dup(source);
-  result = (gstring)g_malloc(
+  result = (gstr)g_malloc0(
       (irep > isub ? irep * g_len(source) / isub + 1 : isource) + 1);
   pc1 = result;
   while (*source != 0) {
@@ -56,64 +53,63 @@ gstring g_replace(gstring source, gstring sub, gstring rep) {
   return result;
 }
 
-gstring g_concat(gcstring string1, ...) {
+gstr g_concat(gcstr str1, ...) {
+  g_return_val_if_fail(str1, NULL);
   guint l;
   va_list args;
-  gstring s;
-  gstring concat;
+  gstr s;
+  gstr concat;
 
-  g_return_val_if_fail(string1, NULL);
-
-  l = 1 + g_len(string1);
-  va_start(args, string1);
-  s = va_arg(args, gstring);
+  l = 1 + g_len(str1);
+  va_start(args, str1);
+  s = va_arg(args, gstr);
   while (s) {
     l += g_len(s);
-    s = va_arg(args, gstring);
+    s = va_arg(args, gstr);
   }
   va_end(args);
 
   concat = g_malloc(l);
   concat[0] = 0;
 
-  strcat(concat, string1);
-  va_start(args, string1);
-  s = va_arg(args, gstring);
+  strcat(concat, str1);
+  va_start(args, str1);
+  s = va_arg(args, gstr);
   while (s) {
     strcat(concat, s);
-    s = va_arg(args, gstring);
+    s = va_arg(args, gstr);
   }
   va_end(args);
 
   return concat;
 }
 
-void g_down(gstring string) {
-  register gstring s;
-  g_return_if_fail(string);
-  s = string;
+void g_down(gstr str) {
+  g_return_if_fail(str);
+  register gstr s;
+  s = str;
   while (*s) {
     *s = tolower(*s);
     s++;
   }
 }
 
-void g_up(gstring string) {
-  register gstring s;
-  g_return_if_fail(string);
-  s = string;
+void g_up(gstr str) {
+  g_return_if_fail(str);
+  register gstr s;
+  s = str;
   while (*s) {
     *s = toupper(*s);
     s++;
   }
 }
 
-void g_reverse(gstring string) {
-  g_return_if_fail(string != NULL);
-  if (*string) {
-    register gstring h, t;
-    h = string;
-    t = string + g_len(string) - 1;
+void g_reverse(gstr str) {
+  g_return_if_fail(str != NULL);
+  if (*str) {
+    register gstr h, t;
+    h = str;
+    t = str + g_len(str) - 1;
     while (h < t) {
       register gchar c;
       c = *h;
@@ -124,100 +120,97 @@ void g_reverse(gstring string) {
     }
   }
 }
-gint g_cmp(gcstring s1, gcstring s2) {
+gint g_cmp(gcstr str1, gcstr str2) {
 #ifdef HAVE_STRCASECMP
-  return strcasecmp(s1, s2);
+  return strcasecmp(str1, str2);
 #else
+  g_return_val_if_fail(str1 && str2, 0);
   gint c1, c2;
 
-  if (s1 == NULL || s2 == NULL)
-    return FALSE;
-
-  while (*s1 && *s2) {
-    c1 = isupper((guchar)*s1) ? tolower((guchar)*s1) : *s1;
-    c2 = isupper((guchar)*s2) ? tolower((guchar)*s2) : *s2;
+  while (*str1 && *str2) {
+    c1 = isupper((guchar)*str1) ? tolower((guchar)*str1) : *str1;
+    c2 = isupper((guchar)*str1) ? tolower((guchar)*str2) : *str2;
     if (c1 != c2)
       return (c1 - c2);
-    s1++;
-    s2++;
+    str1++;
+    str2++;
   }
 
-  return (((gint)(guchar)*s1) - ((gint)(guchar)*s2));
+  return (((gint)(guchar)*str1) - ((gint)(guchar)*str2));
 #endif
 }
 
-void g_delimit(gstring string, gcstring delimiters, gchar new_delim) {
-  register gstring c;
-
-  g_return_if_fail(string != NULL);
+void g_delimit(gstr str, gcstr delimiters, gchar new_delim) {
+  g_return_if_fail(str != NULL);
+  register gstr c;
 
   if (!delimiters)
     delimiters = G_STR_DELIMITERS;
 
-  for (c = string; *c; c++) {
+  for (c = str; *c; c++) {
     if (strchr(delimiters, *c))
       *c = new_delim;
   }
 }
 
-gbool g_start_with(gstring string, gstring sub) {
+gbool g_start_with(gstr str, gstr sub) {
   gint i, len = g_len(sub);
-  if ((gint)g_len(string) < len)
+  if ((gint)g_len(str) < len)
     return FALSE;
   for (i = 0; i < len; i++) {
-    if (string[i] != sub[i])
+    if (str[i] != sub[i])
       return FALSE;
   }
   return TRUE;
 }
-gbool g_end_with(gstring string, gstring sub) {
+gbool g_end_with(gstr str, gstr sub) {
   gint i, len = g_len(sub);
-  gint lensrc = g_len(string);
+  gint lensrc = g_len(str);
   if (lensrc < len)
     return FALSE;
   lensrc -= len;
   for (i = 0; i < len; i++) {
-    if (string[lensrc + i] != sub[i])
+    if (str[lensrc + i] != sub[i])
       return FALSE;
   }
   return TRUE;
 }
-gint g_index_of(gstring fstring, gstring str, gint index) {
+gint g_index_of(gstr str, gstr sub, gint index) {
   char *l;
   if (index < 0)
     index = 0;
-  else if (index >= (gint)g_len(fstring))
+  else if (index >= (gint)g_len(str))
     return -1;
-  l = strstr(fstring + index, str);
-  return l == NULL ? -1 : l - fstring;
+  l = strstr(str + index, sub);
+  return l == NULL ? -1 : l - str;
 }
-gint g_last_index_of(gstring fstring, gstring str) {
+gint g_last_index_of(gstr str, gstr sub) {
   gint pos = -1;
   gint posnext;
   gint len;
-  if (str == NULL)
+  if (sub == NULL)
     return -1;
-  len = g_len(str);
+  len = g_len(sub);
   if (len == 0)
     return -1;
   do {
-    posnext = g_index_of(fstring, str, pos);
+    posnext = g_index_of(str, sub, pos);
     if (posnext == -1)
       return pos == -1 ? -1 : pos - len;
     pos = posnext + len;
   } while (TRUE);
 }
-gstring g_substring(gstring fstring, gint st, gint len) {
+gstr g_substring(gstr str, gint st, gint len) {
   gint i;
-  gstring r;
-  gint fslen = g_len(fstring);
+  gstr r;
+  gint fslen = g_len(str);
   if (len <= 0)
     len = fslen - st;
   if (st + len > fslen)
     len = fslen - st;
   r = g_malloc(len + 1);
   for (i = 0; i < len; i++)
-    r[i] = fstring[st + i];
+    r[i] = str[st + i];
   r[len] = '\0';
   return r;
 }
@@ -231,8 +224,8 @@ gint g_hex(gchar c) {
     return c - 'a' + 10;
   return -1;
 }
-gint g_parse_num(gstring fstring, gchar chend, gint base) {
-  gstring s = fstring;
+gint g_parse_num(gstr str, gchar chend, gint base) {
+  gstr s = str;
   gbool negate = FALSE;
   gint result = 0;
 
@@ -261,10 +254,10 @@ gint g_parse_num(gstring fstring, gchar chend, gint base) {
   return result;
 }
 
-gstring g_trim(gstring str) {
+gstr g_trim(gstr str) {
   gint i;
   gint len;
-  gstring result;
+  gstr result;
   if (str == NULL)
     return NULL;
   len = g_len(str);

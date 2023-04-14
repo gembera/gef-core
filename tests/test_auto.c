@@ -3,7 +3,7 @@
 #include <assert.h>
 
 typedef struct _Person {
-  gstring name;
+  gstr name;
   gint age;
 } Person;
 
@@ -14,7 +14,7 @@ static void free_callback(gpointer pointer, gpointer user_data) {
 static void click_count(GEvent *event, gpointer args, gpointer user_data) {
   gint count = 0;
   g_auto_push_with(free_callback, &count);
-  gstring str = g_auto_of(g_dup("hello"), gchar);
+  gstr str = g_auto_of(g_dup("hello"), gchar);
   printf("%s", str);
   g_auto(g_new(Person));
   GArray *persons = (GArray *)g_auto_with(g_array_new_of(Person),

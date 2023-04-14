@@ -30,7 +30,7 @@ struct _GObject {
 // all methods in class are virtual methods, otherwise you should not add them
 // in the class
 struct _GObjectClass {
-  gstring g_class_name;
+  gstr g_class_name;
   GObjectClassFinalizeFunc g_class_finalize;
   GObjectClass *g_base_class;
 
@@ -44,17 +44,17 @@ GObject *g_object_new(GObjectClass *clazz);
 #define g_object_new_of(type) (type*)g_object_new(CLASS(type))
 void g_object_free(gpointer self);
 
-GObjectClass *g_register_class(const gstring classname, GObjectClass *baseclazz,
+GObjectClass *g_register_class(const gstr classname, GObjectClass *baseclazz,
                                gint class_size, GObjectClassInitFunc class_init,
                                GObjectClassFinalizeFunc class_finalize,
                                gint instance_size, GObjectInitFunc init,
                                GObjectFinalizeFunc finalize);
-GObjectClass *g_class(const gstring classname);
+GObjectClass *g_class(const gstr classname);
 GObjectClass *g_class_GObject(void);
 void g_object_init(gpointer self);
 void g_object_finalize(gpointer self);
 void g_object_class_init(gpointer clazz);
-const gstring g_class_name(GObjectClass *clazz);
+const gstr g_class_name(GObjectClass *clazz);
 gbool g_is_type_of(GObjectClass *thisclazz, GObjectClass *targetclazz);
 gbool g_is_instance_of(gpointer self, GObjectClass *targetclazz);
 

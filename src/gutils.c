@@ -42,7 +42,7 @@ static char encoding_table[] = {
 static char *decoding_table = NULL;
 static int mod_table[] = {0, 2, 1};
 
-gstring g_base64_encode(const gstring input, gint input_length,
+gstr g_base64_encode(const gstr input, gint input_length,
                         gint *output_length) {
   char *encoded_data;
   const guint8 *data = (const guint8 *)input;
@@ -84,7 +84,7 @@ void build_decoding_table() {
 
 void base64_cleanup() { free(decoding_table); }
 
-gstring g_base64_decode(const gstring data, gint input_length,
+gstr g_base64_decode(const gstr data, gint input_length,
                         gint *output_length) {
   char *decoded_data;
   int i, j;
