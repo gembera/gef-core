@@ -40,7 +40,7 @@ glong g_memory_stream_write(gpointer self, gcstr buffer, glong length) {
       capacity = s->position + length;
     g_memory_stream_set_capacity(s, capacity);
   }
-  memcpy((char *)s->buffer + s->position, buffer, length);
+  memcpy((gstr)s->buffer + s->position, buffer, length);
   s->position += length;
   if (s->position >= s->length)
     s->length = s->position;
@@ -54,7 +54,7 @@ glong g_memory_stream_read(gpointer self, gstr buffer, glong length) {
   available = s->length - s->position;
   if (length > available)
     length = available;
-  memcpy(buffer, (char *)s->buffer + s->position, length);
+  memcpy(buffer, (gstr)s->buffer + s->position, length);
   s->position += length;
   return length;
 }

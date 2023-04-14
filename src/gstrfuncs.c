@@ -170,7 +170,7 @@ gbool g_end_with(gstr str, gstr sub) {
   return TRUE;
 }
 gint g_index_of(gstr str, gstr sub, gint index) {
-  char *l;
+  gstr l;
   if (index < 0)
     index = 0;
   else if (index >= (gint)g_len(str))
@@ -299,7 +299,7 @@ gint g_format_max_length(gcstr fmt, va_list args) {
         case '8':
         case '9':
           fmt -= 1;
-          len += strtol(fmt, (char **)&fmt, 10);
+          len += strtol(fmt, (gstr *)&fmt, 10);
           break;
         case 'h':
           short_int = TRUE;
@@ -311,7 +311,7 @@ gint g_format_max_length(gcstr fmt, va_list args) {
           /* I ignore 'q' and 'L', they're not portable anyway. */
 
         case 's':
-          tmp = va_arg(args, char *);
+          tmp = va_arg(args, gstr);
           if (tmp)
             len += g_len(tmp);
           else
@@ -385,7 +385,7 @@ gstr g_format(gcstr fmt, ...) {
   va_end(args);
   return buffer;
 }
-void g_format_to(gstr buffer, gcstr fmt, ...){
+void g_format_to(gstr buffer, gcstr fmt, ...) {
   va_list args;
   va_start(args, fmt);
   vsprintf(buffer, fmt, args);

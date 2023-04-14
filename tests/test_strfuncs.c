@@ -1,22 +1,5 @@
 #include "glib.h"
 #include <assert.h>
-/*
-
-gstr g_trim(gstr str);
-gstr g_limit(gstr str, gint len);
-gstr g_format(gcstr format, ...);
-gwstr g_unicode(gcstr str);
-gwstr g_unicode_dup(gcstr str);
-
-gstr g_utf8(gcwstr str);
-gstr g_utf8_dup(gcwstr str);
-gint g_utf8_strlen(gcstr p, gint max);
-gwchar g_utf8_get_char(gcstr p);
-int g_unichar_to_utf8(gwchar c, gstr outbuf);
-
-gbool g_is_space(gwchar c);
-#define g_is_cjk(c) ((c) >= 8192)
-*/
 
 int test_strfuncs(int, char *[]) {
   g_mem_record(g_mem_record_default_callback);
@@ -68,6 +51,8 @@ int test_strfuncs(int, char *[]) {
   assert(g_equal(str, "Hello GEF!"));
   str = g_replace_free(str, "GEF", "gembera");
   assert(g_equal(str, "Hello gembera!"));
+  str = g_replace_free(str, "e", "");
+  assert(g_equal(str, "Hllo gmbra!"));
   g_free(str);
   str = g_trim(" \t \rgembera  \n");
   assert(g_equal(str, "gembera"));

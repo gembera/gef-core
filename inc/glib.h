@@ -145,23 +145,23 @@ char *_memmove(char *dst, register char *src, register int n);
 #ifdef ENABLE_MEM_RECORD
 typedef void (*GMemRecordCallback)(gulong index, gpointer memnew,
                                    gpointer memfree, gulong allocated,
-                                   gulong freed, const char *__file__,
+                                   gulong freed, gcstr __file__,
                                    const int __line__);
 void g_mem_record_default_callback(gulong index, gpointer memnew,
                                    gpointer memfree, gulong allocated,
-                                   gulong freed, const char *__file__,
+                                   gulong freed, gcstr __file__,
                                    const int __line__);
 void g_mem_record(GMemRecordCallback callback);
 void g_mem_record_begin();
 void g_mem_record_end();
 
-gpointer g_mem_record_malloc(gulong size, const char *__file__,
+gpointer g_mem_record_malloc(gulong size, gcstr __file__,
                              const int __line__);
-gpointer g_mem_record_malloc0(gulong size, const char *__file__,
+gpointer g_mem_record_malloc0(gulong size, gcstr __file__,
                               const int __line__);
-gpointer g_mem_record_realloc(gpointer mem, gulong size, const char *__file__,
+gpointer g_mem_record_realloc(gpointer mem, gulong size, gcstr __file__,
                               const int __line__);
-void g_mem_record_free(gpointer mem, const char *__file__, const int __line__);
+void g_mem_record_free(gpointer mem, gcstr __file__, const int __line__);
 
 gpointer _g_malloc(gulong size);
 gpointer _g_malloc0(gulong size);
@@ -364,66 +364,18 @@ gint g_parse(gstr str, gchar chend, gint base);
 gstr g_replace(gstr source, gstr sub, gstr rep);
 gstr g_replace_free(gstr source, gstr sub, gstr rep);
 gstr g_trim(gstr str);
+gbool g_is_space(gwchar c);
 gint g_format_max_length(gcstr fmt, va_list args);
 gstr g_format(gcstr fmt, ...);
 void g_format_to(gstr buffer, gcstr fmt, ...);
-gwstr g_unicode(gcstr str);
-gwstr g_unicode_dup(gcstr str);
 
-#define g_utf8_length_of_wchar(c)                                              \
-  ((c) < 0x80    ? 1                                                           \
-   : (c) < 0x800 ? 2                                                           \
-                 : ((c) < 0x10000     ? 3                                      \
-                    : (c) < 0x200000  ? 4                                      \
-                    : (c) < 0x4000000 ? 5                                      \
-                                      : 6))
-#define g_utf8_skip(c)                                                         \
-  ((c) < 0xC0   ? 1                                                            \
-   : (c) < 0xE0 ? 2                                                            \
-                : ((c) < 0xF0 ? 3 : ((c) < 0xF8 ? 4 : ((c) < 0xFC ? 5 : 6))))
-#define g_utf8_next_char(p) (char *)((p) + g_utf8_skip(*(guchar *)(p)))
-gstr g_utf8(gcwstr str);
-gstr g_utf8_dup(gcwstr str);
-gint g_utf8_strlen(gcstr p, gint max);
-gwchar g_utf8_get_char(gcstr p);
-int g_unichar_to_utf8(gwchar c, gstr outbuf);
+// Utils
+gulong g_tick_count();
+void g_sleep(gulong time_ms);
+gint g_rand(gint max);
 
-gbool g_is_space(gwchar c);
-#define g_is_cjk(c) ((c) >= 8192)
-
-// String
-typedef struct {
-  gstr str;
-  gint len;
-} GString;
-
-GString *g_string_new(const gstr init);
-GString *g_string_wrap(gstr init);
-GString *g_string_sized_new(guint dfl_size);
-void g_string_free(GString *string);
-GString *g_string_assign(GString *lval, const gstr rval);
-GString *g_string_truncate(GString *string, gint len);
-GString *g_string_append(GString *string, const gstr val);
-GString *g_string_append_with_length(GString *string, const gstr val, gint len);
-GString *g_string_append_c(GString *string, gchar c);
-GString *g_string_prepend(GString *string, const gstr val);
-GString *g_string_prepend_c(GString *string, gchar c);
-GString *g_string_insert(GString *string, gint pos, const gstr val);
-GString *g_string_insert_c(GString *string, gint pos, gchar c);
-GString *g_string_erase(GString *string, gint pos, gint len);
-GString *g_string_down(GString *string);
-GString *g_string_up(GString *string);
-void g_string_sprintf(GString *string, const gstr format, ...);
-void g_string_sprintfa(GString *string, const gstr format, ...);
-GString *g_string_trim(GString *fstring);
-gint g_string_index_of(GString *fstring, gstr str, int index);
-GString *g_string_substring(GString *fstring, gint st, gint len);
-GPtrArray *g_string_split(GString *fstring, gstr str);
-gint g_string_parse_integer(GString *fstring, gchar chend, gint base);
-#define g_string_to_integer(str) g_string_parse_integer(str, '\0', 10)
-
-int g_log_enabled(char *file, int line, char *func, char *level);
-void g_log(char *fmt, ...);
+int g_log_enabled(gstr file, int line, gstr func, gstr level);
+void g_log(gstr fmt, ...);
 
 #ifdef HAVE_TIMER
 typedef struct _GTimer {
@@ -449,16 +401,6 @@ void g_timer_remove_listener(GTimer *timer, GTimerCallback callback,
 #endif
 
 // gulong g_mktime(GDateTime* time);
-
-/* Glib static variable clean
- */
-
-// void g_mem_static_clean_gmcore(void);
-
-gstr g_base64_encode(const gstr data, gint input_length, gint *output_length);
-gstr g_base64_decode(const gstr data, gint input_length, gint *output_length);
-
-gint g_random(gint max);
 
 #ifdef __cplusplus
 }

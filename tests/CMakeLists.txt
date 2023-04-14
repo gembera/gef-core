@@ -12,6 +12,7 @@ create_test_sourcelist(tests
     test_auto.c
     test_stream.c
     test_strfuncs.c
+    test_utils.c
 )
 
 add_executable(all-gef-tests ${tests})
