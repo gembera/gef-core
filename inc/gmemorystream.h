@@ -13,25 +13,23 @@
 typedef struct _GMemoryStream GMemoryStream;
 typedef struct _GMemoryStreamClass GMemoryStreamClass;
 
-struct _GMemoryStream
-{
-	GStream base;
-	gint position;
-	gint length;
-	void * buffer;
-	gint capacity;
+struct _GMemoryStream {
+  GStream base;
+  glong position;
+  glong length;
+  gstr buffer;
+  glong capacity;
 };
-struct _GMemoryStreamClass
-{
-	GStreamClass base;
+struct _GMemoryStreamClass {
+  GStreamClass base;
 };
-void g_memory_stream_set_length(gpointer self, gint len);
-gint g_memory_stream_get_length(gpointer self);
-gint g_memory_stream_get_position(gpointer self);
-gint g_memory_stream_write(gpointer self, void * buffer, gint length);
-gint g_memory_stream_read(gpointer self, void * buffer, gint length);
-void g_memory_stream_seek(gpointer self, gint offset, GSeekOrigin origin);
-void g_memory_stream_set_capacity(gpointer self, gint capacity);
+void g_memory_stream_set_length(gpointer self, glong len);
+glong g_memory_stream_get_length(gpointer self);
+glong g_memory_stream_get_position(gpointer self);
+glong g_memory_stream_write(gpointer self, gcstr buffer, glong length);
+glong g_memory_stream_read(gpointer self, gstr buffer, glong length);
+void g_memory_stream_seek(gpointer self, glong offset, GSeekOrigin origin);
+void g_memory_stream_set_capacity(gpointer self, glong capacity);
 void g_memory_stream_flush(gpointer self);
 gbool g_memory_stream_is_eof(gpointer self);
 gpointer g_class_GMemoryStream(void);

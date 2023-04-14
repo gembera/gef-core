@@ -8,16 +8,16 @@
 #include "gfilestream.h"
 
 gint32 g_stream_read_int32(gpointer self, gint32 *data) {
-  return g_stream_virtual_read(self, (void *)data, 4);
+  return g_stream_read(self, (void *)data, 4);
 }
 gfloat g_stream_read_float(gpointer self) {
   gfloat data;
-  g_stream_virtual_read(self, (void *)&data, 4);
+  g_stream_read(self, (void *)&data, 4);
   return data;
 }
 gint16 g_stream_read_int16(gpointer self) {
   gint16 data;
-  g_stream_virtual_read(self, (void *)&data, 2);
+  g_stream_read(self, (void *)&data, 2);
   return data;
 }
 gstr g_stream_read_string_with_length(gpointer self) {
@@ -28,45 +28,45 @@ gstr g_stream_read_string_with_length(gpointer self) {
     return fn;
   fn = g_malloc(fnlen + 1);
   fn[fnlen] = '\0';
-  g_stream_virtual_read(self, fn, fnlen);
+  g_stream_read(self, fn, fnlen);
   return fn;
 }
 
 void g_stream_write_int32(gpointer self, gint32 data) {
-  g_stream_virtual_write(self, (void *)&data, 4);
+  g_stream_write(self, (void *)&data, 4);
 }
 void g_stream_write_float(gpointer self, gfloat data) {
-  g_stream_virtual_write(self, (void *)&data, 4);
+  g_stream_write(self, (void *)&data, 4);
 }
 void g_stream_write_int16(gpointer self, gint16 data) {
-  g_stream_virtual_write(self, (void *)&data, 2);
+  g_stream_write(self, (void *)&data, 2);
 }
 void g_stream_write_string_with_length(gpointer self, gstr text) {
   gint16 len = g_len(text);
   g_stream_write_int16(self, len);
-  g_stream_virtual_write(self, text, len);
+  g_stream_write(self, text, len);
 }
-void g_stream_read_all_content(gpointer self, gpointer *retbuffer,
-                               gint *retbuflen, gbool appendzero) {
-  gpointer buffer = NULL;
-  gint buflen = 0;
-  buflen = g_stream_virtual_get_length(self);
+void g_stream_read_all_content(gpointer self, gstr *retbuffer,
+                               glong *retbuflen, gbool appendzero) {
+  gstr buffer = NULL;
+  glong buflen = 0;
+  buflen = g_stream_get_length(self);
   buffer = (guint8 *)g_malloc(buflen + (appendzero ? 1 : 0));
-  g_stream_virtual_seek(self, 0, SEEK_BEGIN);
-  g_stream_virtual_read(self, buffer, buflen);
+  g_stream_seek(self, 0, SEEK_BEGIN);
+  g_stream_read(self, buffer, buflen);
   if (appendzero)
-    ((gstr )buffer)[buflen] = '\0';
+    ((gstr)buffer)[buflen] = '\0';
   *retbuffer = buffer;
   *retbuflen = buflen;
 }
 
 void g_stream_write_byte(gpointer self, gint bi) {
   guint8 b = (guint8)(bi & 0xFF);
-  g_stream_virtual_write(self, &b, 1);
+  g_stream_write(self, &b, 1);
 }
 gint g_stream_read_byte(gpointer self) {
   guint8 b = 0;
-  g_stream_virtual_read(self, &b, 1);
+  g_stream_read(self, &b, 1);
   return b;
 }
 

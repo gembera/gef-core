@@ -58,27 +58,27 @@ gbool g_file_stream_is_open(gpointer self) {
   g_return_val_if_fail(self != NULL, FALSE);
   return s->file_handle != NULL;
 }
-void g_file_stream_set_length(gpointer self, gint len) {}
-gint g_file_stream_get_length(gpointer self) {
-  int size = 0;
+void g_file_stream_set_length(gpointer self, glong len) {}
+glong g_file_stream_get_length(gpointer self) {
+  glong size = 0;
   GFileStream *s = GFILESTREAM(self);
   g_return_val_if_fail(g_file_stream_is_open(self), 0);
-  int offset = ftell((FILE *)s->file_handle);
+  glong offset = ftell((FILE *)s->file_handle);
 
   fseek((FILE *)s->file_handle, 0L, SEEK_END);
   size = ftell((FILE *)s->file_handle);
 
   fseek((FILE *)s->file_handle, offset, SEEK_SET); // 返回
   // g_log_debug("offset=%d, size=%d, mode=%d\n", offset, size, s->file_mode);
-  return (gint)size;
+  return (glong)size;
 }
-gint g_file_stream_get_position(gpointer self) {
+glong g_file_stream_get_position(gpointer self) {
   GFileStream *s = GFILESTREAM(self);
   g_return_val_if_fail(g_file_stream_is_open(self), 0);
-  return (gint)ftell((FILE *)s->file_handle);
+  return (glong)ftell((FILE *)s->file_handle);
 }
-gint g_file_stream_write(gpointer self, void *buffer, gint length) {
-  gint written = 0;
+glong g_file_stream_write(gpointer self, gcstr buffer, glong length) {
+  glong written = 0;
   GFileStream *s = GFILESTREAM(self);
   if (!g_file_stream_is_open(self)) {
     g_log_error("g_file_stream_is_open(self) error: %d %s\n", s->file_handle,
@@ -86,17 +86,17 @@ gint g_file_stream_write(gpointer self, void *buffer, gint length) {
   }
   g_return_val_if_fail(g_file_stream_is_open(self), -1);
   written = fwrite(buffer, 1, length, (FILE *)s->file_handle);
-  return (gint)written;
+  return (glong)written;
 }
-gint g_file_stream_read(gpointer self, void *buffer, gint length) {
-  gint nread = 0;
+glong g_file_stream_read(gpointer self, gstr buffer, glong length) {
+  glong nread = 0;
   GFileStream *s = GFILESTREAM(self);
   g_return_val_if_fail(g_file_stream_is_open(self), 0);
   nread = fread(buffer, 1, length, (FILE *)s->file_handle);
   // g_log_debug("g_file_stream_read:%d\n", nread);
-  return (gint)nread;
+  return (glong)nread;
 }
-void g_file_stream_seek(gpointer self, gint offset, GSeekOrigin origin) {
+void g_file_stream_seek(gpointer self, glong offset, GSeekOrigin origin) {
   GFileStream *s = GFILESTREAM(self);
   g_return_if_fail(g_file_stream_is_open(self));
   switch (origin) {

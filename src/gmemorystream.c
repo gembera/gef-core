@@ -5,10 +5,10 @@
  */
 
 #include "gmemorystream.h"
-gint g_memory_stream_get_length(gpointer self) {
+glong g_memory_stream_get_length(gpointer self) {
   return GMEMORYSTREAM(self)->length;
 }
-void g_memory_stream_set_capacity(gpointer self, gint capacity) {
+void g_memory_stream_set_capacity(gpointer self, glong capacity) {
   GMemoryStream *s = GMEMORYSTREAM(self);
   if (capacity <= s->length)
     return;
@@ -19,17 +19,17 @@ void g_memory_stream_set_capacity(gpointer self, gint capacity) {
     s->capacity = capacity;
   }
 }
-void g_memory_stream_set_length(gpointer self, gint len) {
+void g_memory_stream_set_length(gpointer self, glong len) {
   GMemoryStream *s = GMEMORYSTREAM(self);
   if (len > s->capacity)
     g_memory_stream_set_capacity(s, len);
   s->length = len;
 }
-gint g_memory_stream_get_position(gpointer self) {
+glong g_memory_stream_get_position(gpointer self) {
   GMemoryStream *s = GMEMORYSTREAM(self);
   return s->position;
 }
-gint g_memory_stream_write(gpointer self, void *buffer, gint length) {
+glong g_memory_stream_write(gpointer self, gcstr buffer, glong length) {
   GMemoryStream *s = GMEMORYSTREAM(self);
   if (length == 0)
     return 0;
@@ -46,8 +46,8 @@ gint g_memory_stream_write(gpointer self, void *buffer, gint length) {
     s->length = s->position;
   return length;
 }
-gint g_memory_stream_read(gpointer self, void *buffer, gint length) {
-  gint available;
+glong g_memory_stream_read(gpointer self, gstr buffer, glong length) {
+  glong available;
   GMemoryStream *s = GMEMORYSTREAM(self);
   if (buffer == NULL)
     return 0;
@@ -59,9 +59,9 @@ gint g_memory_stream_read(gpointer self, void *buffer, gint length) {
   return length;
 }
 void g_memory_stream_flush(gpointer self) {}
-void g_memory_stream_seek(gpointer self, gint offset, GSeekOrigin origin) {
+void g_memory_stream_seek(gpointer self, glong offset, GSeekOrigin origin) {
   GMemoryStream *s = GMEMORYSTREAM(self);
-  gint pos = -1;
+  glong pos = 0;
   switch (origin) {
   case SEEK_BEGIN:
     pos = offset;

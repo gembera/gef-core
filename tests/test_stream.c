@@ -6,10 +6,18 @@
 int test_stream(int, char *[]) {
   g_mem_record(g_mem_record_default_callback);
   g_mem_record_begin();
-  gchar* hello = "hello ";
-  gchar* gef = "gef";
+  
+  gcstr hello = "hello ";
+  gcstr gef = "gef";
   GMemoryStream * smem = g_object_new_of(GMemoryStream);
-  g_memory_stream_write(smem, hello, g_len(hello));
+  g_stream_write_string(smem, hello);
+  g_stream_write_string(smem, gef);
+  g_stream_seek(smem, 0, SEEK_BEGIN);
+  glong len ;
+  gstr buffer;
+  g_stream_read_all_content(smem, &buffer, &len, TRUE);
+  assert(g_equal(buffer, "hello gef"));
+  g_free(buffer);
   g_object_free(smem);
 
   g_auto_free();
