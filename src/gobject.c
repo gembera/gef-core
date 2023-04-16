@@ -8,7 +8,7 @@
 
 static GMap *name_to_class = NULL;
 
-GObject *g_object_new(GObjectClass *clazz) {
+GObject *g_object_new_with(GObjectClass *clazz) {
   g_return_val_if_fail(clazz, NULL);
   GObject *object = g_malloc0(clazz->instance_size);
   object->g_class = clazz;

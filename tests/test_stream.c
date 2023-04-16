@@ -9,7 +9,7 @@ int test_stream(int, char *[]) {
 
   gcstr hello = "hello ";
   gcstr gef = "gef";
-  GMemoryStream *smem = g_object_new_of(GMemoryStream);
+  GMemoryStream *smem = g_object_new(GMemoryStream);
   g_stream_write_string(smem, hello);
   g_stream_write_string(smem, gef);
   g_stream_seek(smem, 0, SEEK_BEGIN);

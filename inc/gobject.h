@@ -40,8 +40,8 @@ struct _GObjectClass {
   GObjectFinalizeFunc finalize;
 };
 
-GObject *g_object_new(GObjectClass *clazz);
-#define g_object_new_of(type) (type*)g_object_new(CLASS(type))
+#define g_object_new(type) (type *)g_object_new_with(CLASS(type))
+GObject *g_object_new_with(GObjectClass *clazz);
 void g_object_free(gpointer self);
 
 GObjectClass *g_register_class(const gstr classname, GObjectClass *baseclazz,

@@ -8,13 +8,11 @@
 
 static void g_map_free_key_value(GMap *self, GMapEntry *entry) {
   GFreeCallback key_free_callback = self->key_default_free_callback;
-  if (entry->key_custom_free_callback)
-    key_free_callback = entry->key_custom_free_callback;
-
   GFreeCallback value_free_callback = self->value_default_free_callback;
-  if (entry->value_custom_free_callback)
+  if (entry->key_custom_free_callback || entry->value_custom_free_callback) {
+    key_free_callback = entry->key_custom_free_callback;
     value_free_callback = entry->value_custom_free_callback;
-
+  }
   if (key_free_callback)
     key_free_callback(entry->key);
   if (value_free_callback)

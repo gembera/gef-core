@@ -1,4 +1,5 @@
 #include "glib.h"
+#include "gmemorystream.h"
 #include <assert.h>
 
 typedef struct _Student {
@@ -53,8 +54,10 @@ int test_map(int, char *[]) {
   g_map_set(map3, g_dup("c"), g_new(Student));
   g_map_set(map3, g_dup("a"), g_new(Student));
   g_map_set(map3, g_dup("b"), g_new(Student));
+  g_map_set_with(map3, "b", g_object_new(GMemoryStream), NULL, g_object_free);
   g_map_free(map3);
 
+  g_auto_free();
   gulong allocated = 0;
   gulong freed = 0;
   gulong peak = 0;
