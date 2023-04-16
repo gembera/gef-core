@@ -155,10 +155,8 @@ void g_mem_record(GMemRecordCallback callback);
 void g_mem_record_begin();
 void g_mem_record_end();
 
-gpointer g_mem_record_malloc(gulong size, gcstr __file__,
-                             const int __line__);
-gpointer g_mem_record_malloc0(gulong size, gcstr __file__,
-                              const int __line__);
+gpointer g_mem_record_malloc(gulong size, gcstr __file__, const int __line__);
+gpointer g_mem_record_malloc0(gulong size, gcstr __file__, const int __line__);
 gpointer g_mem_record_realloc(gpointer mem, gulong size, gcstr __file__,
                               const int __line__);
 void g_mem_record_free(gpointer mem, gcstr __file__, const int __line__);
@@ -202,7 +200,8 @@ void g_free_callback(gpointer data);
 // Auto memory management
 #define g_auto(data) g_auto_with(data, g_free_callback, -1)
 #define g_auto_of(data, type) (type *)g_auto_with(data, g_free_callback, -1)
-gpointer g_auto_with(gpointer data, GFreeCallback free_callback, gint stack_index);
+gpointer g_auto_with(gpointer data, GFreeCallback free_callback,
+                     gint stack_index);
 #define g_auto_push() g_auto_push_with(NULL, NULL)
 gint g_auto_push_with(GCallback monitor_callback, gpointer user_data);
 void g_auto_pop();
@@ -314,13 +313,15 @@ void g_list_visit(GList *self, GListVisitCallback func, gpointer user_data);
 typedef struct {
   gpointer key;
   gpointer value;
+  GFreeCallback key_custom_free_callback;
+  GFreeCallback value_custom_free_callback;
 } GMapEntry;
 
 typedef struct {
   GArray *data;
   GCompareHandler key_compare_handler;
-  GFreeCallback key_free_callback;
-  GFreeCallback value_free_callback;
+  GFreeCallback key_default_free_callback;
+  GFreeCallback value_default_free_callback;
 } GMap;
 
 typedef gbool (*GMapSearchHandler)(GMap *self, gpointer key, gpointer value,
@@ -329,12 +330,15 @@ typedef void (*GMapVisitCallback)(GMap *self, gpointer key, gpointer value,
                                   gpointer user_data);
 
 #define g_map_new() g_map_new_with(NULL, NULL, NULL)
-GMap *g_map_new_with(GFreeCallback value_free_callback,
-                     GFreeCallback key_free_callback,
+GMap *g_map_new_with(GFreeCallback key_free_callback,
+                     GFreeCallback value_free_callback,
                      GCompareHandler key_compare_func);
 void g_map_free(GMap *self);
 GMapEntry *g_map_get(GMap *self, gcpointer key);
-void g_map_set(GMap *self, gpointer key, gpointer value);
+#define g_map_set(self, key, value) g_map_set_with(self, key, value, NULL, NULL)
+void g_map_set_with(GMap *self, gpointer key, gpointer value,
+                    GFreeCallback key_free_callback,
+                    GFreeCallback value_free_callback);
 void g_map_remove(GMap *self, gcpointer key);
 void g_map_remove_all(GMap *self);
 guint g_map_size(GMap *self);
@@ -349,7 +353,7 @@ void g_map_visit(GMap *self, GMapVisitCallback func, gpointer user_data);
 #define g_equal(str1, str2) (g_cmp(str1, str2) == 0)
 void g_delimit(gstr str, gcstr delimiters, gchar new_delimiter);
 gstr g_dup(gcstr str);
-gstr g_concat(gcstr str1, ...); 
+gstr g_concat(gcstr str1, ...);
 gint g_cmp(gcstr str1, gcstr str2);
 void g_down(gstr str);
 void g_up(gstr str);

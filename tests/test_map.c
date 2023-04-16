@@ -38,7 +38,7 @@ int test_map(int, char *[]) {
   g_free(pp4);
 
   // map2 owns the value memory, but not key memory
-  GMap *map2 = g_map_new_with(g_free_callback, NULL, NULL);
+  GMap *map2 = g_map_new_with(NULL, g_free_callback, NULL);
   g_map_set(map2, keyb, g_new(Student));
   g_map_set(map2, keya, g_new(Student));
   g_map_set(map2, keyd, g_new(Student));

@@ -7,13 +7,20 @@
 #include "glib.h"
 
 static void g_map_free_key_value(GMap *self, GMapEntry *entry) {
-  if (self->key_free_callback)
-    self->key_free_callback(entry->key);
-  if (self->value_free_callback)
-    self->value_free_callback(entry->value);
+  GFreeCallback key_free_callback = self->key_default_free_callback;
+  if (entry->key_custom_free_callback)
+    key_free_callback = entry->key_custom_free_callback;
+
+  GFreeCallback value_free_callback = self->value_default_free_callback;
+  if (entry->value_custom_free_callback)
+    value_free_callback = entry->value_custom_free_callback;
+
+  if (key_free_callback)
+    key_free_callback(entry->key);
+  if (value_free_callback)
+    value_free_callback(entry->value);
 }
-static void g_map_lookup(GMap *self, gcpointer key, gint *left,
-                         gint *right) {
+static void g_map_lookup(GMap *self, gcpointer key, gint *left, gint *right) {
   *left = -1;
   *right = -1;
   g_return_if_fail(self);
@@ -41,16 +48,15 @@ static void g_map_lookup(GMap *self, gcpointer key, gint *left,
   *right = l;
 }
 
-GMap *g_map_new_with(GFreeCallback value_free_callback,
-                   GFreeCallback key_free_callback,
-                   GCompareHandler key_compare_func) {
+GMap *g_map_new_with(GFreeCallback key_free_callback,
+                     GFreeCallback value_free_callback,
+                     GCompareHandler key_compare_func) {
   GMap *map = g_new(GMap);
   g_return_val_if_fail(map, NULL);
-  map->key_compare_handler = key_compare_func == NULL
-                                 ? (GCompareHandler)g_cmp
-                                 : key_compare_func;
-  map->key_free_callback = key_free_callback;
-  map->value_free_callback = value_free_callback;
+  map->key_compare_handler =
+      key_compare_func == NULL ? (GCompareHandler)g_cmp : key_compare_func;
+  map->key_default_free_callback = key_free_callback;
+  map->value_default_free_callback = value_free_callback;
   map->data = g_array_new_of(GMapEntry);
   return map;
 }
@@ -114,13 +120,17 @@ GMapEntry *g_map_search(GMap *self, GMapSearchHandler func,
   }
 }
 
-void g_map_set(GMap *self, gpointer key, gpointer value) {
+void g_map_set_with(GMap *self, gpointer key, gpointer value,
+                    GFreeCallback key_free_callback,
+                    GFreeCallback value_free_callback) {
   g_return_if_fail(self != NULL);
-  gint l, r;
-  g_map_lookup(self, key, &l, &r);
   GMapEntry entrynew;
   entrynew.key = key;
   entrynew.value = value;
+  entrynew.key_custom_free_callback = key_free_callback;
+  entrynew.value_custom_free_callback = value_free_callback;
+  gint l, r;
+  g_map_lookup(self, key, &l, &r);
   if (l == r) {
     if (l == -1) {
       g_array_insert_ref(self->data, 0, &entrynew);
@@ -130,6 +140,8 @@ void g_map_set(GMap *self, gpointer key, gpointer value) {
     g_map_free_key_value(self, entry);
     entry->key = key;
     entry->value = value;
+    entry->key_custom_free_callback = key_free_callback;
+    entry->value_custom_free_callback = value_free_callback;
   } else {
     g_array_insert_ref(self->data, r, &entrynew);
   }
