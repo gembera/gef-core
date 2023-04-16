@@ -48,14 +48,10 @@ static GCoroutineStatus receiver_handler(GCoroutine *co) {
   } while (ud->num != -1);
   co_end(co);
 }
-
-int test_channel(int, char *[]) {
-  g_mem_record(g_mem_record_default_callback);
-  g_mem_record_begin();
-
+static void channel_test(gint max) {
   channel_case_check = g_array_new(gint);
   GCoroutineManager *manager = g_coroutine_manager_new();
-  GChannel *ch = g_channel_new(gint);
+  GChannel *ch = g_channel_new(gint, max);
   SenderUserData *ud1 = g_new(SenderUserData);
   ud1->channel = ch;
   ReceiverUserData *ud2 = g_new(ReceiverUserData);
@@ -75,12 +71,22 @@ int test_channel(int, char *[]) {
   g_coroutine_manager_free(manager);
   gint size = g_array_size(channel_case_check);
   assert(size == 10);
-  gint *nums = g_array(channel_case_check, gint);
-  for (gint i = 0; i < size; i++) {
-    assert(nums[i] == (i / 2) * (i / 2));
+  if (max == 1) {
+    gint *nums = g_array(channel_case_check, gint);
+    for (gint i = 0; i < size; i++) {
+      assert(nums[i] == (i / 2) * (i / 2));
+    }
   }
   g_array_free(channel_case_check);
+}
+int test_channel(int, char *[]) {
+  g_mem_record(g_mem_record_default_callback);
+  g_mem_record_begin();
 
+  channel_test(1);
+  channel_test(2);
+  channel_test(3);
+  
   gulong allocated = 0;
   gulong freed = 0;
   gulong peak = 0;

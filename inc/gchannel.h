@@ -14,7 +14,7 @@ typedef struct {
   GFreeCallback item_cleanup_callback;
 } GChannel;
 
-#define g_channel_new(type) g_channel_new_with(sizeof(type), 1, NULL)
+#define g_channel_new(type, max) g_channel_new_with(sizeof(type), max, NULL)
 GChannel *g_channel_new_with(guint item_len, guint max,
                              GFreeCallback item_cleanup_callback);
 gbool g_channel_send(GChannel *self, gpointer item);
