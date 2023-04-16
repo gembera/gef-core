@@ -6,94 +6,87 @@
 
 #include "gcoroutine.h"
 
-/*
-typedef struct  
-{
-	COROUTINE_FUNC func;
-	GCoroutine* co;
+typedef struct {
+  GCoroutineHandler func;
+  GCoroutine *co;
 } GCoroutineRunner;
 
-static gbool coroutine_initialized = FALSE;
-static GList * coroutine_funcs = NULL;
+GCoroutineManager *g_coroutine_manager_new() {
+  GCoroutineManager *self = g_new(GCoroutineManager);
+  g_return_val_if_fail(self, NULL);
+  self->coroutines = g_ptr_array_new_with((GFreeCallback)g_coroutine_free);
+  return self;
+}
+void g_coroutine_manager_loop(GCoroutineManager *self) {
+  g_return_if_fail(self);
+  GCoroutine *co;
+  gint size = g_ptr_array_size(self->coroutines);
+  for (gint i = 0; i < size; i++) {
+    co = (GCoroutine *)g_ptr_array_get(self->coroutines, i);
+    if (g_coroutine_is_alive(co)) {
+      co->status = co->handler(co);
+    }
+  }
+}
+gint g_coroutine_manager_alive_count(GCoroutineManager *self) {
+  g_return_val_if_fail(self, 0);
+  GCoroutine *co;
+  gint count = 0;
+  gint size = g_ptr_array_size(self->coroutines);
+  for (gint i = 0; i < size; i++) {
+    co = (GCoroutine *)g_ptr_array_get(self->coroutines, i);
+    if (g_coroutine_is_alive(co)) {
+      count++;
+    }
+  }
+  return count;
+}
+void g_coroutine_manager_free(GCoroutineManager *self) {
+  g_return_if_fail(self);
+  g_ptr_array_free(self->coroutines);
+  g_free(self);
+}
 
 gbool g_coroutine_is_ready(void);
 void g_coroutine_initialize(void);
 
-GCoroutine* g_coroutine_new()
-{
-	GCoroutine * co = g_new(GCoroutine);
-	return co;
+GCoroutine *g_coroutine_new_with(GCoroutineManager *manager,
+                                 GCoroutineHandler handler, gpointer user_data,
+                                 GFreeCallback user_data_free_callback) {
+  g_return_val_if_fail(manager && handler, NULL);
+  GCoroutine *self = g_new(GCoroutine);
+  g_return_val_if_fail(self, NULL);
+  self->status = COROUTINE_STATUS_ENDED;
+  self->manager = manager;
+  self->handler = handler;
+  self->user_data = user_data;
+  self->user_data_free_callback = user_data_free_callback;
+  g_ptr_array_add(manager->coroutines, self);
+  return self;
 }
-void g_coroutine_free(GCoroutine* co)
-{
-	g_return_if_fail(co != NULL);
-	g_coroutine_stop(co);
-	g_free(co);
+void g_coroutine_free(GCoroutine *self) {
+  g_return_if_fail(self);
+  g_coroutine_stop(self);
+  if (self->user_data && self->user_data_free_callback)
+    self->user_data_free_callback(self->user_data);
+  g_free(self);
 }
-GCoroutineSemaphore * g_coroutine_semaphore_new(guint count)
-{
-	GCoroutineSemaphore * cs = g_new(GCoroutineSemaphore);
-	cs->count = count;
-	return cs;
-}
-
-static void _on_coroutine_process(gint tid)
-{
-	GList * func = coroutine_funcs;
-	while(func != NULL)
-	{
-		GCoroutineRunner * runner = (GCoroutineRunner *)func->data;
-		func = g_list_next(func);
-		if (!g_coroutine_is_alive(runner->func(runner->co)))			
-		{
-			coroutine_funcs = g_list_remove(coroutine_funcs, runner);
-			g_free(runner->co);
-			g_free(runner);
-		}
-	}
-	if (coroutine_funcs == NULL)
-	{
-		vm_delete_timer(coroutine_timer_id);
-		coroutine_timer_id = -1;
-	}
-}
-void g_coroutine_stop(GCoroutine* co)
-{
-	GList * func = coroutine_funcs;
-	while(func != NULL)
-	{
-		GCoroutineRunner * runner = (GCoroutineRunner *)func->data;
-		func = g_list_next(func);
-		if (runner->co == co)
-		{
-			coroutine_funcs = g_list_remove(coroutine_funcs, runner);
-			g_free(runner->co);
-			g_free(runner);
-			break;
-		}
-	}
-}
-void g_coroutine_run(GCoroutine* co, COROUTINE_FUNC func)
-{
-	GCoroutineRunner * runner = NULL;
-	g_return_if_fail(co != NULL && func != NULL);
-	g_coroutine_initialize();
-	runner = g_new(GCoroutineRunner);
-	runner->func = func;
-	runner->co = co;
-	coroutine_funcs = g_list_append(coroutine_funcs, runner);
+GCoroutineSemaphore *g_coroutine_semaphore_new(guint count) {
+  GCoroutineSemaphore *cs = g_new(GCoroutineSemaphore);
+  g_return_val_if_fail(cs, NULL);
+  cs->count = count;
+  return cs;
 }
 
-gbool g_coroutine_is_ready()
-{
-	return coroutine_initialized;
+void g_coroutine_stop(GCoroutine *self) {
+  g_return_if_fail(self);
+  if (g_coroutine_is_alive(self)) {
+    self->status = COROUTINE_STATUS_EXITED;
+  }
 }
-void g_coroutine_initialize(void)
-{
-	//g_log_debug("g_coroutine_initialize %d", coroutine_initialized);
-	if (!coroutine_initialized)
-	{
-		coroutine_initialized = TRUE;
-	}
+void g_coroutine_start(GCoroutine *self) {
+  g_return_if_fail(self);
+  if (!g_coroutine_is_alive(self)) {
+    self->status = COROUTINE_STATUS_WAITING;
+  }
 }
-*/

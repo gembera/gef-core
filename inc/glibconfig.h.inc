@@ -42,8 +42,6 @@
 /* Define if you have the strcasecmp function.  */
 #undef HAVE_STRCASECMP
 
-//#define g_get_tick_count GetTickCount
-
 #define g_warning g_log_warn
 #define g_error g_log_error
 
