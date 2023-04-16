@@ -34,8 +34,8 @@ struct _GCoroutine {
   GCoroutineManager *manager;
   GCoroutineHandler handler;
   GCoroutineStatus status;
-  gpointer user_data;
   GCoroutineTimer sleep_timer;
+  gpointer user_data;
   GFreeCallback user_data_free_callback;
   guint16 _case_line;
 };

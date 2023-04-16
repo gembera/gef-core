@@ -55,7 +55,7 @@ GMap *g_map_new_with(GFreeCallback key_free_callback,
       key_compare_func == NULL ? (GCompareHandler)g_cmp : key_compare_func;
   map->key_default_free_callback = key_free_callback;
   map->value_default_free_callback = value_free_callback;
-  map->data = g_array_new_of(GMapEntry);
+  map->data = g_array_new(GMapEntry);
   return map;
 }
 

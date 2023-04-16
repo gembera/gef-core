@@ -199,7 +199,6 @@ void g_free_callback(gpointer data);
 
 // Auto memory management
 #define g_auto(data) g_auto_with(data, g_free_callback, -1)
-#define g_auto_of(data, type) (type *)g_auto_with(data, g_free_callback, -1)
 gpointer g_auto_with(gpointer data, GFreeCallback free_callback,
                      gint stack_index);
 #define g_auto_push() g_auto_push_with(NULL, NULL)
@@ -229,12 +228,19 @@ typedef gbool (*GArraySearchHandler)(GArray *self, guint index, gcpointer item,
                                      gcpointer user_data);
 typedef void (*GArrayVisitCallback)(GArray *self, guint index, gcpointer item,
                                     gcpointer user_data);
-GArray *g_array_new(guint item_len);
-#define g_array_new_of(type) g_array_new(sizeof(type))
+#define g_array_new(type) g_array_new_with(sizeof(type))
+GArray *g_array_new_with(guint item_len);
 void g_array_free(GArray *self);
 #define g_array(self, type) ((type *)(self->data))
-#define g_array_get(self, type, index) ((type *)(self->data))[index]
-#define g_array_set(self, type, index, val) ((type *)(self->data))[index] = val
+#define g_array_get(self, type, index) (*(type *)g_array_get_ref(self, index))
+#define g_array_set(self, type, index, val)                                    \
+  {                                                                            \
+    type __tmp__ = val;                                                        \
+    g_array_set_ref(self, index, &__tmp__);                                    \
+  }
+void g_array_copy(GArray *self, gpointer data, guint index, guint count);
+gpointer g_array_get_ref(GArray *self, guint index);
+void g_array_set_ref(GArray *self, guint index, gpointer ref);
 guint g_array_size(GArray *self);
 void g_array_set_size(GArray *self, guint size);
 void g_array_set_capacity(GArray *self, guint capacity);

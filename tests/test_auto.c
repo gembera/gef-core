@@ -15,10 +15,10 @@ static void click_count(GEvent *event, gpointer args, gpointer user_data) {
   gint count = 0;
   gint si = g_auto_push_with(free_callback, &count);
   assert(si == 1);
-  gstr str = g_auto_of(g_dup("hello"), gchar);
+  gstr str = (gstr)g_auto(g_dup("hello"));
   printf("%s", str);
   g_auto(g_new(Person));
-  GArray *persons = (GArray *)g_auto_with(g_array_new_of(Person),
+  GArray *persons = (GArray *)g_auto_with(g_array_new(Person),
                                           (GFreeCallback)g_array_free, -1);
   g_auto_pop();
   assert(count == 3);

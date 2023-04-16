@@ -21,14 +21,12 @@ static void array_visit_callback(GArray *self, guint index, gcpointer item,
 };
 
 static gbool ptr_array_search_handler(GPtrArray *self, guint index,
-                                      gcpointer item,
-                                      gcpointer user_data) {
-  return g_equal(((Person *)item)->name, (gstr )user_data);
+                                      gcpointer item, gcpointer user_data) {
+  return g_equal(((Person *)item)->name, (gstr)user_data);
 };
 
 static void ptr_array_visit_callback(GPtrArray *self, guint index,
-                                     gcpointer item,
-                                     gcpointer user_data) {
+                                     gcpointer item, gcpointer user_data) {
   gint *age_gt_20_count = (gint *)user_data;
   if (((Person *)item)->age > 20)
     (*age_gt_20_count)++;
@@ -44,7 +42,7 @@ int test_array(int, char *[]) {
   gint vals[] = {444, 555, 666};
   gint g_ptr_int = 0;
   // test Array
-  GArray *arr = g_array_new_of(gint);
+  GArray *arr = g_array_new(gint);
   assert(arr != NULL);
   g_array_set_size(arr, 2);
   gint *data = g_array(arr, gint);
@@ -61,9 +59,14 @@ int test_array(int, char *[]) {
       gint); // g_array_prepend may cause reallocate, data should be updated
   assert(data[0] == 444);
   assert(g_array_get(arr, gint, 1) == 555);
+  assert(*(gint *)g_array_get_ref(arr, 2) == 666);
   assert(data[2] == 666);
   assert(data[3] == val1);
   assert(g_array_size(arr) == 5);
+  gint two_items[2];
+  g_array_copy(arr, two_items, 2, 2);
+  assert(two_items[0] == 666);
+  assert(two_items[1] == val1);
 
   g_array_set(arr, gint, 4, val2);
   // 444, 555, 666, 111, 222

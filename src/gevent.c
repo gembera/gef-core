@@ -16,7 +16,7 @@ GEvent *g_event_new_with(gpointer sender) {
   GEvent *self = g_new(GEvent);
   g_return_val_if_fail(self, NULL);
   self->sender = sender;
-  self->listeners = g_array_new_of(GEventListener);
+  self->listeners = g_array_new(GEventListener);
   self->firing_index = -1;
   self->last_token = 1;
   return (GEvent *)self;

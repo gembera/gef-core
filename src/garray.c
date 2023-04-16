@@ -16,7 +16,7 @@ static void g_array_maybe_expand(GArray *self, guint len) {
   }
 }
 
-GArray *g_array_new(guint item_len) {
+GArray *g_array_new_with(guint item_len) {
   g_return_val_if_fail(item_len > 0, NULL);
   GArray *self = g_new(GArray);
   g_return_val_if_fail(self, NULL);
@@ -61,28 +61,51 @@ void g_array_set_size(GArray *self, guint length) {
 
 void g_array_remove(GArray *self, guint index) {
   g_return_if_fail(self);
-  guint length = g_array_size(self);
-  g_return_if_fail(index >= 0 && index < length);
-  guint size = self->item_len;
-  if (self->data && index < self->len / size - 1)
-    g_memmove(self->data + index * size, self->data + (index + 1) * size,
-              self->len - (1 + index) * size);
-  self->len -= size;
+  guint size = g_array_size(self);
+  g_return_if_fail(index >= 0 && index < size);
+  guint item_len = self->item_len;
+  if (self->data && index < self->len / item_len - 1)
+    g_memmove(self->data + index * item_len,
+              self->data + (index + 1) * item_len,
+              self->len - (1 + index) * item_len);
+  self->len -= item_len;
 }
-
-void g_array_insert_ref(GArray *self, guint index, gpointer data) {
+void g_array_copy(GArray *self, gpointer data, guint index, guint count) {
   g_return_if_fail(self);
-  guint length = g_array_size(self);
-  g_return_if_fail(index >= 0 && index <= length);
-  guint size = self->item_len;
-  g_array_maybe_expand(self, size);
-  self->len += size;
+  guint size = g_array_size(self);
+  g_return_if_fail(index >= 0 && index < size && count > 0 &&
+                   index + count <= size);
+  guint item_len = self->item_len;
+  memcpy(data, self->data + index * item_len, item_len * count);
+}
+gpointer g_array_get_ref(GArray *self, guint index) {
+  g_return_val_if_fail(self, NULL);
+  guint size = g_array_size(self);
+  g_return_val_if_fail(index >= 0 && index < size, NULL);
+  guint item_len = self->item_len;
+  return self->data + index * item_len;
+}
+void g_array_set_ref(GArray *self, guint index, gpointer ref) {
+  g_return_if_fail(self);
+  guint size = g_array_size(self);
+  g_return_if_fail(index >= 0 && index < size && ref);
+  guint item_len = self->item_len;
+  memcpy(self->data + index * item_len, ref, item_len);
+}
+void g_array_insert_ref(GArray *self, guint index, gpointer ref) {
+  g_return_if_fail(self);
+  guint size = g_array_size(self);
+  g_return_if_fail(index >= 0 && index <= size);
+  guint item_len = self->item_len;
+  g_array_maybe_expand(self, item_len);
+  self->len += item_len;
 
-  if (self->data && index < self->len / size - 1)
-    g_memmove(self->data + (index + 1) * size, self->data + index * size,
-              self->len - (1 + index) * size);
+  if (self->data && index < self->len / item_len - 1)
+    g_memmove(self->data + (index + 1) * item_len,
+              self->data + index * item_len,
+              self->len - (1 + index) * item_len);
 
-  memcpy(self->data + index * size, data, size);
+  memcpy(self->data + index * item_len, ref, item_len);
 }
 guint g_array_size(GArray *self) {
   g_return_val_if_fail(self, 0);
@@ -90,9 +113,9 @@ guint g_array_size(GArray *self) {
 }
 void g_array_set_capacity(GArray *self, guint capacity) {
   g_return_if_fail(self);
-  guint size = self->item_len;
-  if (capacity * size > self->len)
-    g_array_maybe_expand(self, capacity * size - self->len);
+  guint item_len = self->item_len;
+  if (capacity * item_len > self->len)
+    g_array_maybe_expand(self, capacity * item_len - self->len);
 }
 
 gint g_array_search(GArray *self, GArraySearchHandler func,

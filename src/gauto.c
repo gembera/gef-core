@@ -24,11 +24,11 @@ static GAutoManager *_auto_manager = NULL;
 static GAutoManager *_get_manager() {
   if (_auto_manager == NULL) {
     _auto_manager = g_new(GAutoManager);
-    _auto_manager->stacks = g_array_new_of(GAutoStack);
+    _auto_manager->stacks = g_array_new(GAutoStack);
     // the base stack should never be poped, it can only be destroyed with
     // g_auto_free
     GAutoStack stack;
-    stack.pointers = g_array_new_of(GAutoPointer);
+    stack.pointers = g_array_new(GAutoPointer);
     stack.monitor_callback = NULL;
     stack.user_data = NULL;
     g_array_add(_auto_manager->stacks, GAutoStack, stack);
@@ -75,7 +75,7 @@ gpointer g_auto_with(gpointer data, GFreeCallback free_callback,
 gint g_auto_push_with(GCallback monitor_callback, gpointer user_data) {
   GAutoManager *manager = _get_manager();
   GAutoStack stack;
-  stack.pointers = g_array_new_of(GAutoPointer);
+  stack.pointers = g_array_new(GAutoPointer);
   stack.monitor_callback = monitor_callback;
   stack.user_data = user_data;
   g_array_add(manager->stacks, GAutoStack, stack);

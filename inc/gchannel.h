@@ -9,12 +9,16 @@
 #include "glib.h"
 
 typedef struct {
-  GPtrArray *buffer;
+  GArray *items;
   guint max;
+  GFreeCallback item_cleanup_callback;
 } GChannel;
 
-#define g_channel_new(type) g_channel_new_with(sizeof(type), 1)
-GChannel *g_channel_new_with(guint item_size, guint max, GFreeCallback);
+#define g_channel_new(type) g_channel_new_with(sizeof(type), 1, NULL)
+GChannel *g_channel_new_with(guint item_len, guint max,
+                             GFreeCallback item_cleanup_callback);
+gbool g_channel_send(GChannel *self, gpointer item);
+gbool g_channel_receive(GChannel *self, gpointer item);
 void g_channel_free(GChannel *self);
 
 #endif
