@@ -7,7 +7,7 @@
             "request": "launch",
             "program": "${workspaceRoot}/build/tests/all-gef-tests",
             "cwd": "${workspaceRoot}",
-            "args": ["test_channel"]
+            "args": ["test_auto"]
         }
     ]
 }

@@ -46,17 +46,17 @@ gint g_event_add_listener_with(GEvent *self, GEventCallback callback,
   g_array_add(self->listeners, GEventListener, listener);
   return listener.token;
 }
-static gbool g_event_token_search_handler(GArray *self, guint index,
-                                          gcpointer item,
-                                          gcpointer user_data) {
-  GEventListener *listener = (GEventListener *)item;
-  gint *token = (gint *)user_data;
-  return listener->token == *token;
-}
 void g_event_remove_listener(GEvent *self, gint token) {
   g_return_if_fail(self);
-  gint index =
-      g_array_search(self->listeners, g_event_token_search_handler, &token);
+  gint size = g_array_size(self->listeners);
+  gint index = -1;
+  for (gint i = 0; i < size; i++) {
+    GEventListener *listener = g_array(self->listeners, GEventListener) + i;
+    if (listener->token == token) {
+      index = i;
+      break;
+    }
+  }
   if (index != -1) {
     if (index <= self->firing_index) {
       self->firing_index--;

@@ -118,16 +118,6 @@ void g_array_set_capacity(GArray *self, guint capacity) {
     g_array_maybe_expand(self, capacity * item_len - self->len);
 }
 
-gint g_array_search(GArray *self, GArraySearchHandler func,
-                    gpointer user_data) {
-  g_return_val_if_fail(self, -1);
-  g_return_val_if_fail(func, -1);
-  for (guint i = 0; i < self->len; i += self->item_len) {
-    if (func(self, i, (gpointer)((guint8 *)self->data) + i, user_data))
-      return i / self->item_len;
-  }
-  return -1;
-}
 void g_array_visit(GArray *self, GArrayVisitCallback func, gpointer user_data) {
   g_return_if_fail(self);
   g_return_if_fail(func);
@@ -198,17 +188,6 @@ void g_ptr_array_insert(GPtrArray *self, guint index, gpointer item) {
       self->data[i] = self->data[i - 1];
     self->data[index] = item;
   }
-}
-
-gint g_ptr_array_search(GPtrArray *self, GPtrArraySearchHandler func,
-                        gpointer user_data) {
-  g_return_val_if_fail(self, -1);
-  g_return_val_if_fail(func, -1);
-  for (gint i = 0; i < g_ptr_array_size(self); i++) {
-    if (func(self, i, g_ptr_array_get(self, i), user_data))
-      return i;
-  }
-  return -1;
 }
 
 void g_ptr_array_visit(GPtrArray *self, GPtrArrayVisitCallback func,

@@ -9,13 +9,6 @@ static void print_and_count_callback(GList *self, GListNode *item,
   (*index)++;
 }
 
-static gbool search_handler(GList *self, GListNode *item,
-                            gcpointer user_data) {
-  gstr v1 = (gstr )item->data;
-  gstr v2 = (gstr )user_data;
-  return g_equal(v1, v2);
-}
-
 int test_list(int, char *[]) {
   g_mem_record(g_mem_record_default_callback);
   g_mem_record_begin();
@@ -41,9 +34,6 @@ int test_list(int, char *[]) {
   assert(g_list_size(list1) == 6);
   assert(g_list_get(list1, 1)->data == str5);
   assert(g_list_get(list1, 4)->data == str2);
-
-  GListNode *node = g_list_search(list1, search_handler, "four");
-  assert(node && node->data == str4);
 
   g_list_remove(list1, str4);
   g_list_remove(list1, str6);

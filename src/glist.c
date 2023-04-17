@@ -117,18 +117,6 @@ gint g_list_index_of(GList *self, gpointer data) {
   return -1;
 }
 
-GListNode *g_list_search(GList *self, GListSearchHandler func,
-                         gpointer user_data) {
-  g_return_val_if_fail(self, NULL);
-  g_return_val_if_fail(func, NULL);
-  GListNode *current = self->head;
-  for (; current; current = current->next) {
-    if (func(self, current, user_data))
-      return current;
-  }
-  return NULL;
-}
-
 void g_list_visit(GList *self, GListVisitCallback func, gpointer user_data) {
   g_return_if_fail(self);
   g_return_if_fail(func);

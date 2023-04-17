@@ -97,25 +97,17 @@ void g_map_remove(GMap *self, gcpointer key) {
     g_array_remove(self->data, l);
   }
 }
-
-GMapEntry *g_map_get(GMap *self, gcpointer key) {
+gpointer g_map_get(GMap *self, gcpointer key){
+  GMapEntry * entry = g_map_get_entry(self, key);
+  return entry == NULL ? NULL : entry->value;
+}
+GMapEntry *g_map_get_entry(GMap *self, gcpointer key) {
   g_return_val_if_fail(self, NULL);
   gint l, r;
   g_map_lookup(self, key, &l, &r);
   if (l == r && l != -1)
     return g_array(self->data, GMapEntry) + l;
   return NULL;
-}
-
-GMapEntry *g_map_search(GMap *self, GMapSearchHandler func,
-                        gpointer user_data) {
-  g_return_val_if_fail(self, NULL);
-  guint size = g_map_size(self);
-  for (gint i = 0; i < size; i++) {
-    GMapEntry *entry = g_array(self->data, GMapEntry) + i;
-    if (func(self, entry->key, entry->value, user_data))
-      return entry;
-  }
 }
 
 void g_map_set_with(GMap *self, gpointer key, gpointer value,

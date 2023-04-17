@@ -5,111 +5,54 @@
  */
 
 #include "glib.h"
+
 typedef struct {
   gpointer data;
   GFreeCallback free_callback;
 } GAutoPointer;
 
-typedef struct {
-  GArray *pointers;
-  GCallback monitor_callback;
-  gpointer user_data;
-} GAutoStack;
+#define DEFAULT_AUTO_CONTAINER "DEFAULT_AUTO_CONTAINER"
+static GMap *containers = NULL;
 
-typedef struct {
-  GArray *stacks;
-} GAutoManager;
-
-static GAutoManager *_auto_manager = NULL;
-static GAutoManager *_get_manager() {
-  if (_auto_manager == NULL) {
-    _auto_manager = g_new(GAutoManager);
-    _auto_manager->stacks = g_array_new(GAutoStack);
-    // the base stack should never be poped, it can only be destroyed with
-    // g_auto_free
-    GAutoStack stack;
-    stack.pointers = g_array_new(GAutoPointer);
-    stack.monitor_callback = NULL;
-    stack.user_data = NULL;
-    g_array_add(_auto_manager->stacks, GAutoStack, stack);
-  }
-  return _auto_manager;
-}
-static GAutoStack *_get_top_stack() {
-  GAutoManager *manager = _get_manager();
-  gint size = g_array_size(manager->stacks);
-  g_return_val_if_fail(size > 0, NULL);
-  return g_array(manager->stacks, GAutoStack) + size - 1;
-}
-static void clean_stack(GAutoStack *stack) {
-  gint size = g_array_size(stack->pointers);
+static void g_container_free_callback(GArray *pointers) {
+  gint size = g_array_size(pointers);
   for (gint i = 0; i < size; i++) {
-    GAutoPointer *pointer = g_array(stack->pointers, GAutoPointer) + i;
+    GAutoPointer *pointer = g_array(pointers, GAutoPointer) + i;
     if (pointer->free_callback) {
       pointer->free_callback(pointer->data);
-      if (stack->monitor_callback)
-        stack->monitor_callback(pointer->data, stack->user_data);
     }
   }
-  g_array_free(stack->pointers);
+  g_array_free(pointers);
 }
-gint g_auto_current_stack() {
-  GAutoManager *manager = _get_manager();
-  return g_array_size(manager->stacks) - 1;
+static void g_containers_init() {
+  if (containers == NULL) {
+    containers = g_map_new_with(g_free_callback,
+                                (GFreeCallback)g_container_free_callback, NULL);
+  }
 }
 gpointer g_auto_with(gpointer data, GFreeCallback free_callback,
-                     gint stack_index) {
-  GAutoManager *manager = _get_manager();
-  gint size = g_array_size(manager->stacks);
-  if (stack_index < 0)
-    stack_index += size;
-  g_return_val_if_fail(stack_index < size, NULL);
-  GAutoStack *stack = g_array(manager->stacks, GAutoStack) + stack_index;
+                     gcstr auto_container_name) {
+  g_containers_init();
+  if (auto_container_name == NULL)
+    auto_container_name = DEFAULT_AUTO_CONTAINER;
+  GArray *pointers = (GArray *)g_map_get(containers, auto_container_name);
+  if (pointers == NULL) {
+    pointers = g_array_new(GAutoPointer);
+    g_map_set(containers, g_dup(auto_container_name), pointers);
+  }
   GAutoPointer pointer;
   pointer.data = data;
   pointer.free_callback = free_callback;
-  g_array_add(stack->pointers, GAutoPointer, pointer);
+  g_array_add(pointers, GAutoPointer, pointer);
   return data;
 }
-
-gint g_auto_push_with(GCallback monitor_callback, gpointer user_data) {
-  GAutoManager *manager = _get_manager();
-  GAutoStack stack;
-  stack.pointers = g_array_new(GAutoPointer);
-  stack.monitor_callback = monitor_callback;
-  stack.user_data = user_data;
-  g_array_add(manager->stacks, GAutoStack, stack);
-  return g_array_size(manager->stacks) - 1;
+void g_auto_container_free(gcstr auto_container_name) {
+  g_return_if_fail(containers);
+  g_map_remove(containers, auto_container_name);
 }
-
-void g_auto_pop() {
-  GAutoManager *manager = _get_manager();
-  gint size = g_array_size(manager->stacks);
-  if (size > 1) {
-    GAutoStack *stack = g_array(manager->stacks, GAutoStack) + size - 1;
-    clean_stack(stack);
-    g_array_set_size(manager->stacks, size - 1);
-  }
-}
-
-void g_auto_pop_to(gint stack_index) {
-  g_return_if_fail(stack_index > 0);
-  GAutoManager *manager = _get_manager();
-  gint size = g_array_size(manager->stacks);
-  for (gint i = size - 1; i >= stack_index; i--) {
-    GAutoStack *stack = g_array(manager->stacks, GAutoStack) + i;
-    clean_stack(stack);
-  }
-  g_array_set_size(manager->stacks, stack_index);
-}
-
-void g_auto_pop_all() { g_auto_pop_to(1); }
-
 void g_auto_free() {
-  g_auto_pop_all();
-  GAutoStack *stack = g_array(_auto_manager->stacks, GAutoStack);
-  clean_stack(stack);
-  g_array_free(_auto_manager->stacks);
-  g_free(_auto_manager);
-  _auto_manager = NULL;
+  if (containers == NULL)
+    return;
+  g_map_free(containers);
+  containers = NULL;
 }

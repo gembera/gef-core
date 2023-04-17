@@ -198,15 +198,11 @@ typedef void (*GFreeCallback)(gpointer data);
 void g_free_callback(gpointer data);
 
 // Auto memory management
-#define g_auto(data) g_auto_with(data, g_free_callback, -1)
+#define g_auto(data, auto_container_name)                                      \
+  g_auto_with(data, g_free_callback, auto_container_name)
 gpointer g_auto_with(gpointer data, GFreeCallback free_callback,
-                     gint stack_index);
-#define g_auto_push() g_auto_push_with(NULL, NULL)
-gint g_auto_push_with(GCallback monitor_callback, gpointer user_data);
-void g_auto_pop();
-void g_auto_pop_to(gint stack_index);
-void g_auto_pop_all();
-gint g_auto_current_stack();
+                     gcstr auto_container_name);
+void g_auto_container_free(gcstr auto_container_name);
 void g_auto_free();
 
 // Array
@@ -224,8 +220,6 @@ typedef struct {
   GFreeCallback free_callback;
 } GPtrArray;
 
-typedef gbool (*GArraySearchHandler)(GArray *self, guint index, gcpointer item,
-                                     gcpointer user_data);
 typedef void (*GArrayVisitCallback)(GArray *self, guint index, gcpointer item,
                                     gcpointer user_data);
 #define g_array_new(type) g_array_new_with(sizeof(type))
@@ -257,11 +251,8 @@ void g_array_insert_ref(GArray *self, guint index, gpointer ref);
   }
 void g_array_append_items(GArray *self, gpointer items, guint count);
 void g_array_prepend_items(GArray *self, gpointer items, guint count);
-gint g_array_search(GArray *self, GArraySearchHandler func, gpointer user_data);
 void g_array_visit(GArray *self, GArrayVisitCallback func, gpointer user_data);
 
-typedef gbool (*GPtrArraySearchHandler)(GPtrArray *self, guint index,
-                                        gcpointer item, gcpointer user_data);
 typedef void (*GPtrArrayVisitCallback)(GPtrArray *self, guint index,
                                        gcpointer item, gcpointer user_data);
 #define g_ptr_array_new() g_ptr_array_new_with(NULL)
@@ -279,8 +270,6 @@ void g_ptr_array_insert(GPtrArray *self, guint index, gpointer data);
 void g_ptr_array_append_items(GPtrArray *self, gpointer *items, guint count);
 void g_ptr_array_prepend_items(GPtrArray *self, gpointer *items, guint count);
 gint g_ptr_array_index_of(GPtrArray *self, gpointer item);
-gint g_ptr_array_search(GPtrArray *self, GPtrArraySearchHandler func,
-                        gpointer user_data);
 void g_ptr_array_visit(GPtrArray *self, GPtrArrayVisitCallback func,
                        gpointer user_data);
 
@@ -296,8 +285,6 @@ typedef struct {
   GFreeCallback node_data_free_callback;
 } GList;
 
-typedef gbool (*GListSearchHandler)(GList *self, GListNode *item,
-                                    gcpointer user_data);
 typedef void (*GListVisitCallback)(GList *self, GListNode *item,
                                    gcpointer user_data);
 #define g_list_new() g_list_new_with(NULL)
@@ -311,8 +298,6 @@ void g_list_prepend(GList *self, gpointer data);
 void g_list_remove(GList *self, gpointer data);
 gint g_list_index_of(GList *self, gpointer data);
 GListNode *g_list_get(GList *self, guint n);
-GListNode *g_list_search(GList *self, GListSearchHandler func,
-                         gpointer user_data);
 void g_list_visit(GList *self, GListVisitCallback func, gpointer user_data);
 
 // HashMap
@@ -330,8 +315,6 @@ typedef struct {
   GFreeCallback value_default_free_callback;
 } GMap;
 
-typedef gbool (*GMapSearchHandler)(GMap *self, gpointer key, gpointer value,
-                                   gpointer user_data);
 typedef void (*GMapVisitCallback)(GMap *self, gpointer key, gpointer value,
                                   gpointer user_data);
 
@@ -340,7 +323,8 @@ GMap *g_map_new_with(GFreeCallback key_free_callback,
                      GFreeCallback value_free_callback,
                      GCompareHandler key_compare_func);
 void g_map_free(GMap *self);
-GMapEntry *g_map_get(GMap *self, gcpointer key);
+gpointer g_map_get(GMap *self, gcpointer key);
+GMapEntry *g_map_get_entry(GMap *self, gcpointer key);
 #define g_map_set(self, key, value) g_map_set_with(self, key, value, NULL, NULL)
 void g_map_set_with(GMap *self, gpointer key, gpointer value,
                     GFreeCallback key_free_callback,
@@ -348,7 +332,6 @@ void g_map_set_with(GMap *self, gpointer key, gpointer value,
 void g_map_remove(GMap *self, gcpointer key);
 void g_map_remove_all(GMap *self);
 guint g_map_size(GMap *self);
-GMapEntry *g_map_search(GMap *self, GMapSearchHandler func, gpointer user_data);
 void g_map_visit(GMap *self, GMapVisitCallback func, gpointer user_data);
 
 // String utility

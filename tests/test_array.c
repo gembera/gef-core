@@ -5,12 +5,6 @@ typedef struct _Person {
   gstr name;
   gint age;
 } Person;
-static gbool array_search_handler(GArray *self, guint index, gcpointer item,
-                                  gcpointer user_data) {
-  gint v1 = *(gint *)item;
-  gint v2 = *(gint *)user_data;
-  return v1 == v2;
-};
 
 static void array_visit_callback(GArray *self, guint index, gcpointer item,
                                  gcpointer user_data) {
@@ -18,11 +12,6 @@ static void array_visit_callback(GArray *self, guint index, gcpointer item,
   gint *count = (gint *)user_data;
   if (v > 300)
     (*count)++;
-};
-
-static gbool ptr_array_search_handler(GPtrArray *self, guint index,
-                                      gcpointer item, gcpointer user_data) {
-  return g_equal(((Person *)item)->name, (gstr)user_data);
 };
 
 static void ptr_array_visit_callback(GPtrArray *self, guint index,
@@ -71,9 +60,6 @@ int test_array(int, char *[]) {
   g_array_set(arr, gint, 4, val2);
   // 444, 555, 666, 111, 222
   assert(data[4] == val2);
-
-  i = g_array_search(arr, array_search_handler, &val2);
-  assert(i == 4);
 
   i = 0;
   g_array_visit(arr, array_visit_callback, &i);
@@ -151,9 +137,6 @@ int test_array(int, char *[]) {
   g_ptr_array_add(parr2, &p1);
   assert(g_ptr_array_size(parr2) == 3);
   assert(parr2->data[2] == &p1);
-
-  i3 = g_ptr_array_search(parr2, ptr_array_search_handler, "three");
-  assert(i3 == 0);
 
   g_ptr_array_add(parr2, pp4);
   assert(g_ptr_array_size(parr2) == 4);

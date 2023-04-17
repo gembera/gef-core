@@ -7,6 +7,13 @@ typedef struct _Student {
   guint score;
 } Student;
 
+static void map_visit_callback(GMap *self, gpointer key, gpointer value,
+                               gpointer user_data) {
+  gint *count = (gint *)user_data;
+  if (((Student *)value)->score >= 80)
+    (*count)++;
+};
+
 int test_map(int, char *[]) {
   g_mem_record(g_mem_record_default_callback);
   g_mem_record_begin();
@@ -23,7 +30,7 @@ int test_map(int, char *[]) {
   Student *pp4 = g_new(Student);
   pp4->name = "four";
   pp4->score = 100;
-  Student p5 = {"five", 75};
+  Student p5 = {"five", 60};
 
   GMap *map1 = g_map_new();
   g_map_set(map1, keyb, &p2);
@@ -32,9 +39,12 @@ int test_map(int, char *[]) {
   g_map_set(map1, keyc, &p1);
   g_map_set(map1, keye, &p5);
   GMapEntry *pair;
-  pair = g_map_get(map1, keyc);
+  pair = g_map_get_entry(map1, keyc);
   assert(pair && pair->value == &p1);
-
+  assert(g_map_get(map1, keyc) == &p1);
+  gint count = 0;
+  g_map_visit(map1, map_visit_callback, &count);
+  assert(count == 3);
   g_map_free(map1);
   g_free(pp4);
 
