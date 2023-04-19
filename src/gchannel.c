@@ -17,7 +17,7 @@ GChannel *g_channel_new_with(guint item_len, guint max,
   self->item_cleanup_callback = item_cleanup_callback;
   return self;
 }
-gbool g_channel_send(GChannel *self, gpointer item) {
+gbool g_channel_write(GChannel *self, gpointer item) {
   g_return_val_if_fail(self, FALSE);
   guint size = g_array_size(self->items);
   if (self->max > size) {
@@ -26,7 +26,7 @@ gbool g_channel_send(GChannel *self, gpointer item) {
   }
   return FALSE;
 }
-gbool g_channel_receive(GChannel *self, gpointer item) {
+gbool g_channel_read(GChannel *self, gpointer item) {
   g_return_val_if_fail(self, FALSE);
   guint size = g_array_size(self->items);
   if (size > 0) {

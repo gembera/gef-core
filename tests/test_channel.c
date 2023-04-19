@@ -28,11 +28,11 @@ static GCoroutineStatus sender_handler(GCoroutine *co) {
     ud->num = ud->i * ud->i;
     ud->sleep_time = g_rand(100);
     co_sleep(co, ud->sleep_time);
-    co_wait_until(co, g_channel_send(ud->channel, &ud->num));
+    co_wait_until(co, g_channel_write(ud->channel, &ud->num));
     channel_case_record("sender", ud->num, ud->sleep_time);
   }
   ud->num = -1;
-  co_wait_until(co, g_channel_send(ud->channel, &ud->num));
+  co_wait_until(co, g_channel_write(ud->channel, &ud->num));
   co_end(co);
 }
 
@@ -42,7 +42,7 @@ static GCoroutineStatus receiver_handler(GCoroutine *co) {
   do {
     ud->sleep_time = g_rand(100);
     co_sleep(co, ud->sleep_time);
-    co_wait_until(co, g_channel_receive(ud->channel, &ud->num));
+    co_wait_until(co, g_channel_read(ud->channel, &ud->num));
     if (ud->num != -1)
       channel_case_record("receiver", ud->num, ud->sleep_time);
   } while (ud->num != -1);

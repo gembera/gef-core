@@ -106,12 +106,6 @@ void g_coroutine_free(GCoroutine *self);
 
 #define co_wait_while(co, cond) co_wait_until((co), !(cond))
 
-#define co_wait_child(co, child, f)                                            \
-  do {                                                                         \
-    co_init((child));                                                          \
-    co_wait((co), (f));                                                        \
-  } while (0)
-
 #define co_restart(co)                                                         \
   do {                                                                         \
     co_init(co);                                                               \
