@@ -42,9 +42,9 @@ static GCoroutineStatus receiver_handler(GCoroutine *co) {
     ud->sleep_time = g_rand(100);
     co_sleep(co, ud->sleep_time);
     co_wait_until(co, g_channel_read(ud->channel, &ud->num));
-    if (!g_value_is(&ud->num, G_TYPE_CHANNEL_CLOSED))
+    if (!g_value_is_channel_closed(&ud->num))
       channel_case_record("receiver", g_value_int(&ud->num), ud->sleep_time);
-  } while (!g_value_is(&ud->num, G_TYPE_CHANNEL_CLOSED));
+  } while (!g_value_is_channel_closed(&ud->num));
   co_end(co);
 }
 static void channel_test(gint max) {
@@ -83,8 +83,8 @@ int test_channel(int, char *[]) {
   g_mem_record_begin();
 
   channel_test(1);
-  //channel_test(2);
-  //channel_test(3);
+  channel_test(2);
+  channel_test(3);
 
   gulong allocated = 0;
   gulong freed = 0;

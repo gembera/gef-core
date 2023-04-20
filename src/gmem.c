@@ -279,6 +279,10 @@ void g_mem_record_begin() { mem_record_enabled = TRUE; }
 void g_mem_record_end() {
   mem_record_enabled = FALSE;
   g_mem_print_leaks();
+  free(leak_records);
+  leak_records = NULL;
+  leak_records_size = 0;
+  leak_records_alloc = 0;
 }
 #endif
 

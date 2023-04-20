@@ -21,6 +21,7 @@ typedef struct {
 } GChannel;
 
 #define G_TYPE_CHANNEL_CLOSED 99
+#define g_value_is_channel_closed(val) g_value_is(val, G_TYPE_CHANNEL_CLOSED)
 
 GChannel *g_channel_new( guint max);
 gbool g_channel_write(GChannel *self, GValue* item);

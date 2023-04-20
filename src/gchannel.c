@@ -28,6 +28,7 @@ gbool g_channel_write(GChannel *self, GValue *item) {
     g_array_add_ref(self->items, item);
     if (item->refs)
       (*item->refs)++;
+    g_event_fire(self->on_write, item);
     return TRUE;
   }
   return FALSE;
@@ -38,6 +39,7 @@ gbool g_channel_read(GChannel *self, GValue *item) {
   if (size > 0) {
     g_array_copy(self->items, item, 0, 1);
     g_array_remove(self->items, 0);
+    g_event_fire(self->on_read, item);
     return TRUE;
   }
   return FALSE;
