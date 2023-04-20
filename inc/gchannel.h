@@ -29,8 +29,6 @@ gbool g_channel_read(GChannel *self, GValue* item);
 gbool g_channel_is_closed(GChannel *self);
 void g_channel_close(GChannel *self);
 void g_channel_error(GChannel *self, gint err_code, gstr err_msg);
-guint g_channel_readable_size();
-guint g_channel_writable_size();
 void g_channel_free(GChannel *self);
 
 #endif

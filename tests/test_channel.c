@@ -21,6 +21,14 @@ typedef struct {
   GChannel *channel;
 } ReceiverUserData;
 
+static void free_sender_user_data(SenderUserData *user_data) {
+  g_value_unref(&user_data->num);
+  g_free(user_data);
+}
+static void free_receiver_user_data(ReceiverUserData *user_data) {
+  g_value_unref(&user_data->num);
+  g_free(user_data);
+}
 static GCoroutineStatus sender_handler(GCoroutine *co) {
   SenderUserData *ud = (SenderUserData *)co->user_data;
   co_begin(co);
@@ -42,10 +50,33 @@ static GCoroutineStatus receiver_handler(GCoroutine *co) {
     ud->sleep_time = g_rand(100);
     co_sleep(co, ud->sleep_time);
     co_wait_until(co, g_channel_read(ud->channel, &ud->num));
-    if (!g_value_is_channel_closed(&ud->num))
-      channel_case_record("receiver", g_value_int(&ud->num), ud->sleep_time);
-  } while (!g_value_is_channel_closed(&ud->num));
+    if (g_value_is_channel_closed(&ud->num) || g_value_is_error(&ud->num))
+      break;
+    channel_case_record("receiver", g_value_int(&ud->num), ud->sleep_time);
+  } while (TRUE);
   co_end(co);
+}
+
+typedef struct {
+  gint reads;
+  gint writes;
+} ReadWriteCountUserData;
+static void on_channel_read(GEvent *event, gpointer args, gpointer user_data) {
+  ReadWriteCountUserData *counter = (ReadWriteCountUserData *)user_data;
+  counter->reads++;
+}
+static void on_channel_write(GEvent *event, gpointer args, gpointer user_data) {
+  ReadWriteCountUserData *counter = (ReadWriteCountUserData *)user_data;
+  counter->writes++;
+}
+static void on_channel_closed(GEvent *event, gpointer args,
+                              gpointer user_data) {
+  gbool *closed = (gbool *)user_data;
+  *closed = TRUE;
+}
+static void on_channel_error(GEvent *event, gpointer args, gpointer user_data) {
+  gbool *error = (gbool *)user_data;
+  *error = TRUE;
 }
 static void channel_test(gint max) {
   channel_case_check = g_array_new(gint);
@@ -55,10 +86,17 @@ static void channel_test(gint max) {
   ud1->channel = ch;
   ReceiverUserData *ud2 = g_new(ReceiverUserData);
   ud2->channel = ch;
-  GCoroutine *co_odd =
-      g_coroutine_new_with(manager, sender_handler, ud1, g_free_callback);
-  GCoroutine *co_even =
-      g_coroutine_new_with(manager, receiver_handler, ud2, g_free_callback);
+  ReadWriteCountUserData read_write_counter;
+  read_write_counter.reads = 0;
+  read_write_counter.writes = 0;
+  gbool closed = FALSE;
+  g_event_add_listener(ch->on_read, on_channel_read, &read_write_counter);
+  g_event_add_listener(ch->on_write, on_channel_write, &read_write_counter);
+  g_event_add_listener(ch->on_closed, on_channel_closed, &closed);
+  GCoroutine *co_odd = g_coroutine_new_with(
+      manager, sender_handler, ud1, (GFreeCallback)free_sender_user_data);
+  GCoroutine *co_even = g_coroutine_new_with(
+      manager, receiver_handler, ud2, (GFreeCallback)free_receiver_user_data);
 
   g_coroutine_start(co_odd);
   g_coroutine_start(co_even);
@@ -66,6 +104,9 @@ static void channel_test(gint max) {
     g_coroutine_manager_loop(manager);
     // g_sleep(10);
   }
+  assert(read_write_counter.reads == 6); // 5 data + 1 close
+  assert(read_write_counter.reads == read_write_counter.writes);
+  assert(closed);
   g_channel_free(ch);
   g_coroutine_manager_free(manager);
   gint size = g_array_size(channel_case_check);
@@ -78,6 +119,69 @@ static void channel_test(gint max) {
   }
   g_array_free(channel_case_check);
 }
+
+static GCoroutineStatus sender_error_handler(GCoroutine *co) {
+  SenderUserData *ud = (SenderUserData *)co->user_data;
+  co_begin(co);
+  for (ud->i = 0; ud->i < 5; ud->i++) {
+    g_value_set_int(&ud->num, ud->i * ud->i);
+    ud->sleep_time = g_rand(100);
+    co_sleep(co, ud->sleep_time);
+    if (ud->i == 3) {
+      g_channel_error(ud->channel, -1000, "I don't like number 3!");
+      break;
+    } else {
+      co_wait_until(co, g_channel_write(ud->channel, &ud->num));
+    }
+    channel_case_record("sender", g_value_int(&ud->num), ud->sleep_time);
+  }
+  if (ud->i == 5)
+    g_channel_close(ud->channel);
+  co_end(co);
+}
+static void channel_error_test() {
+  channel_case_check = g_array_new(gint);
+  GCoroutineManager *manager = g_coroutine_manager_new();
+  GChannel *ch = g_channel_new(1);
+  SenderUserData *ud1 = g_new(SenderUserData);
+  ud1->channel = ch;
+  ReceiverUserData *ud2 = g_new(ReceiverUserData);
+  ud2->channel = ch;
+  ReadWriteCountUserData read_write_counter;
+  read_write_counter.reads = 0;
+  read_write_counter.writes = 0;
+  gbool closed = FALSE;
+  gbool error = FALSE;
+  g_event_add_listener(ch->on_read, on_channel_read, &read_write_counter);
+  g_event_add_listener(ch->on_write, on_channel_write, &read_write_counter);
+  g_event_add_listener(ch->on_closed, on_channel_closed, &closed);
+  g_event_add_listener(ch->on_error, on_channel_error, &error);
+
+  GCoroutine *co_odd = g_coroutine_new_with(
+      manager, sender_error_handler, ud1, (GFreeCallback)free_sender_user_data);
+  GCoroutine *co_even = g_coroutine_new_with(
+      manager, receiver_handler, ud2, (GFreeCallback)free_receiver_user_data);
+
+  g_coroutine_start(co_odd);
+  g_coroutine_start(co_even);
+  while (g_coroutine_manager_alive_count(manager)) {
+    g_coroutine_manager_loop(manager);
+    // g_sleep(10);
+  }
+  assert(read_write_counter.reads == 4);  // 3 data + 1 error
+  assert(read_write_counter.writes == 4); // 3 data + 1 error
+  assert(!closed);
+  assert(error);
+  g_channel_free(ch);
+  g_coroutine_manager_free(manager);
+  gint size = g_array_size(channel_case_check);
+  assert(size == 6);
+  gint *nums = g_array(channel_case_check, gint);
+  for (gint i = 0; i < size; i++) {
+    assert(nums[i] == (i / 2) * (i / 2));
+  }
+  g_array_free(channel_case_check);
+}
 int test_channel(int, char *[]) {
   g_mem_record(g_mem_record_default_callback);
   g_mem_record_begin();
@@ -85,6 +189,8 @@ int test_channel(int, char *[]) {
   channel_test(1);
   channel_test(2);
   channel_test(3);
+
+  channel_error_test();
 
   gulong allocated = 0;
   gulong freed = 0;
