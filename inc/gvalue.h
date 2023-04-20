@@ -14,6 +14,7 @@ typedef struct _GObjectClass GObjectClass;
 
 struct _GValue {
   gint type;
+  gint *refs;
   union {
     gbool v_bool;
     gint32 v_int;
@@ -23,12 +24,16 @@ struct _GValue {
   } data;
   GFreeCallback free_callback;
 };
+#define G_TYPE_ERROR -1
+
 #define G_TYPE_NULL 0
 
 #define G_TYPE_BOOL 1
 #define G_TYPE_INT 2
 #define G_TYPE_LONG 3
 #define G_TYPE_DOUBLE 4
+
+#define G_TYPE_END 99
 
 #define G_TYPE_POINTER 100
 #define G_TYPE_STR 101
@@ -39,13 +44,11 @@ struct _GValue {
 
 #define G_TYPE_CUSTOM 200
 
-#define G_TYPE_END 999
-#define G_TYPE_ERROR -1
-
 GValue *g_value_new();
 GValue *g_value_set(GValue *self, gint type, gpointer pointer,
                     GFreeCallback free_callback);
-void g_value_copy(GValue *self, GValue *dest, gbool transferOwnership);
+GValue *g_value_ref(GValue *self, GValue *target);
+void g_value_unref(GValue *self);
 void g_value_free(GValue *self);
 
 gbool g_value_is(GValue *self, gint type);

@@ -21,8 +21,11 @@ int test_value(int, char *[]) {
   g_value_set(val1, G_TYPE_ARRAY, g_array_new(gint),
               (GFreeCallback)g_array_free);
   assert(val1->free_callback);
-  g_value_copy(val1, val2, TRUE);
-  assert(!val1->free_callback && val2->free_callback);
+  assert(*val1->refs == 1);
+  g_value_ref(val2, val1);
+  assert(*val1->refs == 2);
+  assert(*val2->refs == 2);
+  assert(val1->free_callback == val2->free_callback);
   assert(val1->data.v_pointer == val2->data.v_pointer);
   g_value_set(val3, G_TYPE_MAP, g_map_new(), (GFreeCallback)g_map_free);
   g_value_free(val1);

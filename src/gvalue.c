@@ -10,9 +10,8 @@ gbool g_value_is(GValue *self, gint type) { return self->type == type; }
 
 static void g_value_free_data(GValue *self) {
   g_return_if_fail(self);
-  if (self->type >= G_TYPE_POINTER) {
-    g_free_with(self->data.v_pointer, self->free_callback);
-  }
+  g_free(self->refs);
+  g_free_with(self->data.v_pointer, self->free_callback);
   self->type = G_TYPE_NULL;
 }
 
@@ -21,40 +20,53 @@ GValue *g_value_set(GValue *self, gint type, gpointer pointer,
   g_return_val_if_fail(self, NULL);
   g_value_free_data(self);
   self->type = type;
-  if (type < G_TYPE_POINTER) {
-    switch (type) {
-    case G_TYPE_BOOL:
-      self->data.v_bool = *(gbool *)pointer;
-      break;
-    case G_TYPE_INT:
-      self->data.v_int = *(gint32 *)pointer;
-      break;
-    case G_TYPE_LONG:
-      self->data.v_long = *(gint64 *)pointer;
-      break;
-    case G_TYPE_DOUBLE:
-      self->data.v_double = *(gdouble *)pointer;
-      break;
-    }
-  } else {
-    self->data.v_pointer = pointer;
-    self->free_callback = free_callback;
+  self->refs = NULL;
+  self->data.v_pointer = pointer;
+  self->free_callback = free_callback;
+  if (free_callback) {
+    self->refs = g_new(gint);
+    *self->refs = 1;
+  }
+  switch (type) {
+  case G_TYPE_NULL:
+    break;
+  case G_TYPE_BOOL:
+    self->data.v_bool = *(gbool *)pointer;
+    break;
+  case G_TYPE_INT:
+    self->data.v_int = *(gint32 *)pointer;
+    break;
+  case G_TYPE_LONG:
+    self->data.v_long = *(gint64 *)pointer;
+    break;
+  case G_TYPE_DOUBLE:
+    self->data.v_double = *(gdouble *)pointer;
+    break;
   }
   return self;
 }
-void g_value_copy(GValue *self, GValue *dest, gbool transferOwnership) {
-  g_return_if_fail(self && dest);
-  g_value_free_data(dest);
-  *dest = *self;
-  if (transferOwnership) {
-    self->free_callback = NULL;
+GValue *g_value_ref(GValue *self, GValue *target) {
+  g_return_val_if_fail(self && target, self);
+  g_value_unref(self);
+  *self = *target;
+  if (self->refs) {
+    (*self->refs)++;
+  }
+}
+void g_value_unref(GValue *self) {
+  g_return_if_fail(self);
+  if (self->refs) {
+    g_return_if_fail(*self->refs > 0);
+    (*self->refs)--;
+    if (*self->refs == 0)
+      g_value_free_data(self);
   } else {
-    dest->free_callback = NULL;
+    g_value_free_data(self);
   }
 }
 void g_value_free(GValue *self) {
   g_return_if_fail(self);
-  g_value_free_data(self);
+  g_value_unref(self);
   g_free(self);
 }
 
