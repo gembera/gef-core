@@ -138,14 +138,11 @@ void _g_free(gpointer mem) {
 }
 #ifdef ENABLE_MEM_RECORD
 static gbool mem_record_enabled = FALSE;
-static gchar mem_record_log[1024];
 static gulong mem_record_index = 0;
 static GMemRecordCallback mem_record_callback = NULL;
 void g_mem_record(GMemRecordCallback callback) {
   mem_record_callback = callback;
 }
-void g_mem_record_begin() { mem_record_enabled = TRUE; }
-void g_mem_record_end() { mem_record_enabled = FALSE; }
 static gulong mem_size(gpointer mem) {
   if (mem == NULL)
     return 0;
@@ -207,12 +204,81 @@ void g_mem_record_free(gpointer mem, gcstr __file__, const int __line__) {
   _g_free(mem);
 }
 
+typedef struct {
+  gpointer mem;
+  gulong size;
+  gcstr file;
+  gint line;
+} GMemRecord;
+gint leak_records_size = 0;
+gint leak_records_alloc = 0;
+GMemRecord *leak_records = NULL;
+void g_mem_leak_record_free(gpointer memfree, gulong freed, gcstr __file__,
+                            gint __line__) {
+  if (freed == 0)
+    return;
+  g_return_if_fail(leak_records_size > 0 && leak_records);
+  for (gint i = 0; i < leak_records_size; i++) {
+    GMemRecord *ri = leak_records + i;
+    if (ri->mem == memfree) {
+      g_return_if_fail(ri->size == freed);
+      for (gint j = i + 1; j < leak_records_size; j++) {
+        leak_records[j - 1] = leak_records[j];
+      }
+      leak_records_size--;
+      return;
+    }
+  }
+  g_return_if_fail("memfree pointer could not be found")
+}
+
+void g_mem_leak_record_alloc(gpointer memnew, gulong allocated, gcstr __file__,
+                             gint __line__) {
+  if (allocated == 0)
+    return;
+  gint index;
+  if (!leak_records) {
+    leak_records_size = leak_records_alloc = 1;
+    leak_records = malloc(sizeof(GMemRecord));
+    index = 0;
+  } else {
+    for (gint i = 0; i < leak_records_size; i++) {
+      GMemRecord *ri = leak_records + i;
+      g_return_if_fail(ri->mem != memnew)
+    }
+    index = leak_records_size++;
+    if (leak_records_size > leak_records_alloc) {
+      leak_records_alloc = leak_records_size;
+      leak_records =
+          realloc(leak_records, sizeof(GMemRecord) * leak_records_alloc);
+    }
+  }
+  leak_records[index].mem = memnew;
+  leak_records[index].size = allocated;
+  leak_records[index].file = __file__;
+  leak_records[index].line = __line__;
+}
+void g_mem_print_leaks() {
+  for (gint i = 0; i < leak_records_size; i++) {
+    GMemRecord *ri = leak_records + i;
+    printf("\n*** LEAK *** : %lx\t%ld\t%s(%d)", ri->mem, ri->size, ri->file,
+           ri->line);
+  }
+}
 void g_mem_record_default_callback(gulong index, gpointer memnew,
                                    gpointer memfree, gulong allocated,
                                    gulong freed, gcstr __file__,
-                                   const int __line__) {
+                                   gint __line__) {
+  g_mem_leak_record_free(memfree, freed, __file__, __line__);
+  g_mem_leak_record_alloc(memnew, allocated, __file__, __line__);
   printf("\n%ld\t%lx\t%lx\t%ld\t%ld\t%s(%d)", index, memnew, memfree, allocated,
          freed, __file__, __line__);
+}
+
+void g_mem_record_begin() { mem_record_enabled = TRUE; }
+void g_mem_record_end() {
+  mem_record_enabled = FALSE;
+  g_mem_print_leaks();
 }
 #endif
 

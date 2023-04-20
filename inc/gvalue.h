@@ -33,8 +33,6 @@ struct _GValue {
 #define G_TYPE_LONG 3
 #define G_TYPE_DOUBLE 4
 
-#define G_TYPE_END 99
-
 #define G_TYPE_POINTER 100
 #define G_TYPE_STR 101
 #define G_TYPE_ARRAY 102
@@ -52,6 +50,7 @@ void g_value_unref(GValue *self);
 void g_value_free(GValue *self);
 
 gbool g_value_is(GValue *self, gint type);
+gbool g_value_is_error(GValue *self);
 GValue *g_value_set_null(GValue *self);
 gbool g_value_bool(GValue *self);
 GValue *g_value_set_bool(GValue *self, gbool v_bool);

@@ -8,6 +8,8 @@ GValue *g_value_new() {
 
 gbool g_value_is(GValue *self, gint type) { return self->type == type; }
 
+gbool g_value_is_error(GValue *self) { return self->type < 0; }
+
 static void g_value_free_data(GValue *self) {
   g_return_if_fail(self);
   g_free(self->refs);

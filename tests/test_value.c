@@ -10,9 +10,13 @@ int test_value(int, char *[]) {
 
   gstr hello = "hello ";
   gstr gef = "gef";
-
+  gstr err_message = "Something wrong";
   GValue *val1 = g_value_new();
   assert(g_value_is(val1, G_TYPE_NULL));
+  g_value_set(val1, G_TYPE_ERROR, g_dup(err_message), g_free_callback);
+  assert(g_value_is(val1, G_TYPE_ERROR));
+  assert(*val1->refs == 1);
+  assert(g_equal(err_message, g_value_pointer(val1)));
   GValue *val2 = g_value_set(g_value_new(), G_TYPE_STR, hello, NULL);
   assert(g_equal(hello, (gstr)g_value_pointer(val2)));
   GValue *val3 = g_value_set_double(g_value_new(), 16.0);
@@ -62,9 +66,9 @@ int test_value(int, char *[]) {
   gulong freed = 0;
   gulong peak = 0;
   g_mem_profile(&allocated, &freed, &peak);
+  g_mem_record_end();
   printf("\nallocated memory: %d  \nfreed memory: %d\npeak memory: %d\n",
          allocated, freed, peak);
   assert(allocated == freed);
-  g_mem_record_end();
   return 0;
 }

@@ -55,9 +55,9 @@ int test_list(int, char *[]) {
   gulong freed = 0;
   gulong peak = 0;
   g_mem_profile(&allocated, &freed, &peak);
+  g_mem_record_end();
   printf("\nallocated memory: %d  \nfreed memory: %d\npeak memory: %d\n",
          allocated, freed, peak);
   assert(allocated == freed);
-  g_mem_record_end();
   return 0;
 }

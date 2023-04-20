@@ -149,8 +149,7 @@ typedef void (*GMemRecordCallback)(gulong index, gpointer memnew,
                                    const int __line__);
 void g_mem_record_default_callback(gulong index, gpointer memnew,
                                    gpointer memfree, gulong allocated,
-                                   gulong freed, gcstr __file__,
-                                   const int __line__);
+                                   gulong freed, gcstr __file__, gint __line__);
 void g_mem_record(GMemRecordCallback callback);
 void g_mem_record_begin();
 void g_mem_record_end();
