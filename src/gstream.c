@@ -5,7 +5,6 @@
  */
 
 #include "gstream.h"
-#include "gfilestream.h"
 
 gint32 g_stream_read_int32(gpointer self, gint32 *data) {
   return g_stream_read(self, (void *)data, 4);
