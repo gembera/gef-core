@@ -13,10 +13,8 @@ static void g_map_free_key_value(GMap *self, GMapEntry *entry) {
     key_free_callback = entry->key_custom_free_callback;
     value_free_callback = entry->value_custom_free_callback;
   }
-  if (key_free_callback)
-    key_free_callback(entry->key);
-  if (value_free_callback)
-    value_free_callback(entry->value);
+  g_free_with(entry->key, key_free_callback);
+  g_free_with(entry->value, value_free_callback);
 }
 static void g_map_lookup(GMap *self, gcpointer key, gint *left, gint *right) {
   *left = -1;
@@ -97,8 +95,8 @@ void g_map_remove(GMap *self, gcpointer key) {
     g_array_remove(self->data, l);
   }
 }
-gpointer g_map_get(GMap *self, gcpointer key){
-  GMapEntry * entry = g_map_get_entry(self, key);
+gpointer g_map_get(GMap *self, gcpointer key) {
+  GMapEntry *entry = g_map_get_entry(self, key);
   return entry == NULL ? NULL : entry->value;
 }
 GMapEntry *g_map_get_entry(GMap *self, gcpointer key) {

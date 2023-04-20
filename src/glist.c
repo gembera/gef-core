@@ -28,9 +28,7 @@ void g_list_free(GList *self) {
   GListNode *current = self->head;
   for (; current != NULL; current = next) {
     next = current->next;
-    if (self->node_data_free_callback) {
-      self->node_data_free_callback(current->data);
-    }
+    g_free_with(current->data, self->node_data_free_callback);
     g_free(current);
   }
   g_free(self);

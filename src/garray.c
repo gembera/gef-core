@@ -150,7 +150,8 @@ void g_ptr_array_free(GPtrArray *self) {
   g_return_if_fail(self);
   if (self->free_callback) {
     for (gint i = 0; i < g_ptr_array_size(self); i++) {
-      self->free_callback(g_ptr_array_get(self, i));
+      gpointer data = g_ptr_array_get(self, i);
+      g_free_with(data, self->free_callback);
     }
   }
   g_free(self->data);

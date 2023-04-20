@@ -196,6 +196,10 @@ typedef void (*GCallback)(gpointer data, gpointer user_data);
 typedef gint (*GCompareHandler)(gcpointer a, gcpointer b);
 typedef void (*GFreeCallback)(gpointer data);
 void g_free_callback(gpointer data);
+#define g_free_with(data, free_callback)                                       \
+  if ((data) && (free_callback)) {                                             \
+    g_free_callback == (free_callback) ? g_free(data) : (free_callback)(data); \
+  }
 
 // Auto memory management
 #define g_auto(data, auto_container_name)                                      \

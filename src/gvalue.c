@@ -10,8 +10,8 @@ gbool g_value_is(GValue *self, gint type) { return self->type == type; }
 
 static void g_value_free_data(GValue *self) {
   g_return_if_fail(self);
-  if (self->type >= G_TYPE_POINTER && self->free_callback) {
-    self->free_callback(self->data.v_pointer);
+  if (self->type >= G_TYPE_POINTER) {
+    g_free_with(self->data.v_pointer, self->free_callback);
   }
   self->type = G_TYPE_NULL;
 }

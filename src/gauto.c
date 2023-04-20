@@ -18,9 +18,7 @@ static void g_container_free_callback(GArray *pointers) {
   gint size = g_array_size(pointers);
   for (gint i = 0; i < size; i++) {
     GAutoPointer *pointer = g_array(pointers, GAutoPointer) + i;
-    if (pointer->free_callback) {
-      pointer->free_callback(pointer->data);
-    }
+    g_free_with(pointer->data, pointer->free_callback);
   }
   g_array_free(pointers);
 }

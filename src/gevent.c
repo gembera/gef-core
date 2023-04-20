@@ -26,8 +26,7 @@ void g_event_free(GEvent *self) {
   guint size = g_array_size(self->listeners);
   for (gint i = 0; i < size; i++) {
     GEventListener *listener = g_array(self->listeners, GEventListener) + i;
-    if (listener->user_data_free_callback)
-      listener->user_data_free_callback(listener->user_data);
+    g_free_with(listener->user_data, listener->user_data_free_callback);
   }
   g_array_free(self->listeners);
   g_free(self);
@@ -62,8 +61,7 @@ void g_event_remove_listener(GEvent *self, gint token) {
       self->firing_index--;
     }
     GEventListener *listener = g_array(self->listeners, GEventListener) + index;
-    if (listener->user_data_free_callback)
-      listener->user_data_free_callback(listener->user_data);
+    g_free_with(listener->user_data, listener->user_data_free_callback);
     g_array_remove(self->listeners, index);
   }
 }

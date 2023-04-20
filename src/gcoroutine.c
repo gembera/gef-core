@@ -67,8 +67,7 @@ GCoroutine *g_coroutine_new_with(GCoroutineManager *manager,
 void g_coroutine_free(GCoroutine *self) {
   g_return_if_fail(self);
   g_coroutine_stop(self);
-  if (self->user_data && self->user_data_free_callback)
-    self->user_data_free_callback(self->user_data);
+  g_free_with(self->user_data, self->user_data_free_callback);
   g_free(self);
 }
 GCoroutineSemaphore *g_coroutine_semaphore_new(guint count) {
