@@ -72,20 +72,18 @@ void g_value_free(GValue *self) {
 
 gbool g_value_bool(GValue *self) {
   g_return_val_if_fail(self, FALSE);
-  if (self->type < G_TYPE_POINTER) {
-    switch (self->type) {
-    case G_TYPE_NULL:
-      return FALSE;
-    case G_TYPE_BOOL:
-      return self->data.v_bool == 0;
-    case G_TYPE_INT:
-      return self->data.v_int == 0;
-    case G_TYPE_LONG:
-      return self->data.v_long == 0;
-    case G_TYPE_DOUBLE:
-      return self->data.v_double == 0;
-    }
-  } else {
+  switch (self->type) {
+  case G_TYPE_NULL:
+    return FALSE;
+  case G_TYPE_BOOL:
+    return self->data.v_bool;
+  case G_TYPE_INT:
+    return self->data.v_int != 0;
+  case G_TYPE_LONG:
+    return self->data.v_long != 0;
+  case G_TYPE_DOUBLE:
+    return self->data.v_double != 0;
+  default:
     return TRUE;
   }
 }
@@ -100,20 +98,18 @@ GValue *g_value_set_int(GValue *self, gint v_int) {
 
 gint32 g_value_int(GValue *self) {
   g_return_val_if_fail(self, 0);
-  if (self->type < G_TYPE_POINTER) {
-    switch (self->type) {
-    case G_TYPE_NULL:
-      return 0;
-    case G_TYPE_BOOL:
-      return self->data.v_bool ? 1 : 0;
-    case G_TYPE_INT:
-      return self->data.v_int;
-    case G_TYPE_LONG:
-      return (gint32)self->data.v_long;
-    case G_TYPE_DOUBLE:
-      return (gint32)self->data.v_double;
-    }
-  } else {
+  switch (self->type) {
+  case G_TYPE_NULL:
+    return 0;
+  case G_TYPE_BOOL:
+    return self->data.v_bool ? 1 : 0;
+  case G_TYPE_INT:
+    return self->data.v_int;
+  case G_TYPE_LONG:
+    return (gint32)self->data.v_long;
+  case G_TYPE_DOUBLE:
+    return (gint32)self->data.v_double;
+  default:
     return 0;
   }
 }
@@ -124,20 +120,18 @@ GValue *g_value_set_long(GValue *self, gint64 v_long) {
 
 gint64 g_value_long(GValue *self) {
   g_return_val_if_fail(self, 0);
-  if (self->type < G_TYPE_POINTER) {
-    switch (self->type) {
-    case G_TYPE_NULL:
-      return 0;
-    case G_TYPE_BOOL:
-      return self->data.v_bool ? 1 : 0;
-    case G_TYPE_INT:
-      return self->data.v_int;
-    case G_TYPE_LONG:
-      return self->data.v_long;
-    case G_TYPE_DOUBLE:
-      return (gint64)self->data.v_double;
-    }
-  } else {
+  switch (self->type) {
+  case G_TYPE_NULL:
+    return 0;
+  case G_TYPE_BOOL:
+    return self->data.v_bool ? 1 : 0;
+  case G_TYPE_INT:
+    return self->data.v_int;
+  case G_TYPE_LONG:
+    return self->data.v_long;
+  case G_TYPE_DOUBLE:
+    return (gint64)self->data.v_double;
+  default:
     return 0;
   }
 }
@@ -148,20 +142,18 @@ GValue *g_value_set_double(GValue *self, gdouble v_double) {
 
 gdouble g_value_double(GValue *self) {
   g_return_val_if_fail(self, 0);
-  if (self->type < G_TYPE_POINTER) {
-    switch (self->type) {
-    case G_TYPE_NULL:
-      return 0;
-    case G_TYPE_BOOL:
-      return self->data.v_bool ? 1 : 0;
-    case G_TYPE_INT:
-      return self->data.v_int;
-    case G_TYPE_LONG:
-      return self->data.v_long;
-    case G_TYPE_DOUBLE:
-      return self->data.v_double;
-    }
-  } else {
+  switch (self->type) {
+  case G_TYPE_NULL:
+    return 0;
+  case G_TYPE_BOOL:
+    return self->data.v_bool ? 1 : 0;
+  case G_TYPE_INT:
+    return self->data.v_int;
+  case G_TYPE_LONG:
+    return self->data.v_long;
+  case G_TYPE_DOUBLE:
+    return self->data.v_double;
+  default:
     return 0;
   }
 }
