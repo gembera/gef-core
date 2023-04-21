@@ -14,10 +14,12 @@ typedef struct {
   GArray *items; // Array of GValue
   guint max;
   gbool closed;
+  gbool auto_discard; // auto discard the first readable value when the buffer is full
   GEvent * on_read;
   GEvent * on_write;
-  GEvent * on_closed;
+  GEvent * on_close;
   GEvent * on_error;
+  GEvent * on_discard;
 } GChannel;
 
 #define G_TYPE_CHANNEL_CLOSED 99
@@ -29,6 +31,9 @@ gbool g_channel_read(GChannel *self, GValue* item);
 gbool g_channel_is_closed(GChannel *self);
 void g_channel_close(GChannel *self);
 void g_channel_error(GChannel *self, gint err_code, gstr err_msg);
+void g_channel_discard(GChannel *self);
+guint g_channel_readable_count(GChannel *self);
+guint g_channel_writable_count(GChannel *self);
 void g_channel_free(GChannel *self);
 
 #endif

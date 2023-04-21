@@ -92,7 +92,7 @@ static void channel_test(gint max) {
   gbool closed = FALSE;
   g_event_add_listener(ch->on_read, on_channel_read, &read_write_counter);
   g_event_add_listener(ch->on_write, on_channel_write, &read_write_counter);
-  g_event_add_listener(ch->on_closed, on_channel_closed, &closed);
+  g_event_add_listener(ch->on_close, on_channel_closed, &closed);
   GCoroutine *co_odd = g_coroutine_new_with(
       manager, sender_handler, ud1, (GFreeCallback)free_sender_user_data);
   GCoroutine *co_even = g_coroutine_new_with(
@@ -154,7 +154,7 @@ static void channel_error_test() {
   gbool error = FALSE;
   g_event_add_listener(ch->on_read, on_channel_read, &read_write_counter);
   g_event_add_listener(ch->on_write, on_channel_write, &read_write_counter);
-  g_event_add_listener(ch->on_closed, on_channel_closed, &closed);
+  g_event_add_listener(ch->on_close, on_channel_closed, &closed);
   g_event_add_listener(ch->on_error, on_channel_error, &error);
 
   GCoroutine *co_odd = g_coroutine_new_with(
@@ -182,6 +182,97 @@ static void channel_error_test() {
   }
   g_array_free(channel_case_check);
 }
+
+static void on_channel_discard(GEvent *event, gpointer args,
+                               gpointer user_data) {
+  gint *count = (gint *)user_data;
+  (*count)++;
+  GValue *val = ( GValue *)args;
+  printf("\ndiscard : %d\n", g_value_int(val));
+}
+
+static GCoroutineStatus sender_discard_handler(GCoroutine *co) {
+  SenderUserData *ud = (SenderUserData *)co->user_data;
+  co_begin(co);
+  for (ud->i = 0; ud->i < 5; ud->i++) {
+    g_value_set_int(&ud->num, ud->i * ud->i);
+    co_sleep(co, 40);
+    co_wait_until(co, g_channel_write(ud->channel, &ud->num));
+    channel_case_record("sender", g_value_int(&ud->num), 40);
+  }
+  if (ud->i == 5)
+    g_channel_close(ud->channel);
+  co_end(co);
+}
+
+static GCoroutineStatus receiver_discard_handler(GCoroutine *co) {
+  ReceiverUserData *ud = (ReceiverUserData *)co->user_data;
+  co_begin(co);
+  co_wait_until(co, g_channel_readable_count(ud->channel) > 0);
+  g_channel_discard(ud->channel);
+  do {
+    co_sleep(co, 100);
+    co_wait_until(co, g_channel_read(ud->channel, &ud->num));
+    if (g_value_is_channel_closed(&ud->num) || g_value_is_error(&ud->num))
+      break;
+    channel_case_record("receiver", g_value_int(&ud->num), 100);
+  } while (TRUE);
+  co_end(co);
+}
+static void channel_discard_test() {
+  channel_case_check = g_array_new(gint);
+  GCoroutineManager *manager = g_coroutine_manager_new();
+  GChannel *ch = g_channel_new(1);
+  ch->auto_discard = TRUE;
+  SenderUserData *ud1 = g_new(SenderUserData);
+  ud1->channel = ch;
+  ReceiverUserData *ud2 = g_new(ReceiverUserData);
+  ud2->channel = ch;
+  ReadWriteCountUserData read_write_counter;
+  read_write_counter.reads = 0;
+  read_write_counter.writes = 0;
+  gbool closed = FALSE;
+  gbool error = FALSE;
+  gint discards = 0;
+  g_event_add_listener(ch->on_read, on_channel_read, &read_write_counter);
+  g_event_add_listener(ch->on_write, on_channel_write, &read_write_counter);
+  g_event_add_listener(ch->on_close, on_channel_closed, &closed);
+  g_event_add_listener(ch->on_error, on_channel_error, &error);
+  g_event_add_listener(ch->on_discard, on_channel_discard, &discards);
+
+  GCoroutine *co_odd =
+      g_coroutine_new_with(manager, sender_discard_handler, ud1,
+                           (GFreeCallback)free_sender_user_data);
+  GCoroutine *co_even =
+      g_coroutine_new_with(manager, receiver_discard_handler, ud2,
+                           (GFreeCallback)free_receiver_user_data);
+
+  g_coroutine_start(co_odd);
+  g_coroutine_start(co_even);
+  while (g_coroutine_manager_alive_count(manager)) {
+    g_coroutine_manager_loop(manager);
+    // g_sleep(10);
+  }
+  assert(discards == 3);
+  assert(read_write_counter.reads == 3);  // 2 data + 1 close
+  assert(read_write_counter.writes == 6); // 5 data + 1 close
+  assert(closed);
+  assert(!error);
+  g_channel_free(ch);
+  g_coroutine_manager_free(manager);
+  gint size = g_array_size(channel_case_check);
+  assert(size == 7);
+  gint *nums = g_array(channel_case_check, gint);
+  assert(nums[0] == 0);  // send 0
+  assert(nums[1] == 1);  // send 1
+  assert(nums[2] == 4);  // send 4
+  assert(nums[3] == 4);  // receive 4
+  assert(nums[4] == 9);  // send 9
+  assert(nums[5] == 16);  // send 16
+  assert(nums[6] == 16);  // receive 16
+
+  g_array_free(channel_case_check);
+}
 int test_channel(int, char *[]) {
   g_mem_record(g_mem_record_default_callback);
   g_mem_record_begin();
@@ -192,6 +283,7 @@ int test_channel(int, char *[]) {
 
   channel_error_test();
 
+  channel_discard_test();
   gulong allocated = 0;
   gulong freed = 0;
   gulong peak = 0;
