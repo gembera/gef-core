@@ -361,9 +361,8 @@ gstr g_replace(gstr source, gstr sub, gstr rep);
 gstr g_replace_free(gstr source, gstr sub, gstr rep);
 gstr g_trim(gstr str);
 gbool g_is_space(gwchar c);
-gint g_format_max_length(gcstr fmt, va_list args);
 gstr g_format(gcstr fmt, ...);
-void g_format_to(gstr buffer, gcstr fmt, ...);
+guint g_format_to(gstr buffer, guint len, gcstr fmt, ...);
 
 // Utils
 gulong g_tick_count();

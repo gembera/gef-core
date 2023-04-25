@@ -18,13 +18,13 @@ create_test_sourcelist(tests
     test_value.c
 )
 
-add_executable(all-gef-tests ${tests})
-target_link_libraries(all-gef-tests gef-core)
+add_executable(all-gef-core-tests ${tests})
+target_link_libraries(all-gef-core-tests gef-core)
 
-set(all-tests-to-run ${tests})
-remove(all-tests-to-run all_test.c)
+set(all-gef-core-tests-to-run ${tests})
+remove(all-gef-core-tests-to-run all_test.c)
 
-foreach(test ${all-tests-to-run})
+foreach(test ${all-gef-core-tests-to-run})
     get_filename_component(tname ${test} NAME_WE)
-    add_test(NAME ${tname} COMMAND all-gef-tests ${tname})
+    add_test(NAME ${tname} COMMAND all-gef-core-tests ${tname})
 endforeach()

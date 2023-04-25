@@ -5,6 +5,7 @@
  */
 
 #include "glib.h"
+#include "mjson.h"
 
 #define G_STR_DELIMITERS "_-|> <."
 
@@ -269,125 +270,19 @@ gbool g_is_space(gwchar c) {
   return c == ' ' || c == '\t' || c == '\r' || c == '\n';
 }
 
-gint g_format_max_length(gcstr fmt, va_list args) {
-  int len = 0;
-  int short_int;
-  int long_int;
-  int done;
-  gstr tmp;
-
-  while (*fmt) {
-    gchar c = *fmt++;
-
-    short_int = FALSE;
-    long_int = FALSE;
-
-    if (c == '%') {
-      done = FALSE;
-      while (*fmt && !done) {
-        switch (*fmt++) {
-        case '*':
-          len += va_arg(args, int);
-          break;
-        case '1':
-        case '2':
-        case '3':
-        case '4':
-        case '5':
-        case '6':
-        case '7':
-        case '8':
-        case '9':
-          fmt -= 1;
-          len += strtol(fmt, (gstr *)&fmt, 10);
-          break;
-        case 'h':
-          short_int = TRUE;
-          break;
-        case 'l':
-          long_int = TRUE;
-          break;
-
-          /* I ignore 'q' and 'L', they're not portable anyway. */
-
-        case 's':
-          tmp = va_arg(args, gstr);
-          if (tmp)
-            len += g_len(tmp);
-          else
-            len += g_len("(null)");
-          done = TRUE;
-          break;
-        case 'd':
-        case 'i':
-        case 'o':
-        case 'u':
-        case 'x':
-        case 'X':
-          if (long_int)
-            (void)va_arg(args, long);
-          else if (short_int)
-            (void)va_arg(args, int);
-          else
-            (void)va_arg(args, int);
-          len += 32;
-          done = TRUE;
-          break;
-        case 'D':
-        case 'O':
-        case 'U':
-          (void)va_arg(args, long);
-          len += 32;
-          done = TRUE;
-          break;
-        case 'e':
-        case 'E':
-        case 'f':
-        case 'g':
-          (void)va_arg(args, double);
-          len += 32;
-          done = TRUE;
-          break;
-        case 'c':
-          (void)va_arg(args, int);
-          len += 1;
-          done = TRUE;
-          break;
-        case 'p':
-        case 'n':
-          (void)va_arg(args, void *);
-          len += 32;
-          done = TRUE;
-          break;
-        case '%':
-          len += 1;
-          done = TRUE;
-          break;
-        default:
-          break;
-        }
-      }
-    } else
-      len += 1;
-  }
-
-  return len;
-}
-
 gstr g_format(gcstr fmt, ...) {
-  va_list args;
-  va_start(args, fmt);
-  gint length = g_format_max_length(fmt, args);
-  va_end(args);
-  gstr buffer = g_malloc0(length + 1);
-  va_start(args, fmt);
-  vsprintf(buffer, fmt, args);
-  va_end(args);
-  return buffer;
+  va_list ap;
+  gstr result = NULL;
+  va_start(ap, fmt);
+  mjson_vprintf(mjson_print_dynamic_buf, &result, fmt, &ap);
+  va_end(ap);
+  return result;
 }
-void g_format_to(gstr buffer, gcstr fmt, ...) {
-  va_list args;
-  va_start(args, fmt);
-  vsprintf(buffer, fmt, args);
-  va_end(args);
+guint g_format_to(gstr buffer, guint len, gcstr fmt, ...) {
+  va_list ap;
+  struct mjson_fixedbuf fb = {buffer, (int) len, 0};
+  va_start(ap, fmt);
+  mjson_vprintf(mjson_print_fixed_buf, &fb, fmt, &ap);
+  va_end(ap);
+  return fb.len;
 }

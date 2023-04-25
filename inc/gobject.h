@@ -66,7 +66,6 @@ gbool g_is_instance_of(gpointer self, GObjectClass *targetclazz);
   g_register_class(#class "Class", CLASS(baseclass), sizeof(class##Class),     \
                    class_init, class_finalize, sizeof(class), init, finalize);
 
-void static_clean_gobject(void);
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

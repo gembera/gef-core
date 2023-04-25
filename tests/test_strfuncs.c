@@ -60,7 +60,7 @@ int test_strfuncs(int, char *[]) {
   str = g_format("%d + %d = %d", 1, 2, 3);
   assert(g_equal(str, "1 + 2 = 3"));
   g_free(str);
-  g_format_to(buffer, "%d + %d = %d", 8, 8, 16);
+  g_format_to(buffer, 100, "%d + %d = %d", 8, 8, 16);
   assert(g_equal(buffer, "8 + 8 = 16"));
 
   gulong allocated = 0;

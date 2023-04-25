@@ -43,14 +43,11 @@ struct _GValue {
 #define G_TYPE_CUSTOM 200
 
 GValue *g_value_new();
-GValue *g_value_set(GValue *self, gint type, gpointer pointer,
-                    GFreeCallback free_callback);
-GValue *g_value_ref(GValue *self, GValue *target);
-void g_value_unref(GValue *self);
 void g_value_free(GValue *self);
 
 gbool g_value_is(GValue *self, gint type);
 gbool g_value_is_error(GValue *self);
+
 GValue *g_value_set_null(GValue *self);
 gbool g_value_bool(GValue *self);
 GValue *g_value_set_bool(GValue *self, gbool v_bool);
@@ -61,6 +58,11 @@ GValue *g_value_set_long(GValue *self, gint64 v_long);
 gdouble g_value_double(GValue *self);
 GValue *g_value_set_double(GValue *self, gdouble v_double);
 gpointer g_value_pointer(GValue *self);
+GValue *g_value_set(GValue *self, gint type, gpointer pointer,
+                    GFreeCallback free_callback);
+
+GValue *g_value_ref(GValue *self, GValue *target);
+void g_value_unref(GValue *self);
 
 #ifdef __cplusplus
 }
