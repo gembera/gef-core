@@ -345,7 +345,6 @@ void g_map_visit(GMap *self, GMapVisitCallback func, gpointer user_data);
 #define g_equal(str1, str2) (g_cmp(str1, str2) == 0)
 void g_delimit(gstr str, gcstr delimiters, gchar new_delimiter);
 gstr g_dup(gcstr str);
-gstr g_concat(gcstr str1, ...);
 gint g_cmp(gcstr str1, gcstr str2);
 void g_down(gstr str);
 void g_up(gstr str);

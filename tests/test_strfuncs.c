@@ -27,7 +27,7 @@ int test_strfuncs(int, char *[]) {
   g_reverse(str);
   assert(g_equal(str, "FEG"));
   g_free(str);
-  str = g_concat("Why ", "gembera ", "?");
+  str = g_format("%s%s%s","Why ", "gembera ", "?");
   assert(g_equal(str, "Why gembera ?"));
   assert(g_start_with(str, "Why"));
   assert(!g_start_with(str, "why"));

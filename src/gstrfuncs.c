@@ -54,37 +54,6 @@ gstr g_replace(gstr source, gstr sub, gstr rep) {
   return result;
 }
 
-gstr g_concat(gcstr str1, ...) {
-  g_return_val_if_fail(str1, NULL);
-  guint l;
-  va_list args;
-  gstr s;
-  gstr concat;
-
-  l = 1 + g_len(str1);
-  va_start(args, str1);
-  s = va_arg(args, gstr);
-  while (s) {
-    l += g_len(s);
-    s = va_arg(args, gstr);
-  }
-  va_end(args);
-
-  concat = g_malloc(l);
-  concat[0] = 0;
-
-  strcat(concat, str1);
-  va_start(args, str1);
-  s = va_arg(args, gstr);
-  while (s) {
-    strcat(concat, s);
-    s = va_arg(args, gstr);
-  }
-  va_end(args);
-
-  return concat;
-}
-
 void g_down(gstr str) {
   g_return_if_fail(str);
   register gstr s;

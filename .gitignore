@@ -1,5 +1,6 @@
 .DS_Store
 build
+~*.md
 
 # Cmake files
 CMakeCache.txt
