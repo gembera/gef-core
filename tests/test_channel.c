@@ -80,7 +80,7 @@ static void on_channel_error(GEvent *event, gpointer args, gpointer user_data) {
 }
 static void channel_test(gint max) {
   channel_case_check = g_array_new(gint);
-  GCoroutineManager *manager = g_coroutine_manager_new();
+  GCoroutineContext *context = g_coroutine_context_new();
   GChannel *ch = g_channel_new(max);
   SenderUserData *ud1 = g_new(SenderUserData);
   ud1->channel = ch;
@@ -94,21 +94,21 @@ static void channel_test(gint max) {
   g_event_add_listener(ch->on_write, on_channel_write, &read_write_counter);
   g_event_add_listener(ch->on_close, on_channel_closed, &closed);
   GCoroutine *co_odd = g_coroutine_new_with(
-      manager, sender_handler, ud1, (GFreeCallback)free_sender_user_data);
+      context, sender_handler, ud1, (GFreeCallback)free_sender_user_data);
   GCoroutine *co_even = g_coroutine_new_with(
-      manager, receiver_handler, ud2, (GFreeCallback)free_receiver_user_data);
+      context, receiver_handler, ud2, (GFreeCallback)free_receiver_user_data);
 
   g_coroutine_start(co_odd);
   g_coroutine_start(co_even);
-  while (g_coroutine_manager_alive_count(manager)) {
-    g_coroutine_manager_loop(manager);
+  while (g_coroutine_context_alive_count(context)) {
+    g_coroutine_context_loop(context);
     // g_sleep(10);
   }
   assert(read_write_counter.reads == 6); // 5 data + 1 close
   assert(read_write_counter.reads == read_write_counter.writes);
   assert(closed);
   g_channel_free(ch);
-  g_coroutine_manager_free(manager);
+  g_coroutine_context_free(context);
   gint size = g_array_size(channel_case_check);
   assert(size == 10);
   if (max == 1) {
@@ -141,7 +141,7 @@ static GCoroutineStatus sender_error_handler(GCoroutine *co) {
 }
 static void channel_error_test() {
   channel_case_check = g_array_new(gint);
-  GCoroutineManager *manager = g_coroutine_manager_new();
+  GCoroutineContext *context = g_coroutine_context_new();
   GChannel *ch = g_channel_new(1);
   SenderUserData *ud1 = g_new(SenderUserData);
   ud1->channel = ch;
@@ -158,14 +158,14 @@ static void channel_error_test() {
   g_event_add_listener(ch->on_error, on_channel_error, &error);
 
   GCoroutine *co_odd = g_coroutine_new_with(
-      manager, sender_error_handler, ud1, (GFreeCallback)free_sender_user_data);
+      context, sender_error_handler, ud1, (GFreeCallback)free_sender_user_data);
   GCoroutine *co_even = g_coroutine_new_with(
-      manager, receiver_handler, ud2, (GFreeCallback)free_receiver_user_data);
+      context, receiver_handler, ud2, (GFreeCallback)free_receiver_user_data);
 
   g_coroutine_start(co_odd);
   g_coroutine_start(co_even);
-  while (g_coroutine_manager_alive_count(manager)) {
-    g_coroutine_manager_loop(manager);
+  while (g_coroutine_context_alive_count(context)) {
+    g_coroutine_context_loop(context);
     // g_sleep(10);
   }
   assert(read_write_counter.reads == 4);  // 3 data + 1 error
@@ -173,7 +173,7 @@ static void channel_error_test() {
   assert(!closed);
   assert(error);
   g_channel_free(ch);
-  g_coroutine_manager_free(manager);
+  g_coroutine_context_free(context);
   gint size = g_array_size(channel_case_check);
   assert(size == 6);
   gint *nums = g_array(channel_case_check, gint);
@@ -221,7 +221,7 @@ static GCoroutineStatus receiver_discard_handler(GCoroutine *co) {
 }
 static void channel_discard_test() {
   channel_case_check = g_array_new(gint);
-  GCoroutineManager *manager = g_coroutine_manager_new();
+  GCoroutineContext *context = g_coroutine_context_new();
   GChannel *ch = g_channel_new(1);
   ch->auto_discard = TRUE;
   SenderUserData *ud1 = g_new(SenderUserData);
@@ -241,16 +241,16 @@ static void channel_discard_test() {
   g_event_add_listener(ch->on_discard, on_channel_discard, &discards);
 
   GCoroutine *co_odd =
-      g_coroutine_new_with(manager, sender_discard_handler, ud1,
+      g_coroutine_new_with(context, sender_discard_handler, ud1,
                            (GFreeCallback)free_sender_user_data);
   GCoroutine *co_even =
-      g_coroutine_new_with(manager, receiver_discard_handler, ud2,
+      g_coroutine_new_with(context, receiver_discard_handler, ud2,
                            (GFreeCallback)free_receiver_user_data);
 
   g_coroutine_start(co_odd);
   g_coroutine_start(co_even);
-  while (g_coroutine_manager_alive_count(manager)) {
-    g_coroutine_manager_loop(manager);
+  while (g_coroutine_context_alive_count(context)) {
+    g_coroutine_context_loop(context);
     // g_sleep(10);
   }
   assert(discards == 3);
@@ -259,7 +259,7 @@ static void channel_discard_test() {
   assert(closed);
   assert(!error);
   g_channel_free(ch);
-  g_coroutine_manager_free(manager);
+  g_coroutine_context_free(context);
   gint size = g_array_size(channel_case_check);
   assert(size == 7);
   gint *nums = g_array(channel_case_check, gint);

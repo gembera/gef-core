@@ -16,13 +16,17 @@ typedef enum {
   COROUTINE_STATUS_ENDED = 3
 } GCoroutineStatus;
 
-typedef struct _GCoroutineManager GCoroutineManager;
+typedef struct _GCoroutineContext GCoroutineContext;
 typedef struct _GCoroutine GCoroutine;
 // in GCoroutineHandler, do not use any local variables
 typedef GCoroutineStatus (*GCoroutineHandler)(GCoroutine *co);
 
-struct _GCoroutineManager {
+struct _GCoroutineContext {
+  gbool standalone;
+  GCoroutineContext *parent;
   GPtrArray *coroutines;
+  GPtrArray *children;
+  GMap *shared;
 };
 
 typedef struct {
@@ -31,7 +35,7 @@ typedef struct {
 } GCoroutineTimer;
 
 struct _GCoroutine {
-  GCoroutineManager *manager;
+  GCoroutineContext *context;
   GCoroutineHandler handler;
   GCoroutineStatus status;
   GCoroutineTimer sleep_timer;
@@ -44,18 +48,19 @@ typedef struct {
   guint count;
 } GCoroutineSemaphore;
 
-GCoroutineManager *g_coroutine_manager_new();
-void g_coroutine_manager_loop(GCoroutineManager *self);
-gint g_coroutine_manager_alive_count(GCoroutineManager *self);
-void g_coroutine_manager_free(GCoroutineManager *self);
+#define g_coroutine_context_new() g_coroutine_context_new_with(NULL)
+GCoroutineContext *g_coroutine_context_new_with(GCoroutineContext *parent);
+void g_coroutine_context_loop(GCoroutineContext *self);
+gint g_coroutine_context_alive_count(GCoroutineContext *self);
+void g_coroutine_context_free(GCoroutineContext *self);
 
 void g_coroutine_start(GCoroutine *self);
 void g_coroutine_stop(GCoroutine *self);
 #define g_coroutine_is_alive(self) (self)->status < COROUTINE_STATUS_EXITED
 
-#define g_coroutine_new(manager, handler)                                      \
-  g_coroutine_new_with(manager, handler, NULL, NULL)
-GCoroutine *g_coroutine_new_with(GCoroutineManager *manager,
+#define g_coroutine_new(context, handler)                                      \
+  g_coroutine_new_with(context, handler, NULL, NULL)
+GCoroutine *g_coroutine_new_with(GCoroutineContext *context,
                                  GCoroutineHandler handler, gpointer user_data,
                                  GFreeCallback user_data_free_callback);
 void g_coroutine_free(GCoroutine *self);

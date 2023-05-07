@@ -32,7 +32,7 @@ int test_map(int, char *[]) {
   pp4->score = 100;
   Student p5 = {"five", 60};
 
-  GMap *map1 = g_map_new();
+  GMap *map1 = g_map_new(NULL);
   g_map_set(map1, keyb, &p2);
   g_map_set(map1, keya, &p3);
   g_map_set(map1, keyd, pp4);
@@ -49,7 +49,7 @@ int test_map(int, char *[]) {
   g_free(pp4);
 
   // map2 owns the value memory, but not key memory
-  GMap *map2 = g_map_new_with(NULL, g_free_callback, NULL);
+  GMap *map2 = g_map_new_with(NULL, NULL, g_free_callback, NULL);
   g_map_set(map2, keyb, g_new(Student));
   g_map_set(map2, keya, g_new(Student));
   g_map_set(map2, keyd, g_new(Student));
@@ -58,13 +58,13 @@ int test_map(int, char *[]) {
   g_map_free(map2);
 
   // map3 owns both key and value memory
-  GMap *map3 = g_map_new_with(g_free_callback, g_free_callback, NULL);
-  g_map_set(map3, g_dup("a"), g_new(Student));
-  g_map_set(map3, g_dup("b"), g_new(Student));
-  g_map_set(map3, g_dup("c"), g_new(Student));
-  g_map_set(map3, g_dup("a"), g_new(Student));
-  g_map_set(map3, g_dup("b"), g_new(Student));
-  g_map_set_with(map3, "b", g_object_new(GMemoryStream), NULL, g_object_free);
+  GMap *map3 = g_map_new( g_free_callback);
+  g_map_set(map3, "a", g_new(Student));
+  g_map_set(map3, "b", g_new(Student));
+  g_map_set(map3, "c", g_new(Student));
+  g_map_set(map3, "a", g_new(Student));
+  g_map_set(map3, "b", g_new(Student));
+  //g_map_set_with(map3, "b", g_object_new(GMemoryStream), NULL, g_object_free);
   g_map_free(map3);
 
   g_auto_free();

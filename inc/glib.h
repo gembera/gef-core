@@ -304,33 +304,37 @@ GListNode *g_list_get(GList *self, guint n);
 void g_list_visit(GList *self, GListVisitCallback func, gpointer user_data);
 
 // HashMap
-typedef struct {
-  gpointer key;
-  gpointer value;
-  GFreeCallback key_custom_free_callback;
-  GFreeCallback value_custom_free_callback;
-} GMapEntry;
-
-typedef struct {
-  GArray *data;
-  GCompareHandler key_compare_handler;
-  GFreeCallback key_default_free_callback;
-  GFreeCallback value_default_free_callback;
-} GMap;
-
+typedef struct _GMap GMap;
+typedef gpointer (*GMapKeyDupicateHandler)(gpointer data);
 typedef void (*GMapVisitCallback)(GMap *self, gpointer key, gpointer value,
                                   gpointer user_data);
 
-#define g_map_new() g_map_new_with(NULL, NULL, NULL)
-GMap *g_map_new_with(GFreeCallback key_free_callback,
+typedef struct {
+  gpointer key;
+  gpointer value;
+  GFreeCallback value_custom_free_callback;
+} GMapEntry;
+
+struct _GMap {
+  GArray *data;
+  GCompareHandler key_compare_handler;
+  GFreeCallback key_free_callback;
+  GFreeCallback value_default_free_callback;
+  GMapKeyDupicateHandler key_new_handler;
+};
+
+#define g_map_new(value_free_callback)                                         \
+  g_map_new_with((GMapKeyDupicateHandler)g_dup, g_free_callback,               \
+                 value_free_callback, (GCompareHandler)g_cmp)
+GMap *g_map_new_with(GMapKeyDupicateHandler key_new_handler,
+                     GFreeCallback key_free_callback,
                      GFreeCallback value_free_callback,
-                     GCompareHandler key_compare_func);
+                     GCompareHandler key_compare_handler);
 void g_map_free(GMap *self);
 gpointer g_map_get(GMap *self, gcpointer key);
 GMapEntry *g_map_get_entry(GMap *self, gcpointer key);
-#define g_map_set(self, key, value) g_map_set_with(self, key, value, NULL, NULL)
+#define g_map_set(self, key, value) g_map_set_with(self, key, value, NULL)
 void g_map_set_with(GMap *self, gpointer key, gpointer value,
-                    GFreeCallback key_free_callback,
                     GFreeCallback value_free_callback);
 void g_map_remove(GMap *self, gcpointer key);
 void g_map_remove_all(GMap *self);

@@ -37,19 +37,19 @@ int test_coroutine(int, char *[]) {
   g_mem_record_begin();
 
   odd_event_case_check = g_array_new(gint);
-  GCoroutineManager *manager = g_coroutine_manager_new();
+  GCoroutineContext *context = g_coroutine_context_new();
   gint i1 = 1;
   gint i2 = 2;
-  GCoroutine *co_odd = g_coroutine_new_with(manager, print_odd, &i1, NULL);
-  GCoroutine *co_even = g_coroutine_new_with(manager, print_even, &i2, NULL);
+  GCoroutine *co_odd = g_coroutine_new_with(context, print_odd, &i1, NULL);
+  GCoroutine *co_even = g_coroutine_new_with(context, print_even, &i2, NULL);
 
   g_coroutine_start(co_odd);
   g_coroutine_start(co_even);
-  while (g_coroutine_manager_alive_count(manager)) {
-    g_coroutine_manager_loop(manager);
+  while (g_coroutine_context_alive_count(context)) {
+    g_coroutine_context_loop(context);
     g_sleep(10);
   }
-  g_coroutine_manager_free(manager);
+  g_coroutine_context_free(context);
   gint size = g_array_size(odd_event_case_check);
   assert(size == 6);
   gint *nums = g_array(odd_event_case_check, gint);

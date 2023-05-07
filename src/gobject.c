@@ -41,7 +41,7 @@ static void g_object_class_free(gpointer value) {
 static void g_init_class_system() {
   if (name_to_class == NULL) {
     name_to_class =
-        (GMap *)g_auto_with(g_map_new_with(NULL, g_object_class_free, NULL),
+        (GMap *)g_auto_with(g_map_new(g_object_class_free),
                             (GFreeCallback)g_map_free, "GClassSystem");
   }
 }

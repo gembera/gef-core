@@ -33,7 +33,7 @@ static void click_toggle(GEvent *event, gpointer args, gpointer user_data) {
 }
 
 int test_auto(int, char *[]) {
-  // g_mem_record(g_mem_record_default_callback);
+  g_mem_record(g_mem_record_default_callback);
   g_mem_record_begin();
 
   GEvent *click =
