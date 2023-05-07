@@ -3,32 +3,30 @@
 #include <assert.h>
 
 static GArray *odd_event_case_check = NULL;
-static void odd_event_case_record(gcstr label, gint *i) {
-  g_array_add(odd_event_case_check, gint, *i);
-  printf("\n%ld > %s : %d\n", g_tick_count(), label, *i);
-  *i += 2;
+static void odd_event_case_record(gcstr label, gint i) {
+  g_array_add(odd_event_case_check, gint, i);
+  printf("\n%ld > %s : %d\n", g_tick_count(), label, i);
 }
 static GCoroutineStatus print_odd(GCoroutine *co) {
   gint *i = (gint *)co->user_data;
+  gint count = *(gint *)g_map_get(co->context->shared, "count");
   co_begin(co);
-  odd_event_case_record("odd", i);
-  co_sleep(co, 100);
-  odd_event_case_record("odd", i);
-  co_sleep(co, 100);
-  odd_event_case_record("odd", i);
-  co_sleep(co, 100);
+  for (; *i < count; (*i)++) {
+    odd_event_case_record("odd", *i * 2 + 1);
+    co_sleep(co, 100);
+  }
   co_end(co);
 }
 
 static GCoroutineStatus print_even(GCoroutine *co) {
   gint *i = (gint *)co->user_data;
+  gint count = *(gint *)g_map_get(co->context->shared, "count");
   co_begin(co);
   co_sleep(co, 50);
-  odd_event_case_record("even", i);
-  co_sleep(co, 100);
-  odd_event_case_record("even", i);
-  co_sleep(co, 100);
-  odd_event_case_record("even", i);
+  for (; *i < count; (*i)++) {
+    odd_event_case_record("even", *i * 2 + 2);
+    co_sleep(co, 100);
+  }
   co_end(co);
 }
 
@@ -38,8 +36,10 @@ int test_coroutine(int, char *[]) {
 
   odd_event_case_check = g_array_new(gint);
   GCoroutineContext *context = g_coroutine_context_new();
-  gint i1 = 1;
-  gint i2 = 2;
+  gint count = 5;
+  g_map_set(context->shared, "count", &count);
+  gint i1 = 0;
+  gint i2 = 0;
   GCoroutine *co_odd = g_coroutine_new_with(context, print_odd, &i1, NULL);
   GCoroutine *co_even = g_coroutine_new_with(context, print_even, &i2, NULL);
 
@@ -51,7 +51,7 @@ int test_coroutine(int, char *[]) {
   }
   g_coroutine_context_free(context);
   gint size = g_array_size(odd_event_case_check);
-  assert(size == 6);
+  assert(size == count * 2);
   gint *nums = g_array(odd_event_case_check, gint);
   for (gint i = 0; i < size; i++)
     assert(nums[i] == i + 1);

@@ -6,18 +6,13 @@
 
 #include "gcoroutine.h"
 
-typedef struct {
-  GCoroutineHandler func;
-  GCoroutine *co;
-} GCoroutineRunner;
-
 GCoroutineContext *g_coroutine_context_new_with(GCoroutineContext *parent) {
   GCoroutineContext *self = g_new(GCoroutineContext);
   g_return_val_if_fail(self, NULL);
   self->parent = parent;
   self->coroutines = g_ptr_array_new_with((GFreeCallback)g_coroutine_free);
   self->children = g_ptr_array_new_with((GFreeCallback)g_coroutine_context_free);
-  //self->shared = g_map_new();
+  self->shared = g_map_new(NULL);
   return self;
 }
 void g_coroutine_context_loop(GCoroutineContext *self) {
@@ -48,6 +43,7 @@ void g_coroutine_context_free(GCoroutineContext *self) {
   g_return_if_fail(self);
   g_ptr_array_free(self->coroutines);
   g_ptr_array_free(self->children);
+  g_map_free(self->shared);
   g_free(self);
 }
 
