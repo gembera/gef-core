@@ -160,11 +160,21 @@ gdouble g_value_double(GValue *self) {
   }
 }
 
+gstr g_value_str(GValue *self) {
+  g_return_val_if_fail(g_value_is(self, G_TYPE_STR), NULL);
+  return (gstr)g_value_pointer(self);
+}
+GValue *g_value_set_str(GValue *self, gcstr str) {
+  g_return_val_if_fail(self, NULL);
+  g_value_set(self, G_TYPE_STR, (gpointer)str, g_free_callback);
+}
+
 gpointer g_value_pointer(GValue *self) {
   g_return_val_if_fail(self, NULL);
   return self->data.v_pointer;
 }
 
 GValue *g_value_set_null(GValue *self) {
+  g_return_val_if_fail(self, NULL);
   return g_value_set(self, G_TYPE_NULL, NULL, NULL);
 }

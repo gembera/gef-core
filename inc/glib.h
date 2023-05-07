@@ -261,9 +261,9 @@ typedef void (*GPtrArrayVisitCallback)(GPtrArray *self, guint index,
 #define g_ptr_array_new() g_ptr_array_new_with(NULL)
 GPtrArray *g_ptr_array_new_with(GFreeCallback free_func);
 void g_ptr_array_free(GPtrArray *self);
-#define g_ptr_array_get(self, index) self->data[index]
-#define g_ptr_array_set(self, index, val) self->data[index] = val
-#define g_ptr_array_size(self) (self->size)
+#define g_ptr_array_get(self, index) (self)->data[index]
+#define g_ptr_array_set(self, index, val) (self)->data[index] = val
+#define g_ptr_array_size(self) ((self)->size)
 void g_ptr_array_set_size(GPtrArray *self, guint length);
 void g_ptr_array_set_capacity(GPtrArray *self, guint capacity);
 #define g_ptr_array_add(self, data)                                            \

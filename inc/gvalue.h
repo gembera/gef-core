@@ -57,6 +57,8 @@ gint64 g_value_long(GValue *self);
 GValue *g_value_set_long(GValue *self, gint64 v_long);
 gdouble g_value_double(GValue *self);
 GValue *g_value_set_double(GValue *self, gdouble v_double);
+gstr g_value_str(GValue *self);
+GValue *g_value_set_str(GValue *self, gcstr str);
 gpointer g_value_pointer(GValue *self);
 GValue *g_value_set(GValue *self, gint type, gpointer pointer,
                     GFreeCallback free_callback);
