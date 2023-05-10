@@ -119,16 +119,6 @@ typedef gwchar *gwstr;
 typedef const gchar *gcstr;
 typedef const gwchar *gcwstr;
 
-#if (SIZEOF_INT == SIZEOF_VOID_P)
-#define g_pointer_to_num(p) ((gint)(p))
-#define g_pointer_to_unum(p) ((guint)(p))
-#elif (SIZEOF_LONG == SIZEOF_VOID_P)
-#define g_pointer_to_num(p) ((glong)(p))
-#define g_pointer_to_unum(p) ((gulong)(p))
-#else
-/* This should never happen */
-#endif
-
 // Memory management
 
 #ifdef HAVE_MEMMOVE

@@ -33,9 +33,6 @@
 /* The number of bytes in a short.  */
 #define SIZEOF_SHORT 2
 
-/* The number of bytes in a void *.  */
-#define SIZEOF_VOID_P @CMAKE_SIZEOF_VOID_P@
-
 /* Define if you have the memmove function.  */
 #undef HAVE_MEMMOVE
 
@@ -52,7 +49,3 @@
 #define g_log_debug printf
 
 #define g_print printf
-
-
-#cmakedefine ENABLE_MEM_PROFILE
-#cmakedefine ENABLE_MEM_RECORD
