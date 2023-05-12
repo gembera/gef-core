@@ -8,11 +8,13 @@
 #include <time.h>
 #include <unistd.h>
 
+#ifndef HAVE_TICK_COUNT
 gulong g_tick_count() {
   struct timespec tv;
   clock_gettime(CLOCK_MONOTONIC, &tv);
   return (gulong)tv.tv_sec * 1000 + (gulong)tv.tv_nsec / 1000000;
 }
+#endif
 
 void g_sleep(gulong time_ms) { usleep(time_ms * 1000); }
 

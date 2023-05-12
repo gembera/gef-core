@@ -273,7 +273,7 @@ void g_mem_record_default_callback(gulong index, gpointer memnew,
                                    gint __line__) {
   g_mem_leak_record_free(memfree, freed, __file__, __line__);
   g_mem_leak_record_alloc(memnew, allocated, __file__, __line__);
-  printf("\n%ld\t%lx\t%lx\t%ld\t%ld\t%s(%d)", index, memnew, memfree, allocated,
+  printf("\r\n%ld\t%lx\t%lx\t%ld\t%ld\t%s(%d)", index, memnew, memfree, allocated,
          freed, __file__, __line__);
 }
 
