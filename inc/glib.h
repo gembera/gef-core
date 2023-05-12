@@ -124,7 +124,7 @@ typedef const gwchar *gcwstr;
 #ifdef HAVE_MEMMOVE
 #define g_memmove memmove
 #else
-char *_memmove(char *dst, register char *src, register int n);
+void *_memmove(void *dst, const void *src, size_t n);
 #define g_memmove _memmove
 #endif
 

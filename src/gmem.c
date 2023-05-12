@@ -7,7 +7,9 @@
 #include "glib.h"
 
 #ifndef HAVE_MEMMOVE
-char *_memmove(char *dst, register char *src, register int n) {
+void *_memmove(void *str1, const void *str2, size_t n) {
+  char *dst = (char *)str1;
+  char *src = (char *)str2;
   register char *svdst;
 
   if ((dst > src) && (dst < src + n)) {

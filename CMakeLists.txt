@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.21)
 project(gef-core)
 
+#add_compile_options(-Wall -Wextra -Wpedantic -Wno-unused-parameter -Wreturn-type -Wno-pointer-arith -g)
+add_compile_options(-Wreturn-type)
 aux_source_directory(src DIR_SRC_GEF_CORE)
 
 add_library(gef-core STATIC ${DIR_SRC_GEF_CORE} libs/mjson/mjson.c)

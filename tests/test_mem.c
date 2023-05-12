@@ -16,6 +16,6 @@ int test_mem(int, char *[]) {
   g_mem_record_end();
   assert(allocated == (100 + 200 + 150));
   assert(freed == (100 + 200 + 150));
-  printf("\nallocated memory: %d  \nfreed memory: %d\npeak memory: %d\n", allocated, freed, peak);
+  printf("\nallocated memory: %ld  \nfreed memory: %ld\npeak memory: %ld\n", allocated, freed, peak);
   return 0;
 }

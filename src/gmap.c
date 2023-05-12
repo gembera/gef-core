@@ -74,7 +74,7 @@ guint g_map_size(GMap *self) {
 void g_map_visit(GMap *self, GMapVisitCallback func, gpointer user_data) {
   g_return_if_fail(self);
   guint size = g_map_size(self);
-  for (gint i = 0; i < size; i++) {
+  for (guint i = 0; i < size; i++) {
     GMapEntry *entry = g_array(self->data, GMapEntry) + i;
     func(self, entry->key, entry->value, user_data);
   }
@@ -82,7 +82,7 @@ void g_map_visit(GMap *self, GMapVisitCallback func, gpointer user_data) {
 void g_map_remove_all(GMap *self) {
   g_return_if_fail(self);
   guint size = g_map_size(self);
-  for (gint i = 0; i < size; i++) {
+  for (guint i = 0; i < size; i++) {
     GMapEntry *entry = g_array(self->data, GMapEntry) + i;
     g_map_free_key_value(self, entry);
   }

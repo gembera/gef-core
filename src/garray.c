@@ -223,8 +223,7 @@ void g_ptr_array_prepend_items(GPtrArray *self, gpointer *data, guint count) {
   g_return_if_fail(count > 0);
   guint size = sizeof(gpointer);
   g_ptr_array_maybe_expand(self, count);
-  g_memmove((guint8 *)(self->data + count), (guint8 *)self->data,
-            size * self->size);
+  g_memmove(self->data + count, self->data, size * self->size);
   memcpy(self->data, data, size * count);
   self->size += count;
 }

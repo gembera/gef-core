@@ -76,7 +76,7 @@ int test_event(int, char *[]) {
   gulong peak = 0;
   g_mem_profile(&allocated, &freed, &peak);
   g_mem_record_end();
-  printf("\nallocated memory: %d  \nfreed memory: %d\npeak memory: %d\n",
+  printf("\nallocated memory: %ld  \nfreed memory: %ld\npeak memory: %ld\n",
          allocated, freed, peak);
   assert(allocated == freed);
   return 0;

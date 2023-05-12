@@ -56,7 +56,7 @@ void g_coroutine_context_free(GCoroutineContext *self);
 
 void g_coroutine_start(GCoroutine *self);
 void g_coroutine_stop(GCoroutine *self);
-#define g_coroutine_is_alive(self) (self)->status < COROUTINE_STATUS_EXITED
+#define g_coroutine_is_alive(self) ((self)->status < COROUTINE_STATUS_EXITED)
 
 #define g_coroutine_new(context, handler)                                      \
   g_coroutine_new_with(context, handler, NULL, NULL)

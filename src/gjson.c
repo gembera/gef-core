@@ -17,7 +17,6 @@ static void json_parse_add_value(GValue *val_parent, gstr key, GValue *val) {
 }
 static int json_parse_cb(int ev, const char *s, int off, int len, void *ud) {
   struct JsonParseData *d = (struct JsonParseData *)ud;
-  const char *sub = s + off;
   gint size = g_ptr_array_size(d->stack);
   GValue *val_parent = size ? g_ptr_array_get(d->stack, size - 1) : NULL;
   GValue *val_new = NULL;
@@ -79,7 +78,7 @@ static int json_parse_cb(int ev, const char *s, int off, int len, void *ud) {
   return 0;
 }
 GValue *g_json_parse(gcstr s) {
-  struct JsonParseData d = {NULL, NULL};
+  struct JsonParseData d = {NULL, NULL, NULL};
   d.stack = g_ptr_array_new();
   mjson(s, g_len(s), json_parse_cb, &d);
   g_ptr_array_free(d.stack);

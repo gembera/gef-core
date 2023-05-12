@@ -88,6 +88,6 @@ GObjectClass *g_class(const gstr classname) {
   g_init_class_system();
   return (GObjectClass *)g_map_get(name_to_class, classname);
 }
-const gstr g_class_name(GObjectClass *clazz) {
+gstr g_class_name(GObjectClass *clazz) {
   return clazz == NULL ? NULL : clazz->g_class_name;
 }

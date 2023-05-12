@@ -54,7 +54,7 @@ GObjectClass *g_class_GObject(void);
 void g_object_init(gpointer self);
 void g_object_finalize(gpointer self);
 void g_object_class_init(gpointer clazz);
-const gstr g_class_name(GObjectClass *clazz);
+gstr g_class_name(GObjectClass *clazz);
 gbool g_is_type_of(GObjectClass *thisclazz, GObjectClass *targetclazz);
 gbool g_is_instance_of(gpointer self, GObjectClass *targetclazz);
 
