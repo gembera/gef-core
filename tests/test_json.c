@@ -11,7 +11,7 @@ static void json_strigify() {
   // mjson_print_dynamic_buf()
 }
 gstr g_json_stringify(GValue *val) {}
-int test_json(int, char *[]) {
+int test_json(int argc, char *argv[]) {
   g_mem_record(g_mem_record_default_callback);
   g_mem_record_begin();
 
@@ -46,7 +46,7 @@ int test_json(int, char *[]) {
   gulong peak = 0;
   g_mem_profile(&allocated, &freed, &peak);
   g_mem_record_end();
-  printf("\r\nallocated memory: %ld  \nfreed memory: %ld\npeak memory: %ld\r\n",
+  printf("\r\nallocated memory: %ld  \r\nfreed memory: %ld  \r\npeak memory: %ld\r\n",
          allocated, freed, peak);
   assert(allocated == freed);
   return 0;

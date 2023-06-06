@@ -22,7 +22,7 @@ static void click_remove_listener(GEvent *event, gpointer args,
   g_event_remove_listener(event, *token);
 }
 
-int test_event(int, char *[]) {
+int test_event(int argc, char *argv[]) {
   // g_mem_record(g_mem_record_default_callback);
   g_mem_record_begin();
   gint count = 0;
@@ -76,7 +76,7 @@ int test_event(int, char *[]) {
   gulong peak = 0;
   g_mem_profile(&allocated, &freed, &peak);
   g_mem_record_end();
-  printf("\r\nallocated memory: %ld  \nfreed memory: %ld\npeak memory: %ld\r\n",
+  printf("\r\nallocated memory: %ld  \r\nfreed memory: %ld  \r\npeak memory: %ld\r\n",
          allocated, freed, peak);
   assert(allocated == freed);
   return 0;

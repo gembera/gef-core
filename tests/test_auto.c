@@ -32,7 +32,7 @@ static void click_toggle(GEvent *event, gpointer args, gpointer user_data) {
   g_auto_container_free(AC2);
 }
 
-int test_auto(int, char *[]) {
+int test_auto(int argc, char *argv[]) {
   g_mem_record(g_mem_record_default_callback);
   g_mem_record_begin();
 
@@ -48,7 +48,7 @@ int test_auto(int, char *[]) {
   gulong peak = 0;
   g_mem_profile(&allocated, &freed, &peak);
   g_mem_record_end();
-  printf("\r\nallocated memory: %ld  \nfreed memory: %ld\npeak memory: %ld\r\n",
+  printf("\r\nallocated memory: %ld  \r\nfreed memory: %ld  \r\npeak memory: %ld\r\n",
          allocated, freed, peak);
   assert(allocated == freed);
   return 0;

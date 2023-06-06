@@ -273,7 +273,7 @@ static void channel_discard_test() {
 
   g_array_free(channel_case_check);
 }
-int test_channel(int, char *[]) {
+int test_channel(int argc, char *argv[]) {
   g_mem_record(g_mem_record_default_callback);
   g_mem_record_begin();
 
@@ -290,7 +290,7 @@ int test_channel(int, char *[]) {
 
   g_mem_profile(&allocated, &freed, &peak);
   g_mem_record_end();
-  printf("\r\nallocated memory: %ld  \nfreed memory: %ld\npeak memory: %ld\r\n",
+  printf("\r\nallocated memory: %ld  \r\nfreed memory: %ld  \r\npeak memory: %ld\r\n",
          allocated, freed, peak);
   assert(allocated == freed);
   return 0;
