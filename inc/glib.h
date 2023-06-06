@@ -160,7 +160,7 @@ void _g_free(gpointer mem);
 #define g_realloc(mem, size) g_mem_record_realloc(mem, size, __FILE__, __LINE__)
 #define g_free(mem) g_mem_record_free(mem, __FILE__, __LINE__)
 #else
-#define g_mem_record()
+#define g_mem_record(callback)
 #define g_mem_record_begin()
 #define g_mem_record_end()
 
@@ -178,6 +178,8 @@ void _g_free(gpointer mem);
 
 #ifdef ENABLE_MEM_PROFILE
 void g_mem_profile(gulong *allocated, gulong *freed, gulong *ppeak);
+#else
+#define g_mem_profile(allocated, freed, ppeak)
 #endif
 
 // General callbacks and handlers
