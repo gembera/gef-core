@@ -43,17 +43,19 @@
 #undef MININT
 #define MININT ((gint)~MAXINT)
 
-#define g_return_if_fail(expr)                                                 \
+#define g_return_if_fail(expr, ...)                                            \
   if (!(expr)) {                                                               \
-    g_warning("file %s: line %d: assertion \"%s\" failed.\n", __FILE__,        \
+    g_warning("\r\nfile %s: line %d: assertion \"%s\" failed.\n", __FILE__,    \
               __LINE__, #expr);                                                \
+    __VA_ARGS__;                                                               \
     return;                                                                    \
   };
 
-#define g_return_val_if_fail(expr, val)                                        \
+#define g_return_val_if_fail(expr, val, ...)                                   \
   if (!(expr)) {                                                               \
-    g_warning("file %s: line %d: assertion \"%s\" failed.\n", __FILE__,        \
+    g_warning("\r\nfile %s: line %d: assertion \"%s\" failed.\n", __FILE__,    \
               __LINE__, #expr);                                                \
+    __VA_ARGS__;                                                               \
     return val;                                                                \
   };
 
