@@ -4,8 +4,8 @@
  * License: MIT
  */
 
-#ifndef _G_EVENT_H_
-#define _G_EVENT_H_
+#ifndef __G_EVENT_H__
+#define __G_EVENT_H__
 #include "glib.h"
 
 typedef struct {

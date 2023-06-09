@@ -1,5 +1,5 @@
-#ifndef _G_VALUE_H_
-#define _G_VALUE_H_
+#ifndef __G_VALUE_H__
+#define __G_VALUE_H__
 
 #include "glib.h"
 

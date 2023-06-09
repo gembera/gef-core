@@ -4,8 +4,8 @@
  * License: MIT
  */
 
-#ifndef _G_STREAM_H_
-#define _G_STREAM_H_
+#ifndef __G_STREAM_H__
+#define __G_STREAM_H__
 #include "gobject.h"
 
 #define GSTREAM(p) ((GStream *)(p))

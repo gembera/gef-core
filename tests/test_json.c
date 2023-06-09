@@ -7,9 +7,6 @@
 
 #include "../libs/mjson/mjson.h"
 
-static void json_strigify() {
-  // mjson_print_dynamic_buf()
-}
 gstr g_json_stringify(GValue *val) {}
 int test_json(int argc, char *argv[]) {
   g_mem_record(g_mem_record_default_callback);
@@ -22,6 +19,8 @@ int test_json(int argc, char *argv[]) {
   GValue *val_a = g_json_get(json, "a");
   assert(g_value_int(val_a) == 123);
   GValue *val_b = g_json_get(json, "b");
+  gint size = g_json_size(val_b);
+  assert(size == 4);
   GValue *val_i = g_json_index(val_b, 2);
   assert(g_value_double(val_i) == 3.333);
   val_i = g_json_index(val_b, 3);

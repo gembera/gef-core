@@ -92,3 +92,62 @@ GValue *g_json_index(GValue *self, gint index) {
   g_return_val_if_fail(g_value_is(self, G_JSON_ARRAY), NULL);
   return (GValue *)g_ptr_array_get((GPtrArray *)g_value_pointer(self), index);
 }
+guint g_json_size(GValue *self) {
+  g_return_val_if_fail(g_value_is(self, G_JSON_ARRAY), 0);
+  return g_ptr_array_size((GPtrArray *)g_value_pointer(self));
+}
+/*
+static void _json_to_string(gstr *str, GValue *val, gint level) {
+  int i, len;
+  switch (val->g_type) {
+  case G_JSON_NULL:
+    mjson_print_str(mjson_print_dynamic_buf, str, "null");
+    break;
+  case G_JSON_STRING:
+  case G_TYPE_REFERENCE:
+    g_string_append(str, print_string_ptr(g_value_get_string(val)));
+    break;
+  case G_TYPE_BOOLEAN:
+    g_string_append(str, g_value_get_boolean(val) ? "true" : "false");
+    break;
+  case G_TYPE_INT:
+    g_string_append(str, g_format("%d", g_value_get_int(val)));
+    break;
+  case G_TYPE_DOUBLE:
+    g_string_append(str, g_format("%lf", g_value_get_double(val)));
+    break;
+  case G_TYPE_ARRAY: {
+    GPtrArray *ar = g_value_get_array(val);
+    len = g_ptr_array_length(ar);
+    g_string_append_c(str, '[');
+    for (i = 0; i < len; i++) {
+      _json_to_string(str, (GValue *)g_ptr_array_index(ar, i), level);
+      if (i < len - 1)
+        g_string_append_c(str, ',');
+    }
+    g_string_append_c(str, ']');
+  } break;
+  case G_TYPE_HASH_TABLE:
+  case G_TYPE_HASH_TABLE_WITH_REF_KEY: {
+    GHashTable *ht = g_value_get_hash_table(val);
+    gint size = g_hash_table_size(ht);
+    g_string_append_c(str, '{');
+    for (i = 0; i < size; i++) {
+      GHashNode *node = &g_array_index(ht->nodes, GHashNode, i);
+      g_string_append(str, print_string_ptr((gchar *)node->key));
+      g_string_append_c(str, ':');
+      _json_to_string(str, (GValue *)node->value, level);
+      if (i < size - 1)
+        g_string_append_c(str, ',');
+    }
+    g_string_append_c(str, '}');
+  } break;
+  }
+}
+
+gstr g_json_stringify(GValue *self) {
+  gstr s = NULL;
+  _json_to_string(&s, self, 0);
+  return s;
+}
+*/

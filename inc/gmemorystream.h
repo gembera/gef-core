@@ -4,8 +4,8 @@
  * License: MIT
  */
 
-#ifndef _G_MEMORY_STREAM_H_
-#define _G_MEMORY_STREAM_H_
+#ifndef __G_MEMORY_STREAM_H__
+#define __G_MEMORY_STREAM_H__
 #include "gstream.h"
 
 #define GMEMORYSTREAM(p) ((GMemoryStream *)(p))

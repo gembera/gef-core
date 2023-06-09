@@ -4,8 +4,8 @@
  * License: MIT
  */
 
-#ifndef _G_CHANNEL_H_
-#define _G_CHANNEL_H_
+#ifndef __G_CHANNEL_H__
+#define __G_CHANNEL_H__
 #include "glib.h"
 #include "gevent.h"
 #include "gvalue.h"

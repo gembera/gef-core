@@ -17,6 +17,7 @@ create_test_sourcelist(tests
     test_channel.c
     test_value.c
     test_json.c
+    test_string.c
 )
 
 add_executable(all-gef-core-tests ${tests})

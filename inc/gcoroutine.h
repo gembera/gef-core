@@ -4,8 +4,8 @@
  * License: MIT
  */
 
-#ifndef _G_COROUTINE_H_
-#define _G_COROUTINE_H_
+#ifndef __G_COROUTINE_H__
+#define __G_COROUTINE_H__
 
 #include "glib.h"
 
