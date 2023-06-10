@@ -43,7 +43,7 @@ static void g_map_lookup(GMap *self, gcpointer key, gint *left, gint *right) {
   *right = l;
 }
 
-GMap *g_map_new_with(GMapKeyDupicateHandler key_new_handler,
+GMap *g_map_new_with(GMapKeyNewHandler key_new_handler,
                      GFreeCallback key_free_callback,
                      GFreeCallback value_free_callback,
                      GCompareHandler key_compare_handler) {
@@ -96,6 +96,10 @@ void g_map_remove(GMap *self, gcpointer key) {
     g_map_free_key_value(self, g_array(self->data, GMapEntry) + l);
     g_array_remove(self->data, l);
   }
+}
+gbool g_map_has(GMap *self, gcpointer key) {
+  GMapEntry *entry = g_map_get_entry(self, key);
+  return entry != NULL;
 }
 gpointer g_map_get(GMap *self, gcpointer key) {
   GMapEntry *entry = g_map_get_entry(self, key);

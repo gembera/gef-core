@@ -299,7 +299,7 @@ void g_list_visit(GList *self, GListVisitCallback func, gpointer user_data);
 
 // HashMap
 typedef struct _GMap GMap;
-typedef gpointer (*GMapKeyDupicateHandler)(gpointer data);
+typedef gpointer (*GMapKeyNewHandler)(gpointer data);
 typedef void (*GMapVisitCallback)(GMap *self, gpointer key, gpointer value,
                                   gpointer user_data);
 
@@ -314,17 +314,18 @@ struct _GMap {
   GCompareHandler key_compare_handler;
   GFreeCallback key_free_callback;
   GFreeCallback value_default_free_callback;
-  GMapKeyDupicateHandler key_new_handler;
+  GMapKeyNewHandler key_new_handler;
 };
 
 #define g_map_new(value_free_callback)                                         \
-  g_map_new_with((GMapKeyDupicateHandler)g_dup, g_free_callback,               \
+  g_map_new_with((GMapKeyNewHandler)g_dup, g_free_callback,               \
                  value_free_callback, (GCompareHandler)g_cmp)
-GMap *g_map_new_with(GMapKeyDupicateHandler key_new_handler,
+GMap *g_map_new_with(GMapKeyNewHandler key_new_handler,
                      GFreeCallback key_free_callback,
                      GFreeCallback value_free_callback,
                      GCompareHandler key_compare_handler);
 void g_map_free(GMap *self);
+gbool g_map_has(GMap *self, gcpointer key);
 gpointer g_map_get(GMap *self, gcpointer key);
 GMapEntry *g_map_get_entry(GMap *self, gcpointer key);
 #define g_map_set(self, key, value) g_map_set_with(self, key, value, NULL)

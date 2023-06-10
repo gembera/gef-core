@@ -167,7 +167,7 @@ gstr g_value_str(GValue *self) {
 }
 GValue *g_value_set_str(GValue *self, gcstr str) {
   g_return_val_if_fail(self, NULL);
-  g_value_set(self, G_TYPE_STR, (gpointer)str, g_free_callback);
+  g_value_set(self, G_TYPE_STR, (gpointer)g_dup(str), g_free_callback);
   return self;
 }
 
