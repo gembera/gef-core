@@ -5,7 +5,10 @@
 static inline void _string_putc(char ch, void *buffer, size_t idx,
                                 size_t maxlen) {
   GString *self = (GString *)buffer;
-  gint i;
+  if (ch == '\0') {
+    self->value[self->len] = '\0';
+    return;
+  }
   gint left = self->alloc - 1 - self->len;
   if (self->max_len) {
     if (left <= 0)
@@ -20,7 +23,6 @@ static inline void _string_putc(char ch, void *buffer, size_t idx,
     }
   }
   self->value[self->len++] = ch;
-  self->value[self->len] = '\0';
 }
 
 GString *g_string_new() {
@@ -39,8 +41,16 @@ GString *g_string_new_with(guint max_len) {
 }
 void g_string_free(GString *self) {
   g_return_if_fail(self);
-  g_free(self->value);
+  if (self->value)
+    g_free(self->value);
   g_free(self);
+}
+gstr g_string_unwrap(GString *self) {
+  g_return_val_if_fail(self, NULL);
+  gstr value = self->value;
+  self->value = NULL;
+  g_string_free(self);
+  return value;
 }
 void g_string_reset(GString *self) {
   g_return_if_fail(self);
@@ -63,5 +73,6 @@ gint g_string_append_with(GString *self, gcstr str, guint len) {
   gint clen = self->len;
   for (i = 0; i < len; i++)
     _string_putc(str[i], self, 0, 0);
+  _string_putc('\0', self, 0, 0);
   return self->len - clen;
 }

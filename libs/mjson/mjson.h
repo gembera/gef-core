@@ -27,11 +27,11 @@
 #include <string.h>
 
 #ifndef MJSON_ENABLE_PRINT
-#define MJSON_ENABLE_PRINT 1
+#define MJSON_ENABLE_PRINT 0
 #endif
 
 #ifndef MJSON_ENABLE_RPC
-#define MJSON_ENABLE_RPC 1
+#define MJSON_ENABLE_RPC 0
 #endif
 
 #ifndef MJSON_ENABLE_BASE64
@@ -39,11 +39,11 @@
 #endif
 
 #ifndef MJSON_ENABLE_MERGE
-#define MJSON_ENABLE_MERGE 1
+#define MJSON_ENABLE_MERGE 0
 #endif
 
 #ifndef MJSON_ENABLE_PRETTY
-#define MJSON_ENABLE_PRETTY 1
+#define MJSON_ENABLE_PRETTY 0
 #endif
 
 #ifndef MJSON_ENABLE_NEXT

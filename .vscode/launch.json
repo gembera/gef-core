@@ -7,7 +7,7 @@
             "request": "launch",
             "program": "${workspaceRoot}/build/tests/all-gef-core-tests",
             "cwd": "${workspaceRoot}",
-            "args": ["test_string"]
+            "args": ["test_json"]
         }
     ]
 }

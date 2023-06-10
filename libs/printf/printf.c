@@ -365,10 +365,11 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
     negative = true;
     value = 0 - value;
   }
-
+  bool ignore_prec_tail_zeros = false;
   // set default precision, if not set explicitly
   if (!(flags & FLAGS_PRECISION)) {
     prec = PRINTF_DEFAULT_FLOAT_PRECISION;
+    ignore_prec_tail_zeros = true;
   }
   // limit precision to 9, cause a prec >= 10 can lead to overflow errors
   while ((len < PRINTF_FTOA_BUFFER_SIZE) && (prec > 9U)) {
@@ -453,7 +454,29 @@ static size_t _ftoa(out_fct_type out, char* buffer, size_t idx, size_t maxlen, d
       buf[len++] = ' ';
     }
   }
-
+  if (ignore_prec_tail_zeros){
+    int i;
+    int decimal_pos = -1;
+    for(i = 0; i < len; i++){
+      if (buf[i] == '.'){
+        decimal_pos = i;
+        break;
+      }
+    }
+    if (decimal_pos != -1){
+      for(i = 0; i < decimal_pos; i++){
+        if (buf[i] != '0') break;
+      }
+      if (i > 0){
+        if (i == decimal_pos) i ++;
+        int j;
+        len -= i;
+        for(j = 0; j < len; j++){
+          buf[j] = buf[i + j];
+        }
+      }
+    }
+  }
   return _out_rev(out, buffer, idx, maxlen, buf, len, width, flags);
 }
 

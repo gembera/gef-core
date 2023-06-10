@@ -20,6 +20,15 @@ int test_string(int argc, char *argv[]) {
   g_string_appendf(s1, "%f", 123.456789);
   assert(g_equal(s1->value, "123.456789"));
   g_string_reset(s1);
+  g_string_appendf(s1, "%f", 123.4);
+  assert(g_equal(s1->value, "123.4"));
+  g_string_reset(s1);
+  g_string_appendf(s1, "%f", 3.333);
+  assert(g_equal(s1->value, "3.333"));
+  g_string_reset(s1);
+  g_string_appendf(s1, "%f", 123.0);
+  assert(g_equal(s1->value, "123"));
+  g_string_reset(s1);
   g_string_appendf(s1, "%3.1f", 123.456789);
   assert(g_equal(s1->value, "123.5"));
   g_string_reset(s1);

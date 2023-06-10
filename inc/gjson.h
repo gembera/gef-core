@@ -15,6 +15,7 @@
 #define G_JSON_OBJECT G_TYPE_MAP
 
 GValue *g_json_parse(gcstr s);
+gstr g_json_stringify(GValue *self);
 GValue *g_json_get(GValue *self, gcstr key);    // get value by key
 GValue *g_json_index(GValue *self, gint index); // get item by index
 guint g_json_size(GValue *self);                // get array size

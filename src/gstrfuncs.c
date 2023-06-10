@@ -5,7 +5,7 @@
  */
 
 #include "glib.h"
-#include "mjson.h"
+#include "printf.h"
 
 #define G_STR_DELIMITERS "_-|> <."
 
@@ -239,19 +239,10 @@ gbool g_is_space(gwchar c) {
   return c == ' ' || c == '\t' || c == '\r' || c == '\n';
 }
 
-gstr g_format(gcstr fmt, ...) {
+guint g_format(gstr buffer, guint len, gcstr fmt, ...) {
   va_list ap;
-  gstr result = NULL;
   va_start(ap, fmt);
-  mjson_vprintf(mjson_print_dynamic_buf, &result, fmt, &ap);
+  int result = vsnprintf_(buffer, len, fmt, ap);
   va_end(ap);
-  return result;
-}
-guint g_format_to(gstr buffer, guint len, gcstr fmt, ...) {
-  va_list ap;
-  struct mjson_fixedbuf fb = {buffer, (int) len, 0};
-  va_start(ap, fmt);
-  mjson_vprintf(mjson_print_fixed_buf, &fb, fmt, &ap);
-  va_end(ap);
-  return fb.len;
+  return (guint)result;
 }

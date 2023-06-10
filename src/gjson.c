@@ -1,4 +1,5 @@
 #include "gjson.h"
+#include "gstring.h"
 #include "mjson.h"
 
 struct JsonParseData {
@@ -96,57 +97,79 @@ guint g_json_size(GValue *self) {
   g_return_val_if_fail(g_value_is(self, G_JSON_ARRAY), 0);
   return g_ptr_array_size((GPtrArray *)g_value_pointer(self));
 }
-/*
+
+static int _json_esc(int c, int esc) {
+  const char *p, *esc1 = "\b\f\n\r\t\\\"", *esc2 = "bfnrt\\\"";
+  for (p = esc ? esc1 : esc2; *p != '\0'; p++) {
+    if (*p == c)
+      return esc ? esc2[p - esc1] : esc1[p - esc2];
+  }
+  return 0;
+}
+
+static int _json_print_str(GString *str, const char *s) {
+  int len = g_len(s);
+  int i, n = g_string_append_with(str, "\"", 1);
+  for (i = 0; i < len; i++) {
+    char c = (char)(unsigned char)_json_esc(s[i], 1);
+    if (c) {
+      n += g_string_append_with(str, "\\", 1);
+      n += g_string_append_with(str, &c, 1);
+    } else {
+      n += g_string_append_with(str, &s[i], 1);
+    }
+  }
+  return n + g_string_append_with(str, "\"", 1);
+}
+
 static void _json_to_string(GString *str, GValue *val, gint level) {
   int i, len;
-  switch (val->g_type) {
-  case G_JSON_NULL:
-    g_string_append_str(str, "null");
+  switch (val->type) {
+  case G_TYPE_NULL:
+    g_string_append(str, "null");
     break;
-  case G_JSON_STRING:
-    g_string_append_str(str, g_value_str(val));
+  case G_TYPE_STR:
+    _json_print_str(str, g_value_str(val));
     break;
-  case G_TYPE_BOOLEAN:
-    g_string_append_str(str, g_value_bool(val) ? "true" : "false");
+  case G_TYPE_BOOL:
+    g_string_append(str, g_value_bool(val) ? "true" : "false");
     break;
   case G_TYPE_INT:
-    g_string_append(str, g_format("%d", g_value_get_int(val)));
+    g_string_appendf(str, "%d", g_value_int(val));
     break;
   case G_TYPE_DOUBLE:
-    g_string_append(str, g_format("%lf", g_value_get_double(val)));
+    g_string_appendf(str, "%f", g_value_double(val));
     break;
-  case G_TYPE_ARRAY: {
-    GPtrArray *ar = g_value_get_array(val);
-    len = g_ptr_array_length(ar);
-    g_string_append_c(str, '[');
+  case G_TYPE_PTR_ARRAY: {
+    GPtrArray *ar = (GPtrArray *)g_value_pointer(val);
+    len = g_ptr_array_size(ar);
+    g_string_append(str, "[");
     for (i = 0; i < len; i++) {
-      _json_to_string(str, (GValue *)g_ptr_array_index(ar, i), level);
+      _json_to_string(str, (GValue *)g_ptr_array_get(ar, i), level + 1);
       if (i < len - 1)
-        g_string_append_c(str, ',');
+        g_string_append(str, ",");
     }
-    g_string_append_c(str, ']');
+    g_string_append(str, "]");
   } break;
-  case G_TYPE_HASH_TABLE:
-  case G_TYPE_HASH_TABLE_WITH_REF_KEY: {
-    GHashTable *ht = g_value_get_hash_table(val);
-    gint size = g_hash_table_size(ht);
-    g_string_append_c(str, '{');
+  case G_TYPE_MAP: {
+    GMap *map = (GMap *)g_value_pointer(val);
+    guint size = g_map_size(map);
+    g_string_append(str, "{");
     for (i = 0; i < size; i++) {
-      GHashNode *node = &g_array_index(ht->nodes, GHashNode, i);
-      g_string_append(str, print_string_ptr((gchar *)node->key));
-      g_string_append_c(str, ':');
-      _json_to_string(str, (GValue *)node->value, level);
+      GMapEntry *entry = g_array(map->data, GMapEntry) + i;
+      _json_print_str(str, (gstr)entry->key);
+      g_string_append(str, ":");
+      _json_to_string(str, (GValue *)entry->value, level + 1);
       if (i < size - 1)
-        g_string_append_c(str, ',');
+        g_string_append(str, ",");
     }
-    g_string_append_c(str, '}');
+    g_string_append(str, "}");
   } break;
   }
 }
 
 gstr g_json_stringify(GValue *self) {
-  gstr s = NULL;
-  _json_to_string(&s, self, 0);
-  return s;
+  GString *str = g_string_new();
+  _json_to_string(str, self, 0);
+  return g_string_unwrap(str);
 }
-*/

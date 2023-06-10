@@ -27,18 +27,19 @@ int test_strfuncs(int argc, char *argv[]) {
   g_reverse(str);
   assert(g_equal(str, "FEG"));
   g_free(str);
-  str = g_format("%s%s%s","Why ", "gembera ", "?");
-  assert(g_equal(str, "Why gembera ?"));
-  assert(g_start_with(str, "Why"));
-  assert(!g_start_with(str, "why"));
-  assert(g_end_with(str, " ?"));
-  assert(!g_end_with(str, "ggg"));
-  assert(g_index_of(str, "Why", 0) == 0);
-  assert(g_index_of(str, "gembera", 0) == 4);
-  assert(g_index_of(str, "xxx", 0) == -1);
-  assert(g_last_index_of(str, "hy") == 1);
-  assert(g_last_index_of(str, "shy") == -1);
-  g_free(str);
+
+  g_format(buffer, sizeof(buffer), "%s%s%s", "Why ", "gembera ", "?");
+  assert(g_equal(buffer, "Why gembera ?"));
+  assert(g_start_with(buffer, "Why"));
+  assert(!g_start_with(buffer, "why"));
+  assert(g_end_with(buffer, " ?"));
+  assert(!g_end_with(buffer, "ggg"));
+  assert(g_index_of(buffer, "Why", 0) == 0);
+  assert(g_index_of(buffer, "gembera", 0) == 4);
+  assert(g_index_of(buffer, "xxx", 0) == -1);
+  assert(g_last_index_of(buffer, "hy") == 1);
+  assert(g_last_index_of(buffer, "shy") == -1);
+
   assert(g_cmp("aaa", "bbb") < 0);
   assert(g_cmp("aaa", "AAA") > 0);
   assert(g_cmp("aaa", "aaa") == 0);
@@ -57,10 +58,9 @@ int test_strfuncs(int argc, char *argv[]) {
   str = g_trim(" \t \rgembera  \n");
   assert(g_equal(str, "gembera"));
   g_free(str);
-  str = g_format("%d + %d = %d", 1, 2, 3);
-  assert(g_equal(str, "1 + 2 = 3"));
-  g_free(str);
-  g_format_to(buffer, 100, "%d + %d = %d", 8, 8, 16);
+  g_format(buffer, sizeof(buffer), "%d + %d = %d", 1, 2, 3);
+  assert(g_equal(buffer, "1 + 2 = 3"));
+  g_format(buffer, sizeof(buffer), "%d + %d = %d", 8, 8, 16);
   assert(g_equal(buffer, "8 + 8 = 16"));
 
   gulong allocated = 0;
@@ -68,7 +68,8 @@ int test_strfuncs(int argc, char *argv[]) {
   gulong peak = 0;
   g_mem_profile(&allocated, &freed, &peak);
   g_mem_record_end();
-  printf("\r\nallocated memory: %ld  \r\nfreed memory: %ld  \r\npeak memory: %ld\r\n",
+  printf("\r\nallocated memory: %ld  \r\nfreed memory: %ld  \r\npeak memory: "
+         "%ld\r\n",
          allocated, freed, peak);
   assert(allocated == freed);
   return 0;

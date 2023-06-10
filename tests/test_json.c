@@ -5,17 +5,17 @@
 #include "gvalue.h"
 #include <assert.h>
 
-#include "../libs/mjson/mjson.h"
-
-gstr g_json_stringify(GValue *val) {}
 int test_json(int argc, char *argv[]) {
   g_mem_record(g_mem_record_default_callback);
   g_mem_record_begin();
 
   const char *s =
-      "{\"a\":123,\"b\":[1,2,3.333,{\"c\":1}],\"d\":null, \"t\":true, "
-      "\"f\":false, \"o\":{\"c\":\"xxx\"}}";
+      "{\"a\":123,\"b\":[1,2,3.333,{\"c\":1}],\"d\":null,"
+      "\"f\":false,\"o\":{\"c\":\"xxx\\nyyy\"},\"t\":true,\"x\\ty\":\"string\\r\\n\"}";
   GValue *json = g_json_parse(s);
+  gstr str_json = g_json_stringify(json);
+  assert(g_equal(str_json, s));
+  g_free(str_json);
   GValue *val_a = g_json_get(json, "a");
   assert(g_value_int(val_a) == 123);
   GValue *val_b = g_json_get(json, "b");
@@ -34,7 +34,9 @@ int test_json(int argc, char *argv[]) {
   assert(g_value_bool(val_f) == FALSE);
   GValue *val_o = g_json_get(json, "o");
   val_c = g_json_get(val_o, "c");
-  assert(g_equal("xxx", g_value_str(val_c)));
+  assert(g_equal("xxx\nyyy", g_value_str(val_c)));
+  GValue *val_xy = g_json_get(json, "x\ty");
+  assert(g_equal(g_value_str(val_xy), "string\r\n"));
   GValue *val_unknow = g_json_get(json, "unknown");
   assert(val_unknow == NULL);
 
