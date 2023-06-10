@@ -97,18 +97,17 @@ guint g_json_size(GValue *self) {
   return g_ptr_array_size((GPtrArray *)g_value_pointer(self));
 }
 /*
-static void _json_to_string(gstr *str, GValue *val, gint level) {
+static void _json_to_string(GString *str, GValue *val, gint level) {
   int i, len;
   switch (val->g_type) {
   case G_JSON_NULL:
-    mjson_print_str(mjson_print_dynamic_buf, str, "null");
+    g_string_append_str(str, "null");
     break;
   case G_JSON_STRING:
-  case G_TYPE_REFERENCE:
-    g_string_append(str, print_string_ptr(g_value_get_string(val)));
+    g_string_append_str(str, g_value_str(val));
     break;
   case G_TYPE_BOOLEAN:
-    g_string_append(str, g_value_get_boolean(val) ? "true" : "false");
+    g_string_append_str(str, g_value_bool(val) ? "true" : "false");
     break;
   case G_TYPE_INT:
     g_string_append(str, g_format("%d", g_value_get_int(val)));

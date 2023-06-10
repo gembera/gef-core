@@ -9,6 +9,7 @@
         "*.svx": "markdown",
         "queue": "c",
         "random": "c",
-        "time.h": "c"
+        "time.h": "c",
+        "cstdlib": "c"
     }
 }

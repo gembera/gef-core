@@ -4,18 +4,16 @@
 
 typedef struct {
   gstr value;
-  guint len;
   guint alloc;
-  gbool fixed;
+  guint len;
+  guint max_len;
 } GString;
 
 GString *g_string_new();
-GString *g_string_new_with(guint max_length);
+GString *g_string_new_with(guint max_len);
 void g_string_free(GString *self);
 void g_string_reset(GString *self);
-gint g_string_append(GString *self, gcstr fmt, ...);
-gint g_string_append_str(GString *self, gcstr str);
-gint g_string_append_int(GString *self, long num);
-gint g_string_append_float(GString *self, double num, gint digits);
-
+#define g_string_append(self, str) g_string_append_with(self, str, g_len(str))
+gint g_string_append_with(GString *self, gcstr str, guint len);
+gint g_string_appendf(GString *self, gcstr fmt, ...);
 #endif

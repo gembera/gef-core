@@ -1,44 +1,40 @@
 #include "gstring.h"
-#include "mjson.h"
-#define STRING_RESERVE_SIZE 16
-static int g_string_append_buffer(const char *ptr, int len, void *fn_data) {
-  GString *self = (GString *)fn_data;
+#include "printf.h"
+
+#define STRING_CHUNK_SIZE 16
+static inline void _string_putc(char ch, void *buffer, size_t idx,
+                                size_t maxlen) {
+  GString *self = (GString *)buffer;
   gint i;
   gint left = self->alloc - 1 - self->len;
-  if (self->fixed) {
-    if (left < len)
-      len = left;
+  if (self->max_len) {
+    if (left <= 0)
+      return;
   } else {
-    if (left < len) {
-      gint new_size = self->alloc + len + STRING_RESERVE_SIZE;
-      gstr s = (gstr)g_realloc(self->value, new_size);
-      g_return_val_if_fail(s, 0);
-      self->alloc = new_size;
-      self->value = s;
+    if (left < 1) {
+      gint alloc = self->alloc + STRING_CHUNK_SIZE;
+      gstr value = (gstr)g_realloc(self->value, alloc);
+      g_return_if_fail(value);
+      self->alloc = alloc;
+      self->value = value;
     }
   }
-  memcpy(self->value + self->len, ptr, (size_t)len);
-  self->len += len;
+  self->value[self->len++] = ch;
   self->value[self->len] = '\0';
-  return len;
 }
 
 GString *g_string_new() {
   GString *self = g_new(GString);
   g_return_val_if_fail(self, NULL);
-  self->value = NULL;
-  self->alloc = 0;
-  self->len = 0;
-  self->fixed = FALSE;
   return self;
 }
-GString *g_string_new_with(guint max_length) {
+GString *g_string_new_with(guint max_len) {
   GString *self = g_new(GString);
-  g_return_val_if_fail(self && max_length > 0, NULL);
-  self->alloc = max_length + 1;
+  g_return_val_if_fail(self && max_len > 0, NULL);
+  self->alloc = max_len + 1;
   self->value = g_malloc(self->alloc);
-  self->len = 0;
-  self->fixed = TRUE;
+  self->value[0] = '\0';
+  self->max_len = max_len;
   return self;
 }
 void g_string_free(GString *self) {
@@ -53,19 +49,19 @@ void g_string_reset(GString *self) {
     self->value[0] = '\0';
   }
 }
-gint g_string_append(GString *self, gcstr fmt, ...) {
-  va_list ap;
-  va_start(ap, fmt);
-  gint len = mjson_vprintf(g_string_append_buffer, self, fmt, &ap);
-  va_end(ap);
-  return len;
+gint g_string_appendf(GString *self, gcstr fmt, ...) {
+  g_return_val_if_fail(self, 0);
+  va_list va;
+  va_start(va, fmt);
+  const int ret = _vsnprintf(_string_putc, (char *)self, (size_t)-1, fmt, va);
+  va_end(va);
+  return ret;
 }
-gint g_string_append_str(GString *self, gcstr str) {
-  return g_string_append_buffer(str, g_len(str), self);
-}
-gint g_string_append_int(GString *self, long num) {
-  return mjson_print_long(g_string_append_buffer, self, num, TRUE);
-}
-gint g_string_append_float(GString *self, double num, gint digits) {
-  return mjson_print_dbl(g_string_append_buffer, self, num, digits);
+gint g_string_append_with(GString *self, gcstr str, guint len) {
+  g_return_val_if_fail(self && str, 0);
+  gint i;
+  gint clen = self->len;
+  for (i = 0; i < len; i++)
+    _string_putc(str[i], self, 0, 0);
+  return self->len - clen;
 }
