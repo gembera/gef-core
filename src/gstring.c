@@ -39,6 +39,15 @@ GString *g_string_new_with(guint max_len) {
   self->max_len = max_len;
   return self;
 }
+GString *g_string_wrap(gstr value, guint alloc) {
+  GString *self = g_new(GString);
+  g_return_val_if_fail(self && alloc > 0, NULL);
+  self->alloc = alloc;
+  self->value = value;
+  self->value[0] = '\0';
+  self->max_len = alloc - 1;
+  return self;
+}
 void g_string_free(GString *self) {
   g_return_if_fail(self);
   if (self->value)
@@ -59,13 +68,20 @@ void g_string_reset(GString *self) {
     self->value[0] = '\0';
   }
 }
-gint g_string_appendf(GString *self, gcstr fmt, ...) {
+gint g_string_printf(GString *self, gcstr fmt, ...) {
   g_return_val_if_fail(self, 0);
   va_list va;
   va_start(va, fmt);
-  const int ret = _vsnprintf(_string_putc, (char *)self, (size_t)-1, fmt, va);
+  const int ret =
+      _vsnprintf(_string_putc, (char *)self,
+                 (size_t)(self->max_len ? self->max_len : -1), fmt, va);
   va_end(va);
   return ret;
+}
+gint g_string_vprintf(GString *self, gcstr fmt, va_list va) {
+  g_return_val_if_fail(self, 0);
+  return _vsnprintf(_string_putc, (char *)self,
+                    (size_t)(self->max_len ? self->max_len : -1), fmt, va);
 }
 gint g_string_append_with(GString *self, gcstr str, guint len) {
   g_return_val_if_fail(self && str, 0);

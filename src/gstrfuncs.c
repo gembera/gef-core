@@ -5,7 +5,7 @@
  */
 
 #include "glib.h"
-#include "printf.h"
+#include "gstring.h"
 
 #define G_STR_DELIMITERS "_-|> <."
 
@@ -238,11 +238,19 @@ gstr g_trim(gstr str) {
 gbool g_is_space(gwchar c) {
   return c == ' ' || c == '\t' || c == '\r' || c == '\n';
 }
-
-guint g_format(gstr buffer, guint len, gcstr fmt, ...) {
+gstr g_format(gcstr fmt, ...) {
+  GString *str = g_string_new();
   va_list ap;
   va_start(ap, fmt);
-  int result = vsnprintf_(buffer, len, fmt, ap);
+  g_string_vprintf(str, fmt, ap);
   va_end(ap);
-  return (guint)result;
+  return g_string_unwrap(str);
+}
+void g_format_to(gstr buffer, guint len, gcstr fmt, ...) {
+  GString *str = g_string_wrap(buffer, len);
+  va_list ap;
+  va_start(ap, fmt);
+  g_string_vprintf(str, fmt, ap);
+  va_end(ap);
+  g_string_unwrap(str);
 }

@@ -318,7 +318,7 @@ struct _GMap {
 };
 
 #define g_map_new(value_free_callback)                                         \
-  g_map_new_with((GMapKeyNewHandler)g_dup, g_free_callback,               \
+  g_map_new_with((GMapKeyNewHandler)g_dup, g_free_callback,                    \
                  value_free_callback, (GCompareHandler)g_cmp)
 GMap *g_map_new_with(GMapKeyNewHandler key_new_handler,
                      GFreeCallback key_free_callback,
@@ -359,7 +359,8 @@ gstr g_replace(gstr source, gstr sub, gstr rep);
 gstr g_replace_free(gstr source, gstr sub, gstr rep);
 gstr g_trim(gstr str);
 gbool g_is_space(gwchar c);
-guint g_format(gstr buffer, guint len, gcstr fmt, ...);
+gstr g_format(gcstr fmt, ...);
+void g_format_to(gstr buffer, guint len, gcstr fmt, ...);
 
 // Utils
 gulong g_tick_count();

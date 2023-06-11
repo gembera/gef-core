@@ -262,10 +262,10 @@ static void _json_to_string(GString *str, GValue *val, gint level) {
     g_string_append(str, g_value_bool(val) ? "true" : "false");
     break;
   case G_TYPE_INT:
-    g_string_appendf(str, "%d", g_value_int(val));
+    g_string_printf(str, "%d", g_value_int(val));
     break;
   case G_TYPE_DOUBLE:
-    g_string_appendf(str, "%f", g_value_double(val));
+    g_string_printf(str, "%f", g_value_double(val));
     break;
   case G_TYPE_PTR_ARRAY: {
     GPtrArray *ar = (GPtrArray *)g_value_pointer(val);
