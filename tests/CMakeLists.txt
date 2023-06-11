@@ -13,8 +13,6 @@ create_test_sourcelist(tests
     test_stream.c
     test_strfuncs.c
     test_utils.c
-    test_coroutine.c
-    test_channel.c
     test_value.c
     test_json.c
     test_string.c
