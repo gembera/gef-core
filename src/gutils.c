@@ -8,29 +8,11 @@
 #include <time.h>
 #include <unistd.h>
 
-#ifndef HAVE_TICK_COUNT
-gulong g_tick_count() {
-  struct timespec tv;
-  clock_gettime(CLOCK_MONOTONIC, &tv);
-  return (gulong)tv.tv_sec * 1000 + (gulong)tv.tv_nsec / 1000000;
-}
-#endif
 #ifndef HAVE_PRINTF_PUTCHAR
 
 void _putchar(char character) { putchar(character); }
 
 #endif
-
-void g_sleep(gulong time_ms) { usleep(time_ms * 1000); }
-
-static gint rand_init = FALSE;
-gint g_rand(gint max) {
-  if (!rand_init) {
-    rand_init = TRUE;
-    srand((unsigned int)g_tick_count());
-  }
-  return rand() % max;
-}
 
 static char *g_log___file__;
 static int g_log___line__;

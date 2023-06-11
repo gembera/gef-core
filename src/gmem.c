@@ -25,7 +25,7 @@ void *_memmove(void *str1, const void *str2, size_t n) {
 #endif
 
 #ifdef ENABLE_MEM_PROFILE
-#define SIZE_META SIZEOF_LONG
+#define SIZE_META sizeof(gulong)
 static gulong total_allocated_mem = 0;
 static gulong total_freed_mem = 0;
 static gulong current_mem = 0;

@@ -26,12 +26,6 @@ int test_utils(int argc, char *argv[]) {
   g_mem_record(g_mem_record_default_callback);
   g_mem_record_begin();
 
-  gulong st = g_tick_count();
-  g_sleep(100);
-  gulong en = g_tick_count();
-  printf("st: %ld, en: %ld, delta: %ld", st, en, en - st);
-  assert(en - st >= 100);
-
   gstr result = check_score(-10);
   assert(g_equal(result, "Out of range!"));
   g_free(result);

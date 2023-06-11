@@ -84,36 +84,17 @@ typedef const void *gcpointer;
 
 typedef gpointer ghandle;
 
-#if (SIZEOF_CHAR == 1)
-typedef signed char gint8;
-typedef unsigned char guint8;
-#endif /* SIZEOF_CHAR */
+typedef int8_t gint8;
+typedef uint8_t guint8;
 
-#if (SIZEOF_SHORT == 2)
-typedef signed short gint16;
-typedef unsigned short guint16;
-#endif /* SIZEOF_SHORT */
+typedef int16_t gint16;
+typedef uint16_t guint16;
 
-#if (SIZEOF_INT == 4)
-typedef signed int gint32;
-typedef unsigned int guint32;
-#elif (SIZEOF_LONG == 4)
-typedef signed long gint32;
-typedef unsigned long guint32;
-#endif /* SIZEOF_INT */
+typedef int32_t gint32;
+typedef uint32_t guint32;
 
-#if (SIZEOF_LONG == 8)
-#define HAVE_GINT64 1
-typedef signed long gint64;
-typedef unsigned long guint64;
-#elif (SIZEOF_LONG_LONG == 8)
-#define HAVE_GINT64 1
-typedef signed long long gint64;
-typedef unsigned long long guint64;
-#else
-/* No gint64 */
-#undef HAVE_GINT64
-#endif
+typedef int64_t gint64;
+typedef uint64_t guint64;
 
 typedef guint16 gwchar;
 typedef gchar *gstr;
@@ -361,11 +342,6 @@ gstr g_trim(gstr str);
 gbool g_is_space(gwchar c);
 gstr g_format(gcstr fmt, ...);
 void g_format_to(gstr buffer, guint len, gcstr fmt, ...);
-
-// Utils
-gulong g_tick_count();
-void g_sleep(gulong time_ms);
-gint g_rand(gint max);
 
 int g_log_enabled(gstr file, int line, gstr func, gstr level);
 void g_log(gstr fmt, ...);
