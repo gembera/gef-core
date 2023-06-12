@@ -195,6 +195,7 @@ gpointer g_mem_record_realloc(gpointer mem, gulong size, gcstr __file__,
   return memnew;
 }
 void g_mem_record_free(gpointer mem, gcstr __file__, const int __line__) {
+  if (!mem) return;
   if (mem_record_enabled) {
     if (mem_record_callback) {
       gulong allocated = 0;
@@ -263,7 +264,7 @@ void g_mem_leak_record_alloc(gpointer memnew, gulong allocated, gcstr __file__,
 void g_mem_print_leaks() {
   for (gint i = 0; i < leak_records_size; i++) {
     GMemRecord *ri = leak_records + i;
-    printf("\n*** LEAK *** : %lx\t%ld\t%s(%d)", ri->mem, ri->size, ri->file,
+    printf("\n*** LEAK *** : %p\t%ld\t%s(%d)", ri->mem, ri->size, ri->file,
            ri->line);
   }
 }
@@ -273,7 +274,7 @@ void g_mem_record_default_callback(gulong index, gpointer memnew,
                                    gint __line__) {
   g_mem_leak_record_free(memfree, freed, __file__, __line__);
   g_mem_leak_record_alloc(memnew, allocated, __file__, __line__);
-  printf("\r\n%ld\t%lx\t%lx\t%ld\t%ld\t%s(%d)", index, memnew, memfree, allocated,
+  printf("\r\n%ld\t%p\t%p\t+%ld\t-%ld\t%s(%d)", index, memnew, memfree, allocated,
          freed, __file__, __line__);
 }
 

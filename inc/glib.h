@@ -8,7 +8,7 @@
 #define __G_LIB_H__
 
 #include "glibconfig.h"
-
+#include <stdint.h> 
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
