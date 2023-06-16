@@ -1,16 +1,16 @@
 {
   "name": "@gembera/gef-core",
-  "version": "0.9.1",
+  "version": "0.9.2",
   "repository": "https://github.com/gembera/gef-core.git",
   "author": "Xinjie ZHANG <xinjie.zhang@gmail.com>",
   "license": "MIT",
   "scripts": {
     "debug:cmake": "rimraf build/debug && make-dir build/debug && cd build/debug && cross-env CMAKE_BUILD_TYPE=Debug cmake ../..",
-    "debug:build": "cd build/debug && make",
-    "debug:test": "cd build/debug && make test",
+    "debug:build": "cd build/debug && cmake --build .",
+    "debug:test": "cd build/debug && ctest",
     "release:cmake": "rimraf build/release && make-dir build/release && cd build/release && cmake ../..",
-    "release:build": "cd build/release && make",
-    "release:test": "cd build/release && make test"
+    "release:build": "cd build/release && cmake --build .",
+    "release:test": "cd build/release && make ctest"
   },
   "devDependencies": {
     "cpr": "^3.0.1",

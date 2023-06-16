@@ -3,6 +3,8 @@ build
 ~*.md
 node_modules
 *-lock.*
+settings.json
+c_cpp_properties.json
 
 # Cmake files
 CMakeCache.txt

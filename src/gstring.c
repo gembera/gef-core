@@ -73,14 +73,14 @@ gint g_string_printf(GString *self, gcstr fmt, ...) {
   va_list va;
   va_start(va, fmt);
   const int ret =
-      _vsnprintf(_string_putc, (char *)self,
+      _fsnprintf(_string_putc, (char *)self,
                  (size_t)(self->max_len ? self->max_len : -1), fmt, va);
   va_end(va);
   return ret;
 }
 gint g_string_vprintf(GString *self, gcstr fmt, va_list va) {
   g_return_val_if_fail(self, 0);
-  return _vsnprintf(_string_putc, (char *)self,
+  return _fsnprintf(_string_putc, (char *)self,
                     (size_t)(self->max_len ? self->max_len : -1), fmt, va);
 }
 gint g_string_append_with(GString *self, gcstr str, guint len) {
