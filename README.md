@@ -11,3 +11,23 @@ Main features:
 * Concurrent programming based on coroutines
 * Pure C OOP implementation
 * Package management with npm
+
+# How to build
+Make sure you have node.js in your system. Execute
+```shell
+npm install
+```
+to install necessary cross-platform command line tools.
+
+* Debug version 
+```shell
+npm run debug:cmake
+npm run debug:build
+npm run debug:test
+```
+* Release version
+```shell
+npm run release:cmake
+npm run release:build
+npm run release:test
+```

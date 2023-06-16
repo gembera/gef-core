@@ -15,7 +15,7 @@ add_library(gef-core STATIC ${DIR_SRC_GEF_CORE} libs/mjson/mjson.c libs/printf/p
 target_include_directories(gef-core PUBLIC inc)
 target_include_directories(gef-core PRIVATE libs/mjson libs/printf)
 
-if(PROJECT_IS_TOP_LEVEL AND CMAKE_BUILD_TYPE MATCHES Debug)
+if(PROJECT_IS_TOP_LEVEL)
     message(STATUS "${PROJECT_NAME} enables testing.")
     enable_testing()
     add_subdirectory(tests)
