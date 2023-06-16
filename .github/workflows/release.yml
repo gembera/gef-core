@@ -19,7 +19,6 @@ jobs:
     - name: Testing
       run: npm run debug:cmake && npm run debug:build && npm run debug:test
   publish:
-    name: npm-publish
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
