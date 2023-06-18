@@ -14,10 +14,10 @@ jobs:
         node-version: 14.x
     - name: Install cmake & gcc
       run: sudo apt-get install build-essential gdb cmake
-    - name: Install package
-      run: npm install
     - name: Install gef-cli
       run: sudo npm install yarn @gembera/gef-cli --global
+    - name: Install package
+      run: yarn
     - name: Testing
       run: yarn debug make && yarn debug build && yarn debug test
   publish:
