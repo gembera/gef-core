@@ -50,7 +50,7 @@ int test_value(int argc, char *argv[]) {
               (GFreeCallback)g_array_free);
   assert(val1->free_callback);
   assert(*val1->refs == 1);
-  g_value_ref(val2, val1);
+  g_value_assign(val2, val1);
   assert(*val1->refs == 2);
   assert(*val2->refs == 2);
   assert(val1->free_callback == val2->free_callback);
@@ -67,7 +67,8 @@ int test_value(int argc, char *argv[]) {
   gulong peak = 0;
   g_mem_profile(&allocated, &freed, &peak);
   g_mem_record_end();
-  printf("\r\nallocated memory: %ld  \r\nfreed memory: %ld  \r\npeak memory: %ld\r\n",
+  printf("\r\nallocated memory: %ld  \r\nfreed memory: %ld  \r\npeak memory: "
+         "%ld\r\n",
          allocated, freed, peak);
   assert(allocated == freed);
   return 0;

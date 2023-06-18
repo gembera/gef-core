@@ -63,8 +63,9 @@ gpointer g_value_pointer(GValue *self);
 GValue *g_value_set(GValue *self, gint type, gpointer pointer,
                     GFreeCallback free_callback);
 
-GValue *g_value_ref(GValue *self, GValue *target);
+GValue *g_value_ref(GValue *self);
 void g_value_unref(GValue *self);
+GValue *g_value_assign(GValue *self, GValue *target);
 
 #ifdef __cplusplus
 }
