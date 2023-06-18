@@ -16,8 +16,10 @@ jobs:
       run: sudo apt-get install build-essential gdb cmake
     - name: Install package
       run: npm install
+    - name: Install gef-cli
+      run: sudo npm install yarn @gembera/gef-cli --global
     - name: Testing
-      run: npm run debug:cmake && npm run debug:build && npm run debug:test
+      run: yarn debug make && yarn debug build && yarn debug test
   publish:
     runs-on: ubuntu-latest
     steps:
