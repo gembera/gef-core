@@ -20,7 +20,7 @@ static void g_value_free_data(GValue *self) {
 GValue *g_value_set(GValue *self, gint type, gpointer pointer,
                     GFreeCallback free_callback) {
   g_return_val_if_fail(self, NULL);
-  g_value_free_data(self);
+  g_value_unref(self);
   self->type = type;
   self->refs = NULL;
   self->data.v_pointer = pointer;
