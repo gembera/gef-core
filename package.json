@@ -1,21 +1,17 @@
 {
   "name": "@gembera/gef-core",
-  "version": "0.9.2",
+  "version": "1.0.0",
   "repository": "https://github.com/gembera/gef-core.git",
   "author": "Xinjie ZHANG <xinjie.zhang@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "debug:cmake": "rimraf build/debug && make-dir build/debug && cd build/debug && cross-env CMAKE_BUILD_TYPE=Debug cmake ../..",
-    "debug:build": "cd build/debug && cmake --build .",
-    "debug:test": "cd build/debug && ctest",
-    "release:cmake": "rimraf build/release && make-dir build/release && cd build/release && cmake ../..",
-    "release:build": "cd build/release && cmake --build .",
-    "release:test": "cd build/release && make ctest"
-  },
-  "devDependencies": {
-    "cpr": "^3.0.1",
-    "cross-env": "^7.0.3",
-    "make-dir-cli": "^3.0.0",
-    "rimraf": "^5.0.1"
+    "make": "grmdir build/$gbuild && gmkdir build/$gbuild && cd build/$gbuild && genv gload=env/common,$gconfig $gpremake cmake ../..",
+    "build": "cd build/$gbuild && cmake --build .",
+    "test": "cd build/$gbuild && genv ctest -C $gconfig",
+    
+    "debug": "genv gbuild=debug.$gplatform gconfig=debug yarn ",
+    "release": "genv gbuild=release.$gplatform gconfig=release yarn ",
+
+    "wasm": "genv gplatform=wasm gpremake=wasimake yarn "
   }
 }

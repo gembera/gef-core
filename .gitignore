@@ -3,6 +3,7 @@ build
 ~*.md
 node_modules
 *-lock.*
+yarn.lock
 settings.json
 c_cpp_properties.json
 

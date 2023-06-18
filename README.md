@@ -1,8 +1,4 @@
 # Why Gembera
-Gembera is a general embedded framework with C language. This name is basically an idea provided by chatgpt.
-
-![naming by chatgpt](doc/name.png)
-
 C language is one of the oldest languages. It is widely used and at same time heavily criticized. Many modern languages want to be "C/C++ killer", like Rust, Golang, Zig etc. They all try to solve part of the problems, but far from perfect. Gembera does not want to invent another wheel. It try to achieve the goal from the architectural level.
 
 Main features:
@@ -13,21 +9,33 @@ Main features:
 * Package management with npm
 
 # How to build
-Make sure you have node.js in your system. Execute
-```shell
-npm install
-```
-to install necessary cross-platform command line tools.
+Make sure you have installed [gef-cli](https://github.com/gembera/gef-cli). 
 
+## Desktop 
 * Debug version 
 ```shell
-npm run debug:cmake
-npm run debug:build
-npm run debug:test
+yarn debug make
+yarn debug build
+yarn debug test
 ```
 * Release version
 ```shell
-npm run release:cmake
-npm run release:build
-npm run release:test
+yarn release make
+yarn release build
+yarn release test
+```
+
+## WebAssembly
+Install [wasienv](https://github.com/wasienv/wasienv) at first.
+* Debug version 
+```shell
+yarn wasm debug make
+yarn wasm debug build
+yarn wasm debug test
+```
+* Release version
+```shell
+yarn wasm release make
+yarn wasm release build
+yarn wasm release test
 ```
