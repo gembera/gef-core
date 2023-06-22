@@ -39,3 +39,6 @@ yarn wasm release make
 yarn wasm release build
 yarn wasm release test
 ```
+
+# Sponsors
+[<img src="https://www.carota.ai/logo-512.png" width="128">](https://www.carota.ai)
