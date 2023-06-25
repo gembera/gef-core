@@ -114,9 +114,10 @@ GMapEntry *g_map_get_entry(GMap *self, gcpointer key) {
   return NULL;
 }
 
-void g_map_set_with(GMap *self, gpointer key, gpointer value,
+void g_map_set_with(GMap *self, gcpointer original_key, gpointer value,
                     GFreeCallback value_free_callback) {
   g_return_if_fail(self != NULL);
+  gpointer key = (gpointer)original_key;
   if (self->key_new_handler) {
     key = self->key_new_handler(key);
   }
@@ -140,3 +141,5 @@ void g_map_set_with(GMap *self, gpointer key, gpointer value,
     g_array_insert_ref(self->data, r, &entrynew);
   }
 }
+
+gint g_icomp(gcpointer a, gcpointer b) { return (gint)(a - b); }

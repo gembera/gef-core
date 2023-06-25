@@ -8,7 +8,7 @@
 #define __G_LIB_H__
 
 #include "glibconfig.h"
-#include <stdint.h> 
+#include <stdint.h>
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
@@ -310,12 +310,28 @@ gbool g_map_has(GMap *self, gcpointer key);
 gpointer g_map_get(GMap *self, gcpointer key);
 GMapEntry *g_map_get_entry(GMap *self, gcpointer key);
 #define g_map_set(self, key, value) g_map_set_with(self, key, value, NULL)
-void g_map_set_with(GMap *self, gpointer key, gpointer value,
+void g_map_set_with(GMap *self, gcpointer key, gpointer value,
                     GFreeCallback value_free_callback);
 void g_map_remove(GMap *self, gcpointer key);
 void g_map_remove_all(GMap *self);
 guint g_map_size(GMap *self);
 void g_map_visit(GMap *self, GMapVisitCallback func, gpointer user_data);
+
+gint g_icomp(gcpointer a, gcpointer b);
+#define g_imap_new(value_free_callback)                                        \
+  g_map_new_with(NULL, NULL, value_free_callback, (GCompareHandler)g_icomp)
+#define g_imap_free g_map_free
+#define g_imap_has(self, key) g_map_has(self, (gcpointer)key)
+#define g_imap_get(self, key) g_map_get(self, (gcpointer)key)
+#define g_imap_get_entry(self, key) g_map_get_entry(self, (gcpointer)key)
+#define g_imap_set(self, key, value)                                           \
+  g_map_set_with(self, (gcpointer)key, value, NULL)
+#define g_imap_set_with(self, key, value, value_free_callback)                 \
+  g_map_set_with(self, (gcpointer)key, value, value_free_callback)
+#define g_imap_remove(self, key) g_map_remove(self, (gcpointer)key)
+#define g_imap_remove_all(self) g_map_remove_all(self)
+#define g_imap_size(self) g_map_size(self)
+#define g_imap_visit(self, func, user_data) g_map_visit(self, func, user_data)
 
 // String utility
 #define g_len(str) strlen(str)
