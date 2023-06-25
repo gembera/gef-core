@@ -1,3 +1,5 @@
+[![tests & release](https://github.com/gembera/gef-core/actions/workflows/release.yml/badge.svg)](https://github.com/gembera/gef-core/actions/workflows/release.yml)
+
 # Why Gembera
 C language is one of the oldest languages. It is widely used and at same time heavily criticized. Many modern languages want to be "C/C++ killer", like Rust, Golang, Zig etc. They all try to solve part of the problems, but far from perfect. Gembera does not want to invent another wheel. It try to achieve the goal from the architectural level.
 
