@@ -6,7 +6,7 @@
 static GArray *odd_event_case_check = NULL;
 static void odd_event_case_record(gcstr label, gint i) {
   g_array_add(odd_event_case_check, gint, i);
-  printf("\n%llu > %s : %d\n", g_tick(), label, i);
+  g_info("\n%llu > %s : %d\n", g_tick(), label, i);
 }
 static GCoroutineStatus print_odd(GCoroutine *co) {
   gint *i = (gint *)co->user_data;
@@ -54,7 +54,7 @@ int test_coroutine(int argc, char *argv[]) {
   gint size = g_array_size(odd_event_case_check);
   assert(size == count * 2);
   gint *nums = g_array(odd_event_case_check, gint);
-  for (gint i = 0; i < size; i++){
+  for (gint i = 0; i < size; i++) {
     assert(nums[i] == i + 1);
   }
   g_array_free(odd_event_case_check);
@@ -64,7 +64,7 @@ int test_coroutine(int argc, char *argv[]) {
   gulong peak = 0;
   g_mem_profile(&allocated, &freed, &peak);
   g_mem_record_end();
-  printf("\r\nallocated memory: %ld  \r\nfreed memory: %ld  \r\npeak memory: %ld\r\n",
+  g_info("allocated memory: %ld  \tfreed memory: %ld  \tpeak memory: %ld\r\n",
          allocated, freed, peak);
   assert(allocated == freed);
   return 0;

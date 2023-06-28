@@ -90,7 +90,7 @@ static void channel_test(gint channel_buffer_len, gint data_count,
   GCoroutineContext *context = g_coroutine_context_new();
   GChannel *ch = g_channel_new(channel_buffer_len);
   SenderUserData *ud1 = g_new(SenderUserData);
-  GValue* val = g_value_set_str(g_value_new(), "Value 123");
+  GValue *val = g_value_set_str(g_value_new(), "Value 123");
   g_value_assign(&ud1->num, val);
   ud1->channel = ch;
   ud1->data_count = data_count;
@@ -150,8 +150,7 @@ int test_channel(int argc, char *argv[]) {
 
   g_mem_profile(&allocated, &freed, &peak);
   g_mem_record_end();
-  printf("\r\nallocated memory: %ld  \r\nfreed memory: %ld  \r\npeak memory: "
-         "%ld\r\n",
+  g_info("allocated memory: %ld  \tfreed memory: %ld  \tpeak memory: %ld\r\n",
          allocated, freed, peak);
   assert(allocated == freed);
   return 0;

@@ -14,7 +14,7 @@ static void free_callback(gpointer pointer, gpointer user_data) {
 }
 static void click_count(GEvent *event, gpointer args, gpointer user_data) {
   gstr str = (gstr)g_auto(g_dup("hello"), AC1);
-  printf("%s", str);
+  g_info("%s", str);
   g_auto(g_new(Person), AC1);
   GArray *persons = (GArray *)g_auto_with(g_array_new(Person),
                                           (GFreeCallback)g_array_free, AC1);
@@ -48,7 +48,7 @@ int test_auto(int argc, char *argv[]) {
   gulong peak = 0;
   g_mem_profile(&allocated, &freed, &peak);
   g_mem_record_end();
-  printf("\r\nallocated memory: %ld  \r\nfreed memory: %ld  \r\npeak memory: %ld\r\n",
+  g_info("allocated memory: %ld  \tfreed memory: %ld  \tpeak memory: %ld\r\n",
          allocated, freed, peak);
   assert(allocated == freed);
   return 0;

@@ -3,9 +3,9 @@
 
 static void print_and_count_callback(GList *self, GListNode *item,
                                      gcpointer user_data) {
-  gstr str = (gstr )item->data;
+  gstr str = (gstr)item->data;
   gint *index = (gint *)user_data;
-  printf("\n%d:%s\n", *index, str);
+  g_info("\n%d:%s\n", *index, str);
   (*index)++;
 }
 
@@ -56,7 +56,7 @@ int test_list(int argc, char *argv[]) {
   gulong peak = 0;
   g_mem_profile(&allocated, &freed, &peak);
   g_mem_record_end();
-  printf("\r\nallocated memory: %ld  \r\nfreed memory: %ld  \r\npeak memory: %ld\r\n",
+  g_info("allocated memory: %ld  \tfreed memory: %ld  \tpeak memory: %ld\r\n",
          allocated, freed, peak);
   assert(allocated == freed);
   return 0;

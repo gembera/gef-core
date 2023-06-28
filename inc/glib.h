@@ -6,9 +6,14 @@
 
 #ifndef __G_LIB_H__
 #define __G_LIB_H__
-
-#include "glibconfig.h"
+#include <ctype.h>
+#include <stdarg.h>
+#include <stddef.h>
 #include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
@@ -45,16 +50,14 @@
 
 #define g_return_if_fail(expr, ...)                                            \
   if (!(expr)) {                                                               \
-    g_warning("\r\nfile %s: line %d: assertion \"%s\" failed.\n", __FILE__,    \
-              __LINE__, #expr);                                                \
+    g_log_warn("assertion \"%s\" failed.\n", #expr);                           \
     __VA_ARGS__;                                                               \
     return;                                                                    \
   };
 
 #define g_return_val_if_fail(expr, val, ...)                                   \
   if (!(expr)) {                                                               \
-    g_warning("\r\nfile %s: line %d: assertion \"%s\" failed.\n", __FILE__,    \
-              __LINE__, #expr);                                                \
+    g_log_warn("assertion \"%s\" failed.\n", #expr);                           \
     __VA_ARGS__;                                                               \
     return val;                                                                \
   };
@@ -359,8 +362,26 @@ gbool g_is_space(gwchar c);
 gstr g_format(gcstr fmt, ...);
 void g_format_to(gstr buffer, guint len, gcstr fmt, ...);
 
-int g_log_enabled(gstr file, int line, gstr func, gstr level);
-void g_log(gstr fmt, ...);
+typedef enum _GLogLevel { DEBUG, INFO, WARN, ERROR } GLogLevel;
+
+typedef void (*GLogCallback)(gcstr msg, gpointer user_data);
+
+void g_log_init(GLogLevel min_level, GLogCallback callback, gpointer user_data);
+void _g_log(gcstr file, guint line, GLogLevel level, gcstr msg, ...);
+
+#define g_error(msg, ...) _g_log(NULL, 0, ERROR, msg, ##__VA_ARGS__)
+#define g_warn(msg, ...) _g_log(NULL, 0, WARN, msg, ##__VA_ARGS__)
+#define g_info(msg, ...) _g_log(NULL, 0, INFO, msg, ##__VA_ARGS__)
+#define g_debug(msg, ...) _g_log(NULL, 0, DEBUG, msg, ##__VA_ARGS__)
+
+#define g_log_error(msg, ...)                                                  \
+  _g_log(__FILE__, __LINE__, ERROR, msg, ##__VA_ARGS__)
+#define g_log_warn(msg, ...)                                                   \
+  _g_log(__FILE__, __LINE__, WARN, msg, ##__VA_ARGS__)
+#define g_log_info(msg, ...)                                                   \
+  _g_log(__FILE__, __LINE__, INFO, msg, ##__VA_ARGS__)
+#define g_log_debug(msg, ...)                                                  \
+  _g_log(__FILE__, __LINE__, DEBUG, msg, ##__VA_ARGS__)
 
 #ifdef HAVE_TIMER
 typedef struct _GTimer {

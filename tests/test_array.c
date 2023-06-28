@@ -163,8 +163,7 @@ int test_array(int argc, char *argv[]) {
   gulong peak = 0;
   g_mem_profile(&allocated, &freed, &peak);
   g_mem_record_end();
-  printf("\r\nallocated memory: %ld  \r\nfreed memory: %ld  \r\npeak memory: "
-         "%ld\r\n",
+  g_info("allocated memory: %ld  \tfreed memory: %ld  \tpeak memory: %ld\r\n",
          allocated, freed, peak);
   assert(allocated == freed);
   return 0;
