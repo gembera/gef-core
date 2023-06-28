@@ -31,7 +31,7 @@ int test_protobuf(int argc, char *argv[]) {
                      0x32, 0x33, 0x34, 0x38, 0x38, 0x38, 0x10, 0x02, 0x22, 0x05,
                      0x0a, 0x03, 0x35, 0x36, 0x38};
   gint len = sizeof(buffer);
-  g_info("len : %d", len);
+  g_info("buffer length : %d", len);
   GPbMessage *msg = g_pb_message_decode_buffer("Person", buffer, len);
   GValue *json = g_pb_message_to_json(msg);
   gstr msg_content = g_json_stringify(json);

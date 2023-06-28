@@ -7,6 +7,22 @@ int gettimeofday(struct timeval *tv, void *not_used);
 #include <unistd.h>
 #endif
 
+GDate g_date_now() {
+  struct timeval t;
+  gettimeofday(&t, NULL);
+  struct tm tm = *localtime(&t.tv_sec);
+  GDate dt = {0};
+  dt.year = tm.tm_year + 1900;
+  dt.month = tm.tm_mon;
+  dt.day = tm.tm_mday;
+  dt.hours = tm.tm_hour;
+  dt.minutes = tm.tm_min;
+  dt.seconds = tm.tm_sec;
+  dt.milliseconds = t.tv_usec / 1000;
+  dt.timezone_offset = tm.tm_gmtoff / 60;
+  return dt;
+}
+
 guint64 g_tick() {
   struct timeval tv;
   gettimeofday(&tv, NULL);

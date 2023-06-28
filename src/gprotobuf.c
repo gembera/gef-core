@@ -64,8 +64,6 @@ static bool _decode(GPbMessage *self, pb_istream_t *stream) {
   while (pb_decode_tag(stream, &wire_type, &tag, &eof)) {
     g_return_val_if_fail(tag <= tag_max, FALSE);
     GPbField *field = g_ptr_array_get(self->type->fields, tag);
-    g_info("%d : %s(%s) = %d,  %d", tag, field->name,
-           g_pt_field_type_name(field->type), wire_type, eof);
     GValue *field_value = NULL;
     GPbFieldType type = field->type;
     switch (type) {

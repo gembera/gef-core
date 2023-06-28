@@ -52,7 +52,7 @@ gpointer _g_malloc(gulong size) {
 
   p = (gpointer)malloc(size);
   if (!p)
-    g_log_error("could not allocate %ld bytes", size);
+    g_error("could not allocate %ld bytes", size);
 
 #ifdef ENABLE_MEM_PROFILE
   size -= SIZE_META;
@@ -77,7 +77,7 @@ gpointer _g_malloc0(gulong size) {
 
   p = (gpointer)calloc(size, 1);
   if (!p)
-    g_log_error("could not allocate %ld bytes", size);
+    g_error("could not allocate %ld bytes", size);
 
 #ifdef ENABLE_MEM_PROFILE
   size -= SIZE_META;
@@ -112,7 +112,7 @@ gpointer _g_realloc(gpointer mem, gulong size) {
   }
 
   if (!p)
-    g_log_error("could not reallocate %ld bytes", size);
+    g_error("could not reallocate %ld bytes", size);
 
 #ifdef ENABLE_MEM_PROFILE
   size -= SIZE_META;
@@ -264,7 +264,7 @@ void g_mem_leak_record_alloc(gpointer memnew, gulong allocated, gcstr __file__,
 void g_mem_print_leaks() {
   for (gint i = 0; i < leak_records_size; i++) {
     GMemRecord *ri = leak_records + i;
-    g_log_error("\n*** LEAK *** : %p\t%ld\t%s(%d)", ri->mem, ri->size, ri->file,
+    g_error("*** LEAK *** : %p\t%ld\t%s(%d)", ri->mem, ri->size, ri->file,
            ri->line);
   }
 }
