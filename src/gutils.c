@@ -54,15 +54,13 @@ void _g_log(gcstr file, guint line, GLogLevel level, gcstr msg, ...) {
   gstr buf = _log_buffer;
   gint len = LOG_BUFFER_LEN - 1;
   if (_log_callback)
-    snprintf_(buf, len,
-              "\r\n%s\t[%d-%02d-%02d %02d:%02d:%02d.%03d] ", level_text,
-              now.month + 1, now.year, now.day, now.hours, now.minutes,
-              now.seconds, now.milliseconds);
+    snprintf_(buf, len, "\r\n%s\t[%d-%02d-%02d %02d:%02d:%02d.%03d] ",
+              level_text, now.month + 1, now.year, now.day, now.hours,
+              now.minutes, now.seconds, now.milliseconds);
   else
-    snprintf_(buf, len,
-              "\r\n%s%s%s\t[%d-%02d-%02d %02d:%02d:%02d.%03d] ", level_color,
-              level_text, "\033[1;0m", now.year, now.month + 1, now.day,
-              now.hours, now.minutes, now.seconds, now.milliseconds);
+    snprintf_(buf, len, "\r\n%s%s%s\t[%d-%02d-%02d %02d:%02d:%02d.%03d] ",
+              level_color, level_text, "\033[1;0m", now.year, now.month + 1,
+              now.day, now.hours, now.minutes, now.seconds, now.milliseconds);
 
   guint slen = g_len(buf);
   buf += slen;
@@ -71,8 +69,13 @@ void _g_log(gcstr file, guint line, GLogLevel level, gcstr msg, ...) {
   slen = g_len(buf);
   buf += slen;
   len -= slen;
-  if (len > 0 && file)
-    snprintf_(buf, len, "\t in %s (%d)", file, line);
+  if (len > 0 && file) {
+    if (_log_callback)
+      snprintf_(buf, len, "\t @ %s (%d)", file, line);
+    else
+      snprintf_(buf, len, "\t %s@%s %s (%d)", level_color, "\033[1;0m", file,
+                line);
+  }
   va_end(ap);
   if (_log_callback) {
     _log_callback(_log_buffer, _log_file);

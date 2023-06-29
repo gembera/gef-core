@@ -74,7 +74,8 @@ static void on_channel_read(GEvent *event, gpointer args, gpointer user_data) {
   } else if (g_value_is_error(item)) {
     counter->error = TRUE;
   } else {
-    g_array_add(counter->reads, gint, g_value_int(item));
+    gint val = g_value_int(item);
+    g_array_add(counter->reads, &val);
   }
 }
 static void on_channel_write(GEvent *event, gpointer args, gpointer user_data) {
@@ -82,7 +83,8 @@ static void on_channel_write(GEvent *event, gpointer args, gpointer user_data) {
   GValue *item = (GValue *)args;
   ReadWriteCountUserData *counter = (ReadWriteCountUserData *)user_data;
   if (g_value_is_channel_data(item)) {
-    g_array_add(counter->writes, gint, g_value_int(item));
+    gint val = g_value_int(item);
+    g_array_add(counter->writes, &val);
   }
 }
 static void channel_test(gint channel_buffer_len, gint data_count,

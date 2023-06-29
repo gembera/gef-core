@@ -50,14 +50,14 @@
 
 #define g_return_if_fail(expr, ...)                                            \
   if (!(expr)) {                                                               \
-    g_log_warn("assertion \"%s\" failed.\n", #expr);                           \
+    g_log_warn("assertion \"%s\" failed. ", #expr);                           \
     __VA_ARGS__;                                                               \
     return;                                                                    \
   };
 
 #define g_return_val_if_fail(expr, val, ...)                                   \
   if (!(expr)) {                                                               \
-    g_log_warn("assertion \"%s\" failed.\n", #expr);                           \
+    g_log_warn("assertion \"%s\" failed. ", #expr);                           \
     __VA_ARGS__;                                                               \
     return val;                                                                \
   };
@@ -128,6 +128,7 @@ void g_mem_record_default_callback(gulong index, gpointer memnew,
                                    gulong freed, gcstr __file__, gint __line__);
 void g_mem_record(GMemRecordCallback callback);
 void g_mem_record_begin();
+void g_mem_record_set_max(gulong max);
 void g_mem_record_end();
 
 gpointer g_mem_record_malloc(gulong size, gcstr __file__, const int __line__);
@@ -148,6 +149,7 @@ void _g_free(gpointer mem);
 #else
 #define g_mem_record(callback)
 #define g_mem_record_begin()
+#define g_mem_record_set_max(max)
 #define g_mem_record_end()
 
 gpointer _g_malloc(gulong size);
@@ -208,30 +210,18 @@ GArray *g_array_new_with(guint item_len);
 void g_array_free(GArray *self);
 #define g_array(self, type) ((type *)(self->data))
 #define g_array_get(self, type, index) (*(type *)g_array_get_ref(self, index))
-#define g_array_set(self, type, index, val)                                    \
-  {                                                                            \
-    type __tmp__ = val;                                                        \
-    g_array_set_ref(self, index, &__tmp__);                                    \
-  }
 void g_array_copy(GArray *self, gpointer data, guint index, guint count);
 gpointer g_array_get_ref(GArray *self, guint index);
-void g_array_set_ref(GArray *self, guint index, gpointer ref);
+void g_array_set(GArray *self, guint index, gpointer ref);
 guint g_array_size(GArray *self);
-void g_array_set_size(GArray *self, guint size);
-void g_array_set_capacity(GArray *self, guint capacity);
-#define g_array_add_ref(self, ref)                                             \
-  g_array_insert_ref(self, g_array_size(self), ref)
-#define g_array_add(self, type, val)                                           \
-  g_array_insert(self, type, g_array_size(self), val)
+gbool g_array_set_size(GArray *self, guint size);
+gbool g_array_set_capacity(GArray *self, guint capacity);
+#define g_array_add(self, ref)                                             \
+  g_array_insert(self, g_array_size(self), ref)
 void g_array_remove(GArray *self, guint index);
-void g_array_insert_ref(GArray *self, guint index, gpointer ref);
-#define g_array_insert(self, type, index, val)                                 \
-  {                                                                            \
-    type __tmp__ = val;                                                        \
-    g_array_insert_ref(self, index, &__tmp__);                                 \
-  }
-void g_array_append_items(GArray *self, gpointer items, guint count);
-void g_array_prepend_items(GArray *self, gpointer items, guint count);
+gbool g_array_insert(GArray *self, guint index, gpointer ref);
+gbool g_array_append_items(GArray *self, gpointer items, guint count);
+gbool g_array_prepend_items(GArray *self, gpointer items, guint count);
 void g_array_visit(GArray *self, GArrayVisitCallback func, gpointer user_data);
 
 typedef void (*GPtrArrayVisitCallback)(GPtrArray *self, guint index,
@@ -242,14 +232,14 @@ void g_ptr_array_free(GPtrArray *self);
 #define g_ptr_array_get(self, index) (self)->data[index]
 #define g_ptr_array_set(self, index, val) (self)->data[index] = val
 #define g_ptr_array_size(self) ((self)->size)
-void g_ptr_array_set_size(GPtrArray *self, guint length);
-void g_ptr_array_set_capacity(GPtrArray *self, guint capacity);
+gbool g_ptr_array_set_size(GPtrArray *self, guint length);
+gbool g_ptr_array_set_capacity(GPtrArray *self, guint capacity);
 #define g_ptr_array_add(self, data)                                            \
   g_ptr_array_insert(self, g_ptr_array_size(self), data)
 void g_ptr_array_remove(GPtrArray *self, guint index);
-void g_ptr_array_insert(GPtrArray *self, guint index, gpointer data);
-void g_ptr_array_append_items(GPtrArray *self, gpointer *items, guint count);
-void g_ptr_array_prepend_items(GPtrArray *self, gpointer *items, guint count);
+gbool g_ptr_array_insert(GPtrArray *self, guint index, gpointer data);
+gbool g_ptr_array_append_items(GPtrArray *self, gpointer *items, guint count);
+gbool g_ptr_array_prepend_items(GPtrArray *self, gpointer *items, guint count);
 gint g_ptr_array_index_of(GPtrArray *self, gpointer item);
 void g_ptr_array_visit(GPtrArray *self, GPtrArrayVisitCallback func,
                        gpointer user_data);

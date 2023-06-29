@@ -129,7 +129,7 @@ void g_map_set_with(GMap *self, gcpointer original_key, gpointer value,
   g_map_lookup(self, key, &l, &r);
   if (l == r) {
     if (l == -1) {
-      g_array_insert_ref(self->data, 0, &entrynew);
+      g_array_insert(self->data, 0, &entrynew);
       return;
     }
     GMapEntry *entry = g_array(self->data, GMapEntry) + l;
@@ -138,7 +138,7 @@ void g_map_set_with(GMap *self, gcpointer original_key, gpointer value,
     entry->value = value;
     entry->value_custom_free_callback = value_free_callback;
   } else {
-    g_array_insert_ref(self->data, r, &entrynew);
+    g_array_insert(self->data, r, &entrynew);
   }
 }
 

@@ -40,7 +40,7 @@ gpointer g_auto_with(gpointer data, GFreeCallback free_callback,
   GAutoPointer pointer;
   pointer.data = data;
   pointer.free_callback = free_callback;
-  g_array_add(pointers, GAutoPointer, pointer);
+  g_array_add(pointers, &pointer);
   return data;
 }
 void g_auto_container_free(gcstr auto_container_name) {

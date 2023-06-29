@@ -42,7 +42,7 @@ gint g_event_add_listener_with(GEvent *self, GEventCallback callback,
   listener.token = self->last_token;
   listener.user_data = user_data;
   listener.user_data_free_callback = free_callback;
-  g_array_add(self->listeners, GEventListener, listener);
+  g_array_add(self->listeners, &listener);
   return listener.token;
 }
 void g_event_remove_listener(GEvent *self, gint token) {

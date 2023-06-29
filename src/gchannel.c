@@ -24,7 +24,7 @@ gbool g_channel_write(GChannel *self, GValue *item) {
       g_value_is_error(item) || g_value_is_channel_closed(item);
   guint size = g_array_size(self->items);
   if (self->max == 0 || self->max > size || write_anyway) {
-    g_array_add_ref(self->items, item);
+    g_array_add(self->items, item);
     g_value_ref(item);
     if (g_value_is_channel_closed(item)) {
       self->closed = TRUE;

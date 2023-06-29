@@ -22,7 +22,8 @@ static void ptr_array_visit_callback(GPtrArray *self, guint index,
 };
 
 int test_array(int argc, char *argv[]) {
-  // g_mem_record(g_mem_record_default_callback);
+  g_log_init(INFO, NULL, NULL);
+  g_mem_record(g_mem_record_default_callback);
   g_mem_record_begin();
   gint i, i1, i2, i3, i4;
   gint val1 = 111;
@@ -57,7 +58,7 @@ int test_array(int argc, char *argv[]) {
   assert(two_items[0] == 666);
   assert(two_items[1] == val1);
 
-  g_array_set(arr, gint, 4, val2);
+  g_array_set(arr, 4, &val2);
   // 444, 555, 666, 111, 222
   assert(data[4] == val2);
 
@@ -71,14 +72,15 @@ int test_array(int argc, char *argv[]) {
   assert(g_array_size(arr) == 4);
   assert(data[0] == 444);
   g_array_set_capacity(arr, 100);
-  g_array_insert(arr, gint, 3, val3);
+  g_array_insert(arr, 3, &val3);
   // 444, 666, 111, 333, 222
   data = g_array(
       arr,
       gint); // g_array_set_capacity & g_array_insert may cause reallocation
   assert(g_array_size(arr) == 5);
-  g_array_add(arr, gint, 999); // g_array_add may cause reallocation, but in
-                               // this case the capacity is enough
+  gint tmp = 999;
+  g_array_add(arr, &tmp); // g_array_add may cause reallocation, but in
+                          // this case the capacity is enough
   assert(g_array_size(arr) == 6);
   assert(data[0] == 444);
   assert(data[1] == 666);
@@ -87,11 +89,27 @@ int test_array(int argc, char *argv[]) {
   assert(data[4] == val2);
   assert(data[5] == 999);
 
-  g_array_insert(arr, gint, 30,
-                 val3); // nothing will happen since 30 > array current length
+  assert(!g_array_insert(
+      arr, 30,
+      &val3)); // nothing will happen since 30 > array current length
   assert(g_array_size(arr) == 6);
   g_array_free(arr);
+  arr = g_array_new(gint);
+  for (gint i = 0; i < 10; i++) {
+    g_array_add(arr, &i);
+  }
+  assert(g_array_size(arr) == 10);
+  g_mem_record_set_max(10); // simulate out of memory
+  assert(!g_array_set_size(arr, 10000));
+  assert(!g_array_set_capacity(arr, 10000));
+  assert(!g_array_add(arr, &val3));
+  assert(!g_array_insert(arr, 1, &val3));
+  assert(!g_array_append_items(arr, &val3, 1));
+  assert(!g_array_prepend_items(arr, &val3, 1));
+  assert(g_array_size(arr) == 10);
+  g_array_free(arr);
 
+  g_mem_record_set_max(0);
   Person p1 = {"one", 10};
   Person p2 = {"two", 20};
   Person p3 = {"three", 30};
@@ -142,6 +160,15 @@ int test_array(int argc, char *argv[]) {
   assert(g_ptr_array_size(parr2) == 4);
   assert(parr2->data[3] == pp4);
 
+  g_mem_record_set_max(10);
+  assert(!g_ptr_array_set_size(parr2, 1000));
+  assert(!g_ptr_array_set_capacity(parr2, 1000));
+  assert(!g_ptr_array_add(parr2, &p2));
+  assert(!g_ptr_array_insert(parr2, 1, &p1));
+  assert(!g_ptr_array_insert(parr2, 10000, &p1));
+  assert(!g_ptr_array_append_items(parr2, (gpointer *)&p1, 1));
+  assert(!g_ptr_array_prepend_items(parr2, (gpointer *)&p1, 1));
+  g_mem_record_set_max(0);
   i4 = 0;
   g_ptr_array_visit(parr2, ptr_array_visit_callback, &i4);
   assert(i4 == 2);

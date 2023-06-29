@@ -5,7 +5,7 @@
 
 static GArray *odd_event_case_check = NULL;
 static void odd_event_case_record(gcstr label, gint i) {
-  g_array_add(odd_event_case_check, gint, i);
+  g_array_add(odd_event_case_check, &i);
   g_info("\n%llu > %s : %d\n", g_tick(), label, i);
 }
 static GCoroutineStatus print_odd(GCoroutine *co) {

@@ -53,17 +53,17 @@ void g_pb_message_type_free(GPbMessageType *self) {
   g_free(self);
 }
 
-static bool _decode(GPbMessage *self, pb_istream_t *stream) {
+static bool _decode(GPbMessage *msg, pb_istream_t *stream) {
   pb_wire_type_t wire_type;
   guint32 tag;
   bool eof;
-  guint tag_max = g_ptr_array_size(self->type->fields) - 1;
-  self->values = g_ptr_array_new_with((GFreeCallback)g_value_free);
-  g_ptr_array_set_size(self->values, tag_max + 1);
+  guint tag_max = g_ptr_array_size(msg->type->fields) - 1;
+  msg->values = g_ptr_array_new_with((GFreeCallback)g_value_free);
+  g_ptr_array_set_size(msg->values, tag_max + 1);
 
   while (pb_decode_tag(stream, &wire_type, &tag, &eof)) {
     g_return_val_if_fail(tag <= tag_max, FALSE);
-    GPbField *field = g_ptr_array_get(self->type->fields, tag);
+    GPbField *field = g_ptr_array_get(msg->type->fields, tag);
     GValue *field_value = NULL;
     GPbFieldType type = field->type;
     switch (type) {
@@ -117,7 +117,8 @@ static bool _decode(GPbMessage *self, pb_istream_t *stream) {
       break;
     }
     case PBT_FLOAT:
-    case PBT_FIXED32: {
+    case PBT_FIXED32:
+    case PBT_SFIXED32: {
       g_return_val_if_fail(
           wire_type == PB_WT_32BIT || wire_type == PB_WT_PACKED, false);
       union {
@@ -136,7 +137,8 @@ static bool _decode(GPbMessage *self, pb_istream_t *stream) {
     }
 
     case PBT_DOUBLE:
-    case PBT_FIXED64: {
+    case PBT_FIXED64:
+    case PBT_SFIXED64: {
       g_return_val_if_fail(
           wire_type == PB_WT_64BIT || wire_type == PB_WT_PACKED, false);
       union {
@@ -197,18 +199,18 @@ static bool _decode(GPbMessage *self, pb_istream_t *stream) {
     }
     if (field_value) {
       if (field->repeated) {
-        GValue *varr = (GValue *)g_ptr_array_get(self->values, tag);
+        GValue *varr = (GValue *)g_ptr_array_get(msg->values, tag);
         if (varr == NULL) {
           GPtrArray *arr = g_ptr_array_new_with((GFreeCallback)g_value_free);
           g_return_val_if_fail(arr, false);
           varr = g_value_set(g_value_new(), G_TYPE_PTR_ARRAY, arr,
                              (GFreeCallback)g_ptr_array_free);
           g_return_val_if_fail(varr, false);
-          g_ptr_array_set(self->values, tag, varr);
+          g_ptr_array_set(msg->values, tag, varr);
         }
         g_ptr_array_add((GPtrArray *)g_value_pointer(varr), field_value);
       } else {
-        g_ptr_array_set(self->values, tag, field_value);
+        g_ptr_array_set(msg->values, tag, field_value);
       }
     }
   }
@@ -267,6 +269,7 @@ static void _to_json(GPbMessage *self, GValue *json) {
 }
 GValue *g_pb_message_to_json(GPbMessage *self) {
   GValue *json = g_json_new();
+  g_return_val_if_fail(json, NULL);
   _to_json(self, json);
   return json;
 }
@@ -275,4 +278,112 @@ void g_pb_message_free(GPbMessage *self) {
   g_return_if_fail(self);
   g_ptr_array_free(self->values);
   g_free(self);
+}
+
+#define CHUNK_SIZE 16
+static bool _write_callback(pb_ostream_t *stream, const uint8_t *buf,
+                            size_t count) {
+  GArray *arr = (GArray *)stream->state;
+  gint left = arr->alloc - arr->len - count;
+  if (left < 0) {
+    g_return_val_if_fail(
+        g_array_set_capacity(arr, arr->alloc + count + CHUNK_SIZE), false);
+  }
+  return g_array_append_items(arr, (gpointer)buf, count);
+}
+static bool _write_tag(pb_ostream_t *stream, GPbField *field) {
+  pb_wire_type_t wire_type;
+  switch (field->type) {
+  case PBT_DOUBLE:
+  case PBT_FIXED64:
+  case PBT_SFIXED64:
+    wire_type = PB_WT_64BIT;
+    break;
+  case PBT_FLOAT:
+  case PBT_FIXED32:
+  case PBT_SFIXED32:
+    wire_type = PB_WT_32BIT;
+    break;
+  case PBT_STRING:
+  case PBT_BYTES:
+  case PBT_MESSAGE:
+    wire_type = PB_WT_STRING;
+    break;
+  default:
+    wire_type = PB_WT_VARINT;
+  }
+  return pb_encode_tag(stream, wire_type, field->tag);
+}
+static bool _encode_one(pb_ostream_t *stream, GPbField *field, GValue *value) {
+  g_return_val_if_fail(_write_tag(stream, field), false);
+  switch (field->type) {
+  case PBT_DOUBLE:
+  case PBT_FIXED64:
+  case PBT_SFIXED64:
+    break;
+  case PBT_FLOAT:
+  case PBT_FIXED32:
+  case PBT_SFIXED32:
+    break;
+  case PBT_STRING: {
+    gcstr str = g_value_str(value);
+    guint64 len = g_len(str);
+    g_return_val_if_fail(pb_encode_varint(stream, len), false);
+    g_return_val_if_fail(pb_write(stream, str, len), false);
+    break;
+  }
+  case PBT_BYTES: {
+    GArray *buf = (GArray *)g_value_pointer(value);
+    guint64 len = g_array_size(buf);
+    g_return_val_if_fail(pb_encode_varint(stream, len), false);
+    g_return_val_if_fail(pb_write(stream, buf->data, len), false);
+    break;
+  }
+  case PBT_MESSAGE: {
+    GArray *arr = g_pb_message_encode((GPbMessage *)g_value_pointer(value));
+    guint64 len = g_array_size(arr);
+    g_return_val_if_fail(pb_encode_varint(stream, len), false,
+                         g_array_free(arr));
+    g_return_val_if_fail(pb_write(stream, arr->data, len), false,
+                         g_array_free(arr));
+    g_array_free(arr);
+    break;
+  }
+  default:
+  }
+  return true;
+}
+static bool _encode(pb_ostream_t *stream, GPbMessage *msg) {
+  GPbMessageType *mt = msg->type;
+  gint count = g_ptr_array_size(mt->fields);
+  gint i;
+  for (i = 1; i < count; i++) {
+    GPbField *field = g_ptr_array_get(mt->fields, i);
+    if (!field)
+      continue;
+    GValue *value = g_ptr_array_get(msg->values, i);
+    if (!value)
+      continue;
+    if (field->repeated) {
+      GPtrArray *arr = (GPtrArray *)g_value_pointer(value);
+      gint vcount = g_ptr_array_size(arr);
+      gint vi;
+      for (vi = 0; vi < vcount; vi++) {
+        g_return_val_if_fail(
+            _encode_one(stream, field, (GValue *)g_ptr_array_get(arr, vi)),
+            false);
+      }
+    } else {
+      g_return_val_if_fail(_encode_one(stream, field, value), false);
+    }
+  }
+  return true;
+}
+
+GArray *g_pb_message_encode(GPbMessage *self) {
+  GArray *arr = g_array_new(guint8);
+  g_return_val_if_fail(arr, NULL);
+  pb_ostream_t stream = {&_write_callback, (gpointer)arr, SIZE_MAX, 0};
+  _encode(&stream, self);
+  return arr;
 }

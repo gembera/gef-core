@@ -139,6 +139,7 @@ void _g_free(gpointer mem) {
   }
 }
 #ifdef ENABLE_MEM_RECORD
+static gulong mem_record_max = 0;
 static gbool mem_record_enabled = FALSE;
 static gulong mem_record_index = 0;
 static GMemRecordCallback mem_record_callback = NULL;
@@ -158,6 +159,8 @@ static gulong mem_size(gpointer mem) {
 #endif
 }
 gpointer g_mem_record_malloc(gulong size, gcstr __file__, const int __line__) {
+  if (mem_record_max)
+    g_return_val_if_fail(peak_mem + size < mem_record_max, NULL);
   gpointer mem = _g_malloc(size);
   if (mem_record_enabled) {
     if (mem_record_callback) {
@@ -170,6 +173,8 @@ gpointer g_mem_record_malloc(gulong size, gcstr __file__, const int __line__) {
   return mem;
 }
 gpointer g_mem_record_malloc0(gulong size, gcstr __file__, const int __line__) {
+  if (mem_record_max)
+    g_return_val_if_fail(peak_mem + size < mem_record_max, NULL);
   gpointer mem = _g_malloc0(size);
   if (mem_record_enabled) {
     if (mem_record_callback) {
@@ -185,6 +190,8 @@ gpointer g_mem_record_realloc(gpointer mem, gulong size, gcstr __file__,
                               const int __line__) {
   gulong allocated = size;
   gulong freed = mem_size(mem);
+  if (mem_record_max)
+    g_return_val_if_fail(peak_mem + size - freed < mem_record_max, NULL);
   gpointer memnew = _g_realloc(mem, size);
   if (mem_record_enabled) {
     if (mem_record_callback) {
@@ -195,7 +202,8 @@ gpointer g_mem_record_realloc(gpointer mem, gulong size, gcstr __file__,
   return memnew;
 }
 void g_mem_record_free(gpointer mem, gcstr __file__, const int __line__) {
-  if (!mem) return;
+  if (!mem)
+    return;
   if (mem_record_enabled) {
     if (mem_record_callback) {
       gulong allocated = 0;
@@ -265,7 +273,7 @@ void g_mem_print_leaks() {
   for (gint i = 0; i < leak_records_size; i++) {
     GMemRecord *ri = leak_records + i;
     g_error("*** LEAK *** : %p\t%ld\t%s(%d)", ri->mem, ri->size, ri->file,
-           ri->line);
+            ri->line);
   }
 }
 void g_mem_record_default_callback(gulong index, gpointer memnew,
@@ -275,10 +283,13 @@ void g_mem_record_default_callback(gulong index, gpointer memnew,
   g_mem_leak_record_free(memfree, freed, __file__, __line__);
   g_mem_leak_record_alloc(memnew, allocated, __file__, __line__);
   g_debug("%ld\t%p\t%p\t+%ld\t-%ld\t%s(%d)", index, memnew, memfree, allocated,
-         freed, __file__, __line__);
+          freed, __file__, __line__);
 }
 
 void g_mem_record_begin() { mem_record_enabled = TRUE; }
+
+void g_mem_record_set_max(gulong max) { mem_record_max = max; }
+
 void g_mem_record_end() {
   mem_record_enabled = FALSE;
   g_mem_print_leaks();

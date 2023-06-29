@@ -6,9 +6,9 @@
 
 #ifndef __G_PROTOBUF_H__
 #define __G_PROTOBUF_H__
+#include "gjson.h"
 #include "glib.h"
 #include "gvalue.h"
-#include "gjson.h"
 
 #define G_PROTOBUF_MESSAGE G_TYPE_CUSTOM
 
@@ -61,7 +61,9 @@ void g_pb_message_type_free(GPbMessageType *self);
 GPbMessageType *g_pb_message_type_get(gcstr name);
 
 GPbMessage *g_pb_message_decode_buffer(gcstr type, gpointer buffer, guint size);
-GValue* g_pb_message_to_json(GPbMessage *self);
+GValue *g_pb_message_to_json(GPbMessage *self);
+GArray *g_pb_message_encode(GPbMessage *self);
+
 void g_pb_message_free(GPbMessage *self);
 
 #endif
