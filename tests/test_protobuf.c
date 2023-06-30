@@ -33,12 +33,23 @@ int test_protobuf(int argc, char *argv[]) {
   gint len = sizeof(buffer);
   g_info("buffer length : %d", len);
   GPbMessage *msg = g_pb_message_decode_buffer("Person", buffer, len);
+  GArray *buf = g_pb_message_encode(msg);
+  assert(len == g_array_size(buf));
+  GPbMessage *msg2 =
+      g_pb_message_decode_buffer("Person", buf->data, g_array_size(buf));
+  GValue *json2 = g_pb_message_to_json(msg2);
+  gstr msg_content2 = g_json_stringify(json2);
+  g_array_free(buf);
   GValue *json = g_pb_message_to_json(msg);
   gstr msg_content = g_json_stringify(json);
+  g_equal(msg_content, msg_content2);
   g_info(msg_content);
   g_free(msg_content);
+  g_free(msg_content2);
   g_value_free(json);
   g_pb_message_free(msg);
+  g_value_free(json2);
+  g_pb_message_free(msg2);
   g_auto_free();
   gulong allocated = 0;
   gulong freed = 0;

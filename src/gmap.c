@@ -114,12 +114,13 @@ GMapEntry *g_map_get_entry(GMap *self, gcpointer key) {
   return NULL;
 }
 
-void g_map_set_with(GMap *self, gcpointer original_key, gpointer value,
-                    GFreeCallback value_free_callback) {
-  g_return_if_fail(self != NULL);
+gbool g_map_set_with(GMap *self, gcpointer original_key, gpointer value,
+                     GFreeCallback value_free_callback) {
+  g_return_val_if_fail(self, FALSE);
   gpointer key = (gpointer)original_key;
   if (self->key_new_handler) {
     key = self->key_new_handler(key);
+    g_return_val_if_fail(key, FALSE);
   }
   GMapEntry entrynew;
   entrynew.key = key;
@@ -129,16 +130,17 @@ void g_map_set_with(GMap *self, gcpointer original_key, gpointer value,
   g_map_lookup(self, key, &l, &r);
   if (l == r) {
     if (l == -1) {
-      g_array_insert(self->data, 0, &entrynew);
-      return;
+      g_return_val_if_fail(g_array_insert(self->data, 0, &entrynew), FALSE);
+      return TRUE;
     }
     GMapEntry *entry = g_array(self->data, GMapEntry) + l;
     g_map_free_key_value(self, entry);
     entry->key = key;
     entry->value = value;
     entry->value_custom_free_callback = value_free_callback;
+    return TRUE;
   } else {
-    g_array_insert(self->data, r, &entrynew);
+    return g_array_insert(self->data, r, &entrynew);
   }
 }
 

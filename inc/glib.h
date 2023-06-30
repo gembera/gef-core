@@ -50,14 +50,14 @@
 
 #define g_return_if_fail(expr, ...)                                            \
   if (!(expr)) {                                                               \
-    g_log_warn("assertion \"%s\" failed. ", #expr);                           \
+    g_log_warn("assertion \"%s\" failed. ", #expr);                            \
     __VA_ARGS__;                                                               \
     return;                                                                    \
   };
 
 #define g_return_val_if_fail(expr, val, ...)                                   \
   if (!(expr)) {                                                               \
-    g_log_warn("assertion \"%s\" failed. ", #expr);                           \
+    g_log_warn("assertion \"%s\" failed. ", #expr);                            \
     __VA_ARGS__;                                                               \
     return val;                                                                \
   };
@@ -216,8 +216,7 @@ void g_array_set(GArray *self, guint index, gpointer ref);
 guint g_array_size(GArray *self);
 gbool g_array_set_size(GArray *self, guint size);
 gbool g_array_set_capacity(GArray *self, guint capacity);
-#define g_array_add(self, ref)                                             \
-  g_array_insert(self, g_array_size(self), ref)
+#define g_array_add(self, ref) g_array_insert(self, g_array_size(self), ref)
 void g_array_remove(GArray *self, guint index);
 gbool g_array_insert(GArray *self, guint index, gpointer ref);
 gbool g_array_append_items(GArray *self, gpointer items, guint count);
@@ -303,8 +302,8 @@ gbool g_map_has(GMap *self, gcpointer key);
 gpointer g_map_get(GMap *self, gcpointer key);
 GMapEntry *g_map_get_entry(GMap *self, gcpointer key);
 #define g_map_set(self, key, value) g_map_set_with(self, key, value, NULL)
-void g_map_set_with(GMap *self, gcpointer key, gpointer value,
-                    GFreeCallback value_free_callback);
+gbool g_map_set_with(GMap *self, gcpointer key, gpointer value,
+                     GFreeCallback value_free_callback);
 void g_map_remove(GMap *self, gcpointer key);
 void g_map_remove_all(GMap *self);
 guint g_map_size(GMap *self);

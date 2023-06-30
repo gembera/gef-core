@@ -27,18 +27,18 @@ gbool g_json_has(GValue *self, gcstr key) {
   g_return_val_if_fail(g_value_is(self, G_JSON_OBJECT), FALSE);
   return g_map_has((GMap *)g_value_pointer(self), key);
 }
-void g_json_set(GValue *self, gcstr key, GValue *val) {
-  g_return_if_fail(g_value_is(self, G_JSON_OBJECT));
-  g_map_set((GMap *)g_value_pointer(self), (gpointer)key, val);
+gbool g_json_set(GValue *self, gcstr key, GValue *val) {
+  g_return_val_if_fail(g_value_is(self, G_JSON_OBJECT), FALSE);
+  return g_map_set((GMap *)g_value_pointer(self), (gpointer)key, val);
 }
-void g_json_set_int(GValue *self, gcstr key, gint val) {
-  g_json_set(self, key, g_value_set_int(g_value_new(), val));
+gbool g_json_set_int(GValue *self, gcstr key, gint val) {
+  return g_json_set(self, key, g_value_set_int(g_value_new(), val));
 }
-void g_json_set_double(GValue *self, gcstr key, gdouble val) {
-  g_json_set(self, key, g_value_set_double(g_value_new(), val));
+gbool g_json_set_double(GValue *self, gcstr key, gdouble val) {
+  return g_json_set(self, key, g_value_set_double(g_value_new(), val));
 }
-void g_json_set_str(GValue *self, gcstr key, gstr val) {
-  g_json_set(self, key, g_value_set_str(g_value_new(), val));
+gbool g_json_set_str(GValue *self, gcstr key, gstr val) {
+  return g_json_set(self, key, g_value_set_str(g_value_new(), val));
 }
 GMapEntry *g_json_get_entry(GValue *self, gcstr key) {
   g_return_val_if_fail(g_value_is(self, G_JSON_OBJECT), NULL);
@@ -75,55 +75,64 @@ void g_json_array_set(GValue *self, guint index, GValue *item) {
   g_ptr_array_set((GPtrArray *)g_value_pointer(self), index, item);
 }
 
-void g_json_array_add(GValue *self, GValue *item) {
-  g_return_if_fail(g_value_is(self, G_JSON_ARRAY));
-  g_ptr_array_add((GPtrArray *)g_value_pointer(self), item);
+gbool g_json_array_add(GValue *self, GValue *item) {
+  g_return_val_if_fail(g_value_is(self, G_JSON_ARRAY), FALSE);
+  return g_ptr_array_add((GPtrArray *)g_value_pointer(self), item);
 }
 
 GValue *g_json_array_add_int(GValue *self, gint item) {
   g_return_val_if_fail(g_value_is(self, G_JSON_ARRAY), NULL);
   GValue *val = g_value_set_int(g_value_new(), item);
-  g_json_array_add(self, val);
+  g_return_val_if_fail(val, NULL);
+  g_return_val_if_fail(g_json_array_add(self, val), NULL, g_value_free(val));
   return val;
 }
 GValue *g_json_array_add_double(GValue *self, gdouble item) {
   g_return_val_if_fail(g_value_is(self, G_JSON_ARRAY), NULL);
   GValue *val = g_value_set_double(g_value_new(), item);
-  g_json_array_add(self, val);
+  g_return_val_if_fail(val, NULL);
+  g_return_val_if_fail(g_json_array_add(self, val), NULL, g_value_free(val));
   return val;
 }
 GValue *g_json_array_add_str(GValue *self, gstr item) {
   g_return_val_if_fail(g_value_is(self, G_JSON_ARRAY), NULL);
   GValue *val = g_value_set_str(g_value_new(), item);
-  g_json_array_add(self, val);
+  g_return_val_if_fail(val, NULL);
+  g_return_val_if_fail(g_json_array_add(self, val), NULL, g_value_free(val));
   return val;
 }
 
 GValue *g_json_array_insert_int(GValue *self, guint index, gint item) {
   g_return_val_if_fail(g_value_is(self, G_JSON_ARRAY), NULL);
   GValue *val = g_value_set_int(g_value_new(), item);
-  g_json_array_insert(self, index, val);
+  g_return_val_if_fail(val, NULL);
+  g_return_val_if_fail(g_json_array_insert(self, index, val), NULL,
+                       g_value_free(val));
   return val;
 }
 GValue *g_json_array_insert_double(GValue *self, guint index, gdouble item) {
   g_return_val_if_fail(g_value_is(self, G_JSON_ARRAY), NULL);
   GValue *val = g_value_set_double(g_value_new(), item);
-  g_json_array_insert(self, index, val);
+  g_return_val_if_fail(val, NULL);
+  g_return_val_if_fail(g_json_array_insert(self, index, val), NULL,
+                       g_value_free(val));
   return val;
 }
 GValue *g_json_array_insert_str(GValue *self, guint index, gstr item) {
   g_return_val_if_fail(g_value_is(self, G_JSON_ARRAY), NULL);
   GValue *val = g_value_set_str(g_value_new(), item);
-  g_json_array_insert(self, index, val);
+  g_return_val_if_fail(val, NULL);
+  g_return_val_if_fail(g_json_array_insert(self, index, val), NULL,
+                       g_value_free(val));
   return val;
 }
 void g_json_array_remove(GValue *self, guint index) {
   g_return_if_fail(g_value_is(self, G_JSON_ARRAY));
   g_ptr_array_remove((GPtrArray *)g_value_pointer(self), index);
 }
-void g_json_array_insert(GValue *self, guint index, GValue *item) {
-  g_return_if_fail(g_value_is(self, G_JSON_ARRAY));
-  g_ptr_array_insert((GPtrArray *)g_value_pointer(self), index, item);
+gbool g_json_array_insert(GValue *self, guint index, GValue *item) {
+  g_return_val_if_fail(g_value_is(self, G_JSON_ARRAY), FALSE);
+  return g_ptr_array_insert((GPtrArray *)g_value_pointer(self), index, item);
 }
 gint g_json_array_index_of(GValue *self, GValue *item) {
   g_return_val_if_fail(g_value_is(self, G_JSON_ARRAY), -1);
@@ -141,13 +150,14 @@ struct JsonParseData {
   GPtrArray *stack;
 };
 
-static void json_parse_add_value(GValue *val_parent, gstr key, GValue *val) {
+static gbool json_parse_add_value(GValue *val_parent, gstr key, GValue *val) {
   if (g_value_is(val_parent, G_TYPE_PTR_ARRAY)) {
-    g_json_array_add(val_parent, val);
+    g_return_val_if_fail(g_json_array_add(val_parent, val), FALSE);
   } else {
-    g_return_if_fail(key);
+    g_return_val_if_fail(key, FALSE);
     g_json_set(val_parent, key, val);
   }
+  return TRUE;
 }
 
 static int json_parse_cb(int ev, const char *s, int off, int len, void *ud) {
@@ -163,12 +173,16 @@ static int json_parse_cb(int ev, const char *s, int off, int len, void *ud) {
     } else {
       val_new = g_json_new_array();
     }
+    g_return_val_if_fail(val_new, -1);
     if (val_parent) {
-      json_parse_add_value(val_parent, d->last_key, val_new);
+      g_return_val_if_fail(
+          json_parse_add_value(val_parent, d->last_key, val_new), -1,
+          g_value_free(val_new));
     } else {
       d->root = val_new;
     }
-    g_ptr_array_add(d->stack, val_new);
+    g_return_val_if_fail(g_ptr_array_add(d->stack, val_new), -1,
+                         g_value_free(val_new));
     break;
   case '}':
   case ']':
@@ -184,6 +198,7 @@ static int json_parse_cb(int ev, const char *s, int off, int len, void *ud) {
     break;
   case MJSON_TOK_NUMBER:
     val_new = g_value_new();
+    g_return_val_if_fail(val_new, -1);
     double num;
     mjson_get_number(s + off, len, "$", &num);
     if ((gint)num == num) {
@@ -191,25 +206,33 @@ static int json_parse_cb(int ev, const char *s, int off, int len, void *ud) {
     } else {
       g_value_set_double(val_new, num);
     }
-    json_parse_add_value(val_parent, d->last_key, val_new);
+    g_return_val_if_fail(json_parse_add_value(val_parent, d->last_key, val_new),
+                         -1, g_value_free(val_new));
     break;
   case MJSON_TOK_STRING:
     val_new = g_value_new();
+    g_return_val_if_fail(val_new, -1);
     gstr str = g_malloc0(len + 1);
+    g_return_val_if_fail(str, -1, g_value_free(val_new));
     mjson_get_string(s + off, len, "$", str, len + 1);
     g_value_set_str(val_new, str);
-    json_parse_add_value(val_parent, d->last_key, val_new);
+    g_return_val_if_fail(json_parse_add_value(val_parent, d->last_key, val_new),
+                         -1, g_value_free(val_new), g_free(str));
     g_free(str);
     break;
   case MJSON_TOK_FALSE:
   case MJSON_TOK_TRUE:
     val_new = g_value_new();
+    g_return_val_if_fail(val_new, -1);
     g_value_set_bool(val_new, ev == MJSON_TOK_TRUE);
-    json_parse_add_value(val_parent, d->last_key, val_new);
+    g_return_val_if_fail(json_parse_add_value(val_parent, d->last_key, val_new),
+                         -1, g_value_free(val_new));
     break;
   case MJSON_TOK_NULL:
     val_new = g_value_new();
-    json_parse_add_value(val_parent, d->last_key, val_new);
+    g_return_val_if_fail(val_new, -1);
+    g_return_val_if_fail(json_parse_add_value(val_parent, d->last_key, val_new),
+                         -1, g_value_free(val_new));
     break;
   }
   return 0;
