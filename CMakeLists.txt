@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.21)
 project(gef-core)
 
+message("Build type: ${CMAKE_BUILD_TYPE}")
+
 if(CMAKE_BUILD_TYPE MATCHES Debug)
     add_definitions("-DENABLE_MEM_PROFILE")
     add_definitions("-DENABLE_MEM_RECORD")

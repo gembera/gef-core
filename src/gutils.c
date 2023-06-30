@@ -80,6 +80,6 @@ void _g_log(gcstr file, guint line, GLogLevel level, gcstr msg, ...) {
   if (_log_callback) {
     _log_callback(_log_buffer, _log_file);
   } else {
-    fprintf(stderr, _log_buffer);
+    fprintf(stderr, "%s", _log_buffer);
   }
 }

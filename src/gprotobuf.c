@@ -349,7 +349,6 @@ static bool _encode_one(pb_ostream_t *stream, GPbField *field, GValue *value) {
     g_array_free(arr);
     break;
   }
-  default:
   }
   return true;
 }
