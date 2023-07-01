@@ -45,16 +45,21 @@ GValue *g_value_set(GValue *self, gint type, gpointer pointer,
 }
 GValue *g_value_assign(GValue *self, GValue *target) {
   g_return_val_if_fail(self && target, self);
-  g_value_unref(self);
-  *self = *target;
-  if (self->free_callback) {
-    if (!self->refs) {
-      self->refs = target->refs = g_new(gint);
-      g_return_val_if_fail(self->refs, NULL);
-      *self->refs = 2;
+  if (target->free_callback) {
+    if (!target->refs) {
+      target->refs = g_new(gint);
+      g_return_val_if_fail(target->refs, NULL);
+      *target->refs = 2;
+      g_value_unref(self);
+      *self = *target;
     } else {
+      g_value_unref(self);
+      *self = *target;
       (*self->refs)++;
     }
+  } else {
+    g_value_unref(self);
+    *self = *target;
   }
   return self;
 }

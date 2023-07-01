@@ -159,8 +159,11 @@ static gulong mem_size(gpointer mem) {
 #endif
 }
 gpointer g_mem_record_malloc(gulong size, gcstr __file__, const int __line__) {
-  if (mem_record_max)
-    g_return_val_if_fail(peak_mem + size < mem_record_max, NULL);
+  if (mem_record_max && peak_mem + size > mem_record_max) {
+    g_log_error("Out of memory (%llu + %llu > %llu) !", peak_mem, size,
+                mem_record_max);
+    return NULL;
+  }
   gpointer mem = _g_malloc(size);
   if (mem_record_enabled) {
     if (mem_record_callback) {
@@ -173,8 +176,11 @@ gpointer g_mem_record_malloc(gulong size, gcstr __file__, const int __line__) {
   return mem;
 }
 gpointer g_mem_record_malloc0(gulong size, gcstr __file__, const int __line__) {
-  if (mem_record_max)
-    g_return_val_if_fail(peak_mem + size < mem_record_max, NULL);
+  if (mem_record_max && peak_mem + size > mem_record_max) {
+    g_log_error("Out of memory (%llu + %llu > %llu) !", peak_mem, size,
+                mem_record_max);
+    return NULL;
+  }
   gpointer mem = _g_malloc0(size);
   if (mem_record_enabled) {
     if (mem_record_callback) {
@@ -190,8 +196,11 @@ gpointer g_mem_record_realloc(gpointer mem, gulong size, gcstr __file__,
                               const int __line__) {
   gulong allocated = size;
   gulong freed = mem_size(mem);
-  if (mem_record_max)
-    g_return_val_if_fail(peak_mem + size - freed < mem_record_max, NULL);
+  if (mem_record_max && peak_mem + size - freed > mem_record_max) {
+    g_log_error("Out of memory (%llu + %llu > %llu) !", peak_mem, size - freed,
+                mem_record_max);
+    return NULL;
+  }
   gpointer memnew = _g_realloc(mem, size);
   if (mem_record_enabled) {
     if (mem_record_callback) {

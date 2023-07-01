@@ -44,6 +44,9 @@ void process(guint max_mem) {
   assert(len == g_array_size(buf));
   msg2 = g_pb_message_decode_buffer("Person", buf->data, g_array_size(buf));
   g_goto_if_fail(msg2, clean);
+  if (max_mem == 2300){
+    g_info("Here");
+  }
   json2 = g_pb_message_to_json(msg2);
   g_goto_if_fail(json2, clean);
   msg_content2 = g_json_stringify(json2);

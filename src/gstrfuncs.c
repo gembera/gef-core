@@ -14,6 +14,7 @@ gstr g_dup(gcstr str) {
   new_str = NULL;
   if (str) {
     new_str = g_malloc0(g_len(str) + 1);
+    g_return_val_if_fail(new_str, NULL);
     g_ncpy(new_str, str, g_len(str));
   }
   return new_str;
