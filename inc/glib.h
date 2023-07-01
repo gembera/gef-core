@@ -48,6 +48,13 @@
 #undef MININT
 #define MININT ((gint)~MAXINT)
 
+#define g_goto_if_fail(expr, label, ...)                                       \
+  if (!(expr)) {                                                               \
+    g_log_warn("assertion \"%s\" failed. ", #expr);                            \
+    __VA_ARGS__;                                                               \
+    goto label;                                                                \
+  };
+
 #define g_return_if_fail(expr, ...)                                            \
   if (!(expr)) {                                                               \
     g_log_warn("assertion \"%s\" failed. ", #expr);                            \
@@ -165,8 +172,10 @@ void _g_free(gpointer mem);
 #endif
 
 #ifdef ENABLE_MEM_PROFILE
+void g_mem_profile_reset();
 void g_mem_profile(gulong *allocated, gulong *freed, gulong *ppeak);
 #else
+#define g_mem_profile_reset()
 #define g_mem_profile(allocated, freed, ppeak)
 #endif
 

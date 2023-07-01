@@ -172,6 +172,7 @@ static gbool _decode(GPbMessage *msg, pb_istream_t *stream) {
       str[length] = '\0';
       field_value =
           g_value_set(g_value_new(), G_TYPE_STR, str, g_free_callback);
+      g_return_val_if_fail(field_value, FALSE, g_free(str));
       break;
     }
     case PBT_MESSAGE: {
@@ -181,11 +182,13 @@ static gbool _decode(GPbMessage *msg, pb_istream_t *stream) {
       GPbMessage *sub = g_new(GPbMessage);
       g_return_val_if_fail(sub, FALSE);
       sub->type = g_pb_message_type_get(field->sub_message_type);
-      g_return_val_if_fail(_decode(sub, &substream), FALSE);
+      g_return_val_if_fail(_decode(sub, &substream), FALSE,
+                           g_pb_message_free(sub));
+      g_return_val_if_fail(pb_close_string_substream(stream, &substream), FALSE,
+                           g_pb_message_free(sub));
       field_value = g_value_set(g_value_new(), G_PROTOBUF_MESSAGE, sub,
                                 (GFreeCallback)g_pb_message_free);
-      g_return_val_if_fail(pb_close_string_substream(stream, &substream), FALSE,
-                           g_value_free(field_value), g_pb_message_free(sub));
+      g_return_val_if_fail(field_value, FALSE, g_pb_message_free(sub));
       break;
     }
     }
@@ -194,10 +197,11 @@ static gbool _decode(GPbMessage *msg, pb_istream_t *stream) {
       GValue *varr = (GValue *)g_ptr_array_get(msg->values, tag);
       if (varr == NULL) {
         GPtrArray *arr = g_ptr_array_new_with((GFreeCallback)g_value_free);
-        g_return_val_if_fail(arr, FALSE);
+        g_return_val_if_fail(arr, FALSE, g_value_free(field_value));
         varr = g_value_set(g_value_new(), G_TYPE_PTR_ARRAY, arr,
                            (GFreeCallback)g_ptr_array_free);
-        g_return_val_if_fail(varr, FALSE, g_ptr_array_free(arr));
+        g_return_val_if_fail(varr, FALSE, g_ptr_array_free(arr),
+                             g_value_free(field_value));
         g_ptr_array_set(msg->values, tag, varr);
       }
       g_return_val_if_fail(
@@ -242,7 +246,7 @@ static gbool _to_json(GPbMessage *self, GValue *json) {
       for (vi = 0; vi < vcount; vi++) {
         GValue *item = (GValue *)g_ptr_array_get(arr, vi);
         GValue *jval = g_json_new();
-        g_return_val_if_fail(jval, FALSE);
+        g_return_val_if_fail(jval, FALSE, g_value_free(jarr));
         if (g_value_is(item, G_PROTOBUF_MESSAGE)) {
           g_return_val_if_fail(
               _to_json((GPbMessage *)g_value_pointer(item), jval), FALSE,
@@ -365,6 +369,7 @@ static gbool _encode_one(pb_ostream_t *stream, GPbField *field, GValue *value) {
   }
   case PBT_MESSAGE: {
     GArray *arr = g_pb_message_encode((GPbMessage *)g_value_pointer(value));
+    g_return_val_if_fail(arr, FALSE);
     guint64 len = g_array_size(arr);
     g_return_val_if_fail(pb_encode_varint(stream, len), FALSE,
                          g_array_free(arr));

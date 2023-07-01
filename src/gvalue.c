@@ -25,10 +25,6 @@ GValue *g_value_set(GValue *self, gint type, gpointer pointer,
   self->refs = NULL;
   self->data.v_pointer = pointer;
   self->free_callback = free_callback;
-  if (free_callback) {
-    self->refs = g_new(gint);
-    *self->refs = 1;
-  }
   switch (type) {
   case G_TYPE_NULL:
     break;
@@ -51,8 +47,14 @@ GValue *g_value_assign(GValue *self, GValue *target) {
   g_return_val_if_fail(self && target, self);
   g_value_unref(self);
   *self = *target;
-  if (self->refs) {
-    (*self->refs)++;
+  if (self->free_callback) {
+    if (!self->refs) {
+      self->refs = target->refs = g_new(gint);
+      g_return_val_if_fail(self->refs, NULL);
+      *self->refs = 2;
+    } else {
+      (*self->refs)++;
+    }
   }
   return self;
 }
@@ -60,6 +62,12 @@ GValue *g_value_ref(GValue *self) {
   g_return_val_if_fail(self, NULL);
   if (self->refs) {
     (*self->refs)++;
+  } else {
+    if (self->free_callback) {
+      self->refs = g_new(gint);
+      g_return_val_if_fail(self->refs, NULL);
+      *self->refs = 1;
+    }
   }
   return self;
 }

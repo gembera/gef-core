@@ -15,7 +15,6 @@ int test_value(int argc, char *argv[]) {
   assert(g_value_is(val1, G_TYPE_NULL));
   g_value_set(val1, G_TYPE_ERROR, g_dup(err_message), g_free_callback);
   assert(g_value_is(val1, G_TYPE_ERROR));
-  assert(*val1->refs == 1);
   assert(g_equal(err_message, g_value_pointer(val1)));
   GValue *val2 = g_value_set(g_value_new(), G_TYPE_STR, hello, NULL);
   assert(g_equal(hello, (gstr)g_value_pointer(val2)));
@@ -49,7 +48,6 @@ int test_value(int argc, char *argv[]) {
   g_value_set(val1, G_TYPE_ARRAY, g_array_new(gint),
               (GFreeCallback)g_array_free);
   assert(val1->free_callback);
-  assert(*val1->refs == 1);
   g_value_assign(val2, val1);
   assert(*val1->refs == 2);
   assert(*val2->refs == 2);

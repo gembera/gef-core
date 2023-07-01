@@ -306,6 +306,11 @@ void g_mem_profile(gulong *pallocated, gulong *pfreed, gulong *ppeak) {
   *pfreed = total_freed_mem;
   *ppeak = peak_mem;
 }
+void g_mem_profile_reset() {
+  total_allocated_mem = 0;
+  total_freed_mem = 0;
+  peak_mem = 0;
+}
 #endif
 
 void g_free_callback(gpointer data) { g_free(data); }

@@ -12,7 +12,8 @@ static void g_map_free_key_value(GMap *self, GMapEntry *entry) {
   if (entry->value_custom_free_callback) {
     value_free_callback = entry->value_custom_free_callback;
   }
-  g_free_with(entry->key, key_free_callback);
+  if (self->key_new_handler)
+    g_free_with(entry->key, key_free_callback);
   g_free_with(entry->value, value_free_callback);
 }
 static void g_map_lookup(GMap *self, gcpointer key, gint *left, gint *right) {
@@ -130,18 +131,21 @@ gbool g_map_set_with(GMap *self, gcpointer original_key, gpointer value,
   g_map_lookup(self, key, &l, &r);
   if (l == r) {
     if (l == -1) {
-      g_return_val_if_fail(g_array_insert(self->data, 0, &entrynew), FALSE);
-      return TRUE;
+      g_return_val_if_fail(g_array_insert(self->data, 0, &entrynew), FALSE,
+                           g_map_free_key_value(self, &entrynew));
+
+    } else {
+      GMapEntry *entry = g_array(self->data, GMapEntry) + l;
+      g_map_free_key_value(self, entry);
+      entry->key = key;
+      entry->value = value;
+      entry->value_custom_free_callback = value_free_callback;
     }
-    GMapEntry *entry = g_array(self->data, GMapEntry) + l;
-    g_map_free_key_value(self, entry);
-    entry->key = key;
-    entry->value = value;
-    entry->value_custom_free_callback = value_free_callback;
-    return TRUE;
   } else {
-    return g_array_insert(self->data, r, &entrynew);
+    g_return_val_if_fail(g_array_insert(self->data, r, &entrynew), FALSE,
+                         g_map_free_key_value(self, &entrynew));
   }
+  return TRUE;
 }
 
 gint g_icomp(gcpointer a, gcpointer b) { return (gint)(a - b); }
