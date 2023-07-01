@@ -6,7 +6,8 @@ static inline void _string_putc(char ch, void *buffer, size_t idx,
                                 size_t maxlen) {
   GString *self = (GString *)buffer;
   if (ch == '\0') {
-    self->value[self->len] = '\0';
+    if (self->len < self->alloc)
+      self->value[self->len] = '\0';
     return;
   }
   gint left = self->alloc - 1 - self->len;

@@ -258,9 +258,8 @@ static gbool _to_json(GPbMessage *self, GValue *json) {
         g_return_val_if_fail(g_json_array_add(jarr, jval), FALSE,
                              g_value_free(jarr), g_value_free(jval));
       }
-      g_return_val_if_fail(g_json_set(json, field->name, jarr),
-                           FALSE); // if g_json_set fails, it will free jarr,
-                                   // should not free it again
+      g_return_val_if_fail(g_json_set(json, field->name, jarr), FALSE,
+                           g_value_free(jarr));
     } else {
       GValue *jval = g_value_new();
       g_return_val_if_fail(jval, FALSE);
@@ -272,9 +271,8 @@ static gbool _to_json(GPbMessage *self, GValue *json) {
         g_return_val_if_fail(g_value_assign(jval, value), FALSE,
                              g_value_free(jval));
       }
-      g_return_val_if_fail(g_json_set(json, field->name, jval),
-                           FALSE); // if g_json_set fails, it will free jval,
-                                   // should not free it again
+      g_return_val_if_fail(g_json_set(json, field->name, jval), FALSE,
+                           g_value_free(jval));
     }
   }
   return TRUE;
