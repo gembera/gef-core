@@ -31,11 +31,14 @@ void process(guint max_mem) {
   gint len = sizeof(buffer);
   GPbMessage *msg = NULL;
   GPbMessage *msg2 = NULL;
-  gstr msg_content2 = NULL;
+  GPbMessage *msg3 = NULL;
   gstr msg_content = NULL;
+  gstr msg_content2 = NULL;
+  gstr msg_content3 = NULL;
   GArray *buf = NULL;
   GValue *json = NULL;
   GValue *json2 = NULL;
+  GValue *json3 = NULL;
   g_info("buffer length : %d", len);
   msg = g_pb_message_decode_buffer("Person", buffer, len);
   g_goto_if_fail(msg, clean);
@@ -52,16 +55,26 @@ void process(guint max_mem) {
   g_goto_if_fail(json, clean);
   msg_content = g_json_stringify(json);
   g_goto_if_fail(msg_content, clean);
+  msg3 = g_pb_json_to_message("Person", json);
+  g_goto_if_fail(msg3, clean);
+  json3 = g_pb_message_to_json(msg3);
+  g_goto_if_fail(json3, clean);
+  msg_content3 = g_json_stringify(json3);
+  g_goto_if_fail(msg_content3, clean);
   g_equal(msg_content, msg_content2);
+  g_equal(msg_content, msg_content3);
   g_info(msg_content);
 clean:
   g_free(msg_content);
   g_free(msg_content2);
+  g_free(msg_content3);
   g_array_free(buf);
   g_value_free(json);
-  g_pb_message_free(msg);
   g_value_free(json2);
+  g_value_free(json3);
+  g_pb_message_free(msg);
   g_pb_message_free(msg2);
+  g_pb_message_free(msg3);
   check_memory();
 }
 
@@ -85,7 +98,7 @@ int test_protobuf(int argc, char *argv[]) {
   assert(mt_person == g_pb_message_type_get("Person"));
 
   guint max;
-  for (max = 0; max < 3500; max += 50) {
+  for (max = 0; max < 5000; max += 50) {
     process(max);
   }
 

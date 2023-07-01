@@ -137,7 +137,7 @@ void g_array_visit(GArray *self, GArrayVisitCallback func, gpointer user_data) {
 
 static gbool g_ptr_array_maybe_expand(GPtrArray *self, guint size) {
   if ((self->size + size) > self->alloc) {
-    gpointer newdata;
+    gpointer *newdata;
     if (self->data)
       newdata = g_realloc(self->data, sizeof(gpointer) * (self->size + size));
     else

@@ -21,6 +21,7 @@ struct _GValue {
     gint64 v_long;
     gdouble v_double;
     gpointer v_pointer;
+    gstr v_str;
   } data;
   GFreeCallback free_callback;
 };

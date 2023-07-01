@@ -63,6 +63,7 @@ GPbMessageType *g_pb_message_type_get(gcstr name);
 GPbMessage *g_pb_message_decode_buffer(gcstr type, gpointer buffer, guint size);
 GValue *g_pb_message_to_json(GPbMessage *self);
 GArray *g_pb_message_encode(GPbMessage *self);
+GPbMessage *g_pb_json_to_message(gcstr type, GValue *json);
 
 void g_pb_message_free(GPbMessage *self);
 

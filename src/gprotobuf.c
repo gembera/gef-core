@@ -283,7 +283,74 @@ GValue *g_pb_message_to_json(GPbMessage *self) {
   g_return_val_if_fail(_to_json(self, json), NULL, g_value_free(json));
   return json;
 }
-
+static GValue *_from_json_field(GPbField *field, GValue *json_val) {
+  GPbFieldType type = field->type;
+  GValue *field_value = NULL;
+  switch (type) {
+  case PBT_MESSAGE: {
+    g_return_val_if_fail(field->sub_message_type, NULL);
+    GPbMessage *sub = g_pb_json_to_message(field->sub_message_type, json_val);
+    g_return_val_if_fail(sub, NULL);
+    field_value = g_value_set(g_value_new(), G_PROTOBUF_MESSAGE, sub,
+                              (GFreeCallback)g_pb_message_free);
+    g_return_val_if_fail(field_value, NULL, g_pb_message_free(sub));
+    break;
+  }
+  default: {
+    field_value = g_value_new();
+    g_return_val_if_fail(field_value, NULL);
+    g_return_val_if_fail(g_value_assign(field_value, json_val), NULL,
+                         g_value_free(field_value));
+  }
+  }
+  return field_value;
+}
+static gbool _from_json(GPbMessage *self, GValue *json) {
+  GPbMessageType *type = self->type;
+  guint count = g_ptr_array_size(type->fields);
+  g_return_val_if_fail(g_ptr_array_set_size(self->values, count), FALSE);
+  guint i;
+  for (i = 1; i < count; i++) {
+    GPbField *field = g_ptr_array_get(type->fields, i);
+    if (field == NULL)
+      continue;
+    GValue *value = g_json_get(json, field->name);
+    if (value == NULL)
+      continue;
+    if (field->repeated) {
+      guint vi;
+      guint vcount = g_json_array_size(value);
+      GPtrArray *arr = g_ptr_array_new_with((GFreeCallback)g_value_free);
+      g_return_val_if_fail(arr, FALSE);
+      for (vi = 0; vi < vcount; vi++) {
+        GValue *item = g_json_array_get(value, vi);
+        GValue *field_value = _from_json_field(field, item);
+        g_return_val_if_fail(field_value, FALSE, g_ptr_array_free(arr));
+        g_return_val_if_fail(g_ptr_array_add(arr, field_value), FALSE,
+                             g_value_free(field_value), g_ptr_array_free(arr));
+      }
+      GValue *varr = g_value_set(g_value_new(), G_TYPE_PTR_ARRAY, arr,
+                                 (GFreeCallback)g_ptr_array_free);
+      g_return_val_if_fail(varr, FALSE, g_ptr_array_free(arr));
+      g_ptr_array_set(self->values, i, varr);
+    } else {
+      GValue *field_value = _from_json_field(field, value);
+      g_return_val_if_fail(field_value, FALSE);
+      g_ptr_array_set(self->values, i, field_value);
+    }
+  }
+  return TRUE;
+}
+GPbMessage *g_pb_json_to_message(gcstr type, GValue *json) {
+  GPbMessage *msg = g_new(GPbMessage);
+  g_return_val_if_fail(msg, NULL);
+  GPbMessageType *mt = g_pb_message_type_get(type);
+  g_return_val_if_fail(mt, NULL, g_pb_message_free(msg));
+  msg->type = mt;
+  msg->values = g_ptr_array_new_with((GFreeCallback)g_value_free);
+  g_return_val_if_fail(_from_json(msg, json), NULL, g_pb_message_free(msg));
+  return msg;
+}
 void g_pb_message_free(GPbMessage *self) {
   g_return_if_fail(self);
   g_ptr_array_free(self->values);
