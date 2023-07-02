@@ -18,7 +18,7 @@ static inline void _string_putc(char ch, void *buffer, size_t idx,
     if (left < 1) {
       gint alloc = self->alloc + STRING_CHUNK_SIZE;
       gstr value = (gstr)g_realloc(self->value, alloc);
-      g_return_if_fail(value);
+      g_return_if_fail(value, self->max_len = self->alloc - 1);
       self->alloc = alloc;
       self->value = value;
     }

@@ -25,22 +25,28 @@ static void g_container_free_callback(GArray *pointers) {
 static void g_containers_init() {
   if (containers == NULL) {
     containers = g_map_new((GFreeCallback)g_container_free_callback);
+    g_array_set_capacity(containers->data, 10);
   }
 }
 gpointer g_auto_with(gpointer data, GFreeCallback free_callback,
                      gcstr auto_container_name) {
+  g_return_val_if_fail(data, NULL);
   g_containers_init();
   if (auto_container_name == NULL)
     auto_container_name = DEFAULT_AUTO_CONTAINER;
   GArray *pointers = (GArray *)g_map_get(containers, auto_container_name);
   if (pointers == NULL) {
     pointers = g_array_new(GAutoPointer);
-    g_map_set(containers, (gpointer)auto_container_name, pointers);
+    g_return_val_if_fail(pointers, NULL, free_callback(data));
+    g_return_val_if_fail(
+        g_map_set(containers, (gpointer)auto_container_name, pointers), NULL,
+        free_callback(data), g_array_free(pointers));
   }
   GAutoPointer pointer;
   pointer.data = data;
   pointer.free_callback = free_callback;
-  g_array_add(pointers, &pointer);
+  g_return_val_if_fail(g_array_add(pointers, &pointer), NULL,
+                       free_callback(data));
   return data;
 }
 void g_auto_container_free(gcstr auto_container_name) {

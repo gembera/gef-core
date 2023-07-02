@@ -23,13 +23,13 @@ struct _GMemoryStream {
 struct _GMemoryStreamClass {
   GStreamClass base;
 };
-void g_memory_stream_set_length(gpointer self, glong len);
+gbool g_memory_stream_set_length(gpointer self, glong len);
 glong g_memory_stream_get_length(gpointer self);
 glong g_memory_stream_get_position(gpointer self);
 glong g_memory_stream_write(gpointer self, gcstr buffer, glong length);
 glong g_memory_stream_read(gpointer self, gstr buffer, glong length);
 void g_memory_stream_seek(gpointer self, glong offset, GSeekOrigin origin);
-void g_memory_stream_set_capacity(gpointer self, glong capacity);
+gbool g_memory_stream_set_capacity(gpointer self, glong capacity);
 void g_memory_stream_flush(gpointer self);
 gbool g_memory_stream_is_eof(gpointer self);
 gpointer g_class_GMemoryStream(void);

@@ -332,7 +332,28 @@ GPbMessage *g_pb_message_decode_buffer(gcstr type, gpointer buffer,
   g_return_val_if_fail(_decode(self, &stream), NULL, g_pb_message_free(self));
   return self;
 }
+static bool _read_stream_callback(pb_istream_t *stream, pb_byte_t *buf,
+                                  size_t count) {
+  GStream *source = (GStream *)stream->state;
+  return g_stream_read(source, buf, count) == count;
+}
+
+GPbMessage *g_pb_message_decode_stream(gcstr type, GStream *source_stream) {
+  g_return_val_if_fail(type && source_stream, NULL);
+  GPbMessageType *mt = g_pb_message_type_get(type);
+  g_return_val_if_fail(mt, NULL);
+  GPbMessage *self = g_new(GPbMessage);
+  g_return_val_if_fail(self, NULL);
+  self->type = mt;
+  pb_istream_t stream;
+  stream.callback = &_read_stream_callback;
+  stream.state = source_stream;
+  stream.bytes_left = g_stream_get_length(source_stream);
+  g_return_val_if_fail(_decode(self, &stream), NULL, g_pb_message_free(self));
+  return self;
+}
 static gbool _to_json(GPbMessage *self, GValue *json) {
+  g_return_val_if_fail(self && json, FALSE);
   GPbMessageType *type = self->type;
   guint count = g_ptr_array_size(type->fields);
   guint i;
@@ -601,9 +622,29 @@ static gbool _encode(pb_ostream_t *stream, GPbMessage *msg) {
 }
 
 GArray *g_pb_message_encode(GPbMessage *self) {
+  g_return_val_if_fail(self, NULL);
   GArray *arr = g_array_new(guint8);
   g_return_val_if_fail(arr, NULL);
   pb_ostream_t stream = {&_write_callback, (gpointer)arr, SIZE_MAX, 0};
   g_return_val_if_fail(_encode(&stream, self), NULL, g_array_free(arr));
   return arr;
+}
+gbool g_pb_message_encode_buffer(GPbMessage *self, GArray *buffer) {
+  g_return_val_if_fail(self && buffer, FALSE);
+  pb_ostream_t stream = {&_write_callback, (gpointer)buffer, SIZE_MAX, 0};
+  g_return_val_if_fail(_encode(&stream, self), FALSE);
+  return TRUE;
+}
+
+static bool _write_stream_callback(pb_ostream_t *stream, const uint8_t *buf,
+                                   size_t count) {
+  GStream *target_stream = (GStream *)stream->state;
+  return count == g_stream_write(target_stream, (gcstr)buf, count);
+}
+gbool g_pb_message_encode_stream(GPbMessage *self, GStream *target_stream) {
+  g_return_val_if_fail(self && target_stream, FALSE);
+  pb_ostream_t stream = {&_write_stream_callback, (gpointer)target_stream,
+                         SIZE_MAX, 0};
+  g_return_val_if_fail(_encode(&stream, self), FALSE);
+  return TRUE;
 }

@@ -58,6 +58,8 @@ gstr g_class_name(GObjectClass *clazz);
 gbool g_is_type_of(GObjectClass *thisclazz, GObjectClass *targetclazz);
 gbool g_is_instance_of(gpointer self, GObjectClass *targetclazz);
 
+void g_class_system_reset();
+
 #define GOBJECT(p) ((GObject *)(p))
 #define CLASS(class) (GObjectClass *)g_class_##class()
 #define CLASS_NAME(class) #class "Class"

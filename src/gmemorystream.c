@@ -8,22 +8,22 @@
 glong g_memory_stream_get_length(gpointer self) {
   return GMEMORYSTREAM(self)->length;
 }
-void g_memory_stream_set_capacity(gpointer self, glong capacity) {
+gbool g_memory_stream_set_capacity(gpointer self, glong capacity) {
   GMemoryStream *s = GMEMORYSTREAM(self);
   if (capacity <= s->length)
-    return;
-  s->buffer = g_realloc(s->buffer, capacity);
-  if (s->buffer == NULL) {
-    g_log_error("g_memory_stream_set_capacity : Memory overflow!");
-  } else {
-    s->capacity = capacity;
-  }
+    return TRUE;
+  gstr newbuf = g_realloc(s->buffer, capacity);
+  g_return_val_if_fail(newbuf, FALSE);
+  s->buffer = newbuf;
+  s->capacity = capacity;
+  return TRUE;
 }
-void g_memory_stream_set_length(gpointer self, glong len) {
+gbool g_memory_stream_set_length(gpointer self, glong len) {
   GMemoryStream *s = GMEMORYSTREAM(self);
   if (len > s->capacity)
-    g_memory_stream_set_capacity(s, len);
+    g_return_val_if_fail(g_memory_stream_set_capacity(s, len), FALSE);
   s->length = len;
+  return TRUE;
 }
 glong g_memory_stream_get_position(gpointer self) {
   GMemoryStream *s = GMEMORYSTREAM(self);
@@ -38,7 +38,7 @@ glong g_memory_stream_write(gpointer self, gcstr buffer, glong length) {
         s->capacity != 0 && s->capacity <= 1024 ? s->capacity * 2 : s->capacity;
     if (s->position + length > capacity)
       capacity = s->position + length;
-    g_memory_stream_set_capacity(s, capacity);
+    g_return_val_if_fail(g_memory_stream_set_capacity(s, capacity), 0);
   }
   memcpy((gstr)s->buffer + s->position, buffer, length);
   s->position += length;

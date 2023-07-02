@@ -324,5 +324,6 @@ static void _json_to_string(GString *str, GValue *val, gint level) {
 gstr g_json_stringify(GValue *self) {
   GString *str = g_string_new();
   _json_to_string(str, self, 0);
+  g_return_val_if_fail(str->max_len == 0, NULL, g_string_free(str));
   return g_string_unwrap(str);
 }

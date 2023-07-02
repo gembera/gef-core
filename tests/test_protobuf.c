@@ -1,5 +1,6 @@
 
 #include "gjson.h"
+#include "gmemorystream.h"
 #include "gprotobuf.h"
 #include "gtime.h"
 #include <assert.h>
@@ -69,6 +70,12 @@ Data:
     ]
 }
 */
+
+// Enum PhoneType
+#define PHONETYPE_MOBILE 0
+#define PHONETYPE_HOME 1
+#define PHONETYPE_WORK 2
+
 void check_memory() {
   g_mem_record_end();
   gulong allocated = 0;
@@ -102,29 +109,62 @@ void process(guint max_mem) {
   GPbMessage *msg = NULL;
   GPbMessage *msg2 = NULL;
   GPbMessage *msg3 = NULL;
+  GPbMessage *msg4 = NULL;
   gstr msg_content = NULL;
   gstr msg_content2 = NULL;
   gstr msg_content3 = NULL;
+  gstr msg_content4 = NULL;
   GArray *buf = NULL;
+  GArray *buf2 = NULL;
   GValue *json = NULL;
   GValue *json2 = NULL;
   GValue *json3 = NULL;
+  GValue *json4 = NULL;
+  GStream *stream = NULL;
+  GStream *stream2 = NULL;
   g_info("buffer length : %d", len);
   msg = g_pb_message_decode_buffer("Person", buffer, len);
   g_goto_if_fail(msg, clean);
+  json = g_pb_message_to_json(msg);
+  g_goto_if_fail(json, clean);
+  msg_content = g_json_stringify(json);
+  g_goto_if_fail(msg_content, clean);
+
+  stream = (GStream *)g_object_new(GMemoryStream);
+  g_goto_if_fail(stream, clean);
+  g_goto_if_fail(g_stream_write(stream, buffer, len) == len, clean);
+  g_stream_seek(stream, 0, SEEK_BEGIN);
+  msg4 = g_pb_message_decode_stream("Person", stream);
+  g_goto_if_fail(msg4, clean);
+  json4 = g_pb_message_to_json(msg4);
+  g_goto_if_fail(json4, clean);
+  msg_content4 = g_json_stringify(json4);
+  g_goto_if_fail(msg_content4, clean);
+  assert(g_equal(msg_content, msg_content4));
+
+  buf2 = g_array_new(guint8);
+  g_array_set_capacity(buf2, 1024);
+  g_goto_if_fail(buf2, clean);
+  gbool buf2ok = g_pb_message_encode_buffer(msg, buf2);
   buf = g_pb_message_encode(msg);
-  g_goto_if_fail(buf, clean);
   g_info("buffer length : %d", g_array_size(buf));
+  g_goto_if_fail(buf, clean);
+  if (buf2ok)
+    assert(g_array_size(buf) == g_array_size(buf2));
+
+  stream2 = (GStream *)g_object_new(GMemoryStream);
+  g_goto_if_fail(stream2, clean);
+  gbool stream2ok = g_pb_message_encode_stream(msg, stream2);
+  if (stream2ok)
+    assert(g_array_size(buf) == g_stream_get_length(stream2));
+
   msg2 = g_pb_message_decode_buffer("Person", buf->data, g_array_size(buf));
   g_goto_if_fail(msg2, clean);
   json2 = g_pb_message_to_json(msg2);
   g_goto_if_fail(json2, clean);
   msg_content2 = g_json_stringify(json2);
   g_goto_if_fail(msg_content2, clean);
-  json = g_pb_message_to_json(msg);
-  g_goto_if_fail(json, clean);
-  msg_content = g_json_stringify(json);
-  g_goto_if_fail(msg_content, clean);
+
   msg3 = g_pb_json_to_message("Person", json);
   g_goto_if_fail(msg3, clean);
   json3 = g_pb_message_to_json(msg3);
@@ -135,16 +175,23 @@ void process(guint max_mem) {
   g_equal(msg_content, msg_content3);
   g_info(msg_content);
 clean:
+  g_object_free(stream);
+  g_object_free(stream2);
   g_free(msg_content);
   g_free(msg_content2);
   g_free(msg_content3);
+  g_free(msg_content4);
   g_array_free(buf);
+  g_array_free(buf2);
   g_value_free(json);
   g_value_free(json2);
   g_value_free(json3);
+  g_value_free(json4);
   g_pb_message_free(msg);
   g_pb_message_free(msg2);
   g_pb_message_free(msg3);
+  g_pb_message_free(msg4);
+  g_class_system_reset();
   check_memory();
 }
 
@@ -155,43 +202,20 @@ int test_protobuf(int argc, char *argv[]) {
       {1, "name", PBT_STRING},
       {2, "id", PBT_INT32},
       {3, "email", PBT_STRING},
-      {
-          4,
-          "phone",
-          PBT_MESSAGE,
-          "PhoneNumber",
-          TRUE,
-      },
-      {
-          5,
-          "snums",
-          PBT_SINT32,
-          NULL,
-          TRUE,
-      },
-      {
-          6,
-          "fnums",
-          PBT_FLOAT,
-          NULL,
-          TRUE,
-      },
+      {4, "phone", PBT_MESSAGE, "PhoneNumber", TRUE},
+      {5, "snums", PBT_SINT32, NULL, TRUE},
+      {6, "fnums", PBT_FLOAT, NULL, TRUE},
       {7, "bignum", PBT_DOUBLE},
       {8, "bigint", PBT_UINT64},
-      {
-          9,
-          "sbnums",
-          PBT_SINT64,
-          NULL,
-          TRUE,
-      },
+      {9, "sbnums", PBT_SINT64, NULL, TRUE},
       {10, "country", PBT_STRING, NULL, FALSE, {.default_str = "China"}},
       0};
   g_pb_message_type_new("Person", person_fields);
 
-  GPbField phonenumber_fields[] = {{1, "number", PBT_STRING},
-                                   {2, "type", PBT_ENUM, "PhoneType", FALSE, 1},
-                                   0};
+  GPbField phonenumber_fields[] = {
+      {1, "number", PBT_STRING},
+      {2, "type", PBT_ENUM, "PhoneType", FALSE, PHONETYPE_HOME},
+      0};
   g_pb_message_type_new("PhoneNumber", phonenumber_fields);
 
   gbool stress_test = FALSE;

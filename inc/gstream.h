@@ -25,7 +25,7 @@ struct _GStream {
 struct _GStreamClass {
   GObjectClass base;
   glong (*get_length)(gpointer self);
-  void (*set_length)(gpointer self, glong len);
+  gbool (*set_length)(gpointer self, glong len);
   glong (*get_position)(gpointer self);
   glong (*read)(gpointer self, gstr buffer, glong length);
   glong (*write)(gpointer self, gcstr buffer, glong length);
