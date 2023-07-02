@@ -169,7 +169,7 @@ static gbool _decode(GPbMessage *msg, pb_istream_t *stream) {
       g_return_val_if_fail(pb_decode_varint32(stream, &length), FALSE);
       gstr str = g_malloc(length + 1);
       g_return_val_if_fail(str, FALSE);
-      pb_read(stream, str, (size_t)length);
+      pb_read(stream, (pb_byte_t *)str, (size_t)length);
       str[length] = '\0';
       field_value =
           g_value_set(g_value_new(), G_TYPE_STR, str, g_free_callback);
@@ -210,6 +210,35 @@ static gbool _decode(GPbMessage *msg, pb_istream_t *stream) {
           FALSE, g_value_free(field_value));
     } else {
       g_ptr_array_set(msg->values, tag, field_value);
+    }
+  }
+
+  for (tag = 1; tag <= tag_max; tag++) {
+    GPbField *field = g_ptr_array_get(msg->type->fields, tag);
+    if (field && !field->repeated) {
+      GValue *value = g_ptr_array_get(msg->values, tag);
+      if (!value) {
+        switch (field->type) {
+        case PBT_MESSAGE:
+        case PBT_BYTES:
+          break;
+        case PBT_STRING:
+          value = g_value_set(g_value_new(), G_TYPE_STR,
+                              (gpointer)field->default_value.v_str, NULL);
+          break;
+        case PBT_DOUBLE:
+        case PBT_FLOAT:
+          value =
+              g_value_set_double(g_value_new(), field->default_value.v_double);
+          break;
+        default:
+          value = g_value_set_long(g_value_new(), field->default_value.v_int);
+          break;
+        }
+      }
+      if (value) {
+        g_ptr_array_set(msg->values, tag, value);
+      }
     }
   }
   return TRUE;
@@ -424,10 +453,10 @@ static gbool _encode_one(pb_ostream_t *stream, GPbField *field, GValue *value) {
     break;
   }
   case PBT_STRING: {
-    gcstr str = g_value_str(value);
+    gstr str = g_value_str(value);
     guint64 len = g_len(str);
     g_return_val_if_fail(pb_encode_varint(stream, len), FALSE);
-    g_return_val_if_fail(pb_write(stream, str, len), FALSE);
+    g_return_val_if_fail(pb_write(stream, (pb_byte_t *)str, len), FALSE);
     break;
   }
   case PBT_BYTES: {
