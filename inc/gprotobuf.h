@@ -40,10 +40,10 @@ typedef struct _GPbField {
   gcstr sub_message_type;
   gbool repeated;
   union {
-    gint64 v_int;
-    gdouble v_double;
-    gcstr v_str;
-  } default_value;
+    gint64 default_int;
+    gdouble default_double;
+    gcstr default_str;
+  };
 } GPbField;
 
 struct _GPbMessageType {

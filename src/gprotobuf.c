@@ -53,7 +53,110 @@ void g_pb_message_type_free(GPbMessageType *self) {
   g_ptr_array_free(self->fields);
   g_free(self);
 }
+static GValue *_ensure_field_repeated(GPbMessage *msg, guint32 tag) {
+  GValue *varr = (GValue *)g_ptr_array_get(msg->values, tag);
+  if (varr == NULL) {
+    GPtrArray *arr = g_ptr_array_new_with((GFreeCallback)g_value_free);
+    g_return_val_if_fail(arr, NULL);
+    varr = g_value_set(g_value_new(), G_TYPE_PTR_ARRAY, arr,
+                       (GFreeCallback)g_ptr_array_free);
+    g_return_val_if_fail(varr, NULL, g_ptr_array_free(arr));
+    g_ptr_array_set(msg->values, tag, varr);
+  }
+  return varr;
+}
 
+typedef GValue *(*GPbDecodeFieldHandler)(pb_istream_t *stream,
+                                         GPbFieldType type);
+
+static GValue *_decode_field_bool(pb_istream_t *stream, GPbFieldType type) {
+  GValue *field_value = NULL;
+  uint32_t value;
+  g_return_val_if_fail(pb_decode_varint32(stream, &value), NULL);
+  field_value = g_value_set_bool(g_value_new(), value != 0);
+  return field_value;
+}
+
+static GValue *_decode_field_int32(pb_istream_t *stream, GPbFieldType type) {
+  GValue *field_value = NULL;
+  union {
+    gint32 v_int;
+    guint32 v_uint;
+  } u;
+  g_return_val_if_fail(pb_decode_varint32(stream, &u.v_uint), NULL);
+  if (type == PBT_UINT32)
+    field_value = g_value_set_long(g_value_new(), u.v_uint);
+  else
+    field_value = g_value_set_int(g_value_new(), u.v_int);
+  return field_value;
+}
+
+static GValue *_decode_field_int64(pb_istream_t *stream, GPbFieldType type) {
+  GValue *field_value = NULL;
+  union {
+    gint64 v_int;
+    guint64 v_uint;
+  } u;
+  g_return_val_if_fail(pb_decode_varint(stream, &u.v_uint), FALSE);
+  field_value = g_value_set_long(g_value_new(), u.v_int);
+  return field_value;
+}
+static GValue *_decode_field_sint(pb_istream_t *stream, GPbFieldType type) {
+  GValue *field_value = NULL;
+  int64_t value;
+  g_return_val_if_fail(pb_decode_svarint(stream, &value), FALSE);
+  field_value = g_value_set_long(g_value_new(), value);
+  return field_value;
+}
+
+static GValue *_decode_field_fiexed32(pb_istream_t *stream, GPbFieldType type) {
+  GValue *field_value = NULL;
+  union {
+    gint32 v_int;
+    gfloat v_float;
+  } u;
+  g_return_val_if_fail(pb_decode_fixed32(stream, &u), FALSE);
+  field_value = g_value_new();
+  if (type == PBT_FLOAT) {
+    g_value_set_double(field_value, u.v_float);
+  } else {
+    g_value_set_int(field_value, u.v_int);
+  }
+  return field_value;
+}
+
+static GValue *_decode_field_fiexed64(pb_istream_t *stream, GPbFieldType type) {
+  GValue *field_value = NULL;
+  union {
+    gint64 v_long;
+    gdouble v_double;
+  } u;
+  g_return_val_if_fail(pb_decode_fixed64(stream, &u), FALSE);
+  field_value = g_value_new();
+  if (type == PBT_DOUBLE) {
+    g_value_set_double(field_value, u.v_double);
+  } else {
+    g_value_set_long(field_value, u.v_long);
+  }
+  return field_value;
+}
+static gbool _decode_packed(pb_istream_t *stream, GPbFieldType type,
+                            GPbMessage *msg, guint32 tag,
+                            GPbDecodeFieldHandler handler) {
+  pb_istream_t substream;
+  g_return_val_if_fail(pb_make_string_substream(stream, &substream), FALSE);
+  GValue *varr = _ensure_field_repeated(msg, tag);
+  g_return_val_if_fail(varr, FALSE);
+  while (substream.bytes_left > 0) {
+    GValue *field_value = handler(&substream, type);
+    g_return_val_if_fail(field_value, FALSE);
+    g_return_val_if_fail(
+        g_ptr_array_add((GPtrArray *)g_value_pointer(varr), field_value), FALSE,
+        g_value_free(field_value));
+  }
+  g_return_val_if_fail(pb_close_string_substream(stream, &substream), FALSE);
+  return TRUE;
+}
 static gbool _decode(GPbMessage *msg, pb_istream_t *stream) {
   pb_wire_type_t wire_type;
   guint32 tag;
@@ -69,88 +172,70 @@ static gbool _decode(GPbMessage *msg, pb_istream_t *stream) {
     GValue *field_value = NULL;
     GPbFieldType type = field->type;
     switch (type) {
-    case PBT_BOOL: {
-      g_return_val_if_fail(
-          wire_type == PB_WT_VARINT || wire_type == PB_WT_PACKED, FALSE);
-      uint32_t value;
-      g_return_val_if_fail(pb_decode_varint32(stream, &value), FALSE);
-      field_value = g_value_set_bool(g_value_new(), value != 0);
+    case PBT_BOOL:
+      if (wire_type == PB_WT_STRING) {
+        g_return_val_if_fail(
+            _decode_packed(stream, type, msg, tag, _decode_field_bool), FALSE);
+        continue;
+      } else {
+        field_value = _decode_field_bool(stream, type);
+      }
       break;
-    }
     case PBT_ENUM:
     case PBT_INT32:
-    case PBT_UINT32: {
-      g_return_val_if_fail(
-          wire_type == PB_WT_VARINT || wire_type == PB_WT_PACKED, FALSE);
-      union {
-        gint32 v_int;
-        guint32 v_uint;
-      } u;
-      g_return_val_if_fail(pb_decode_varint32(stream, &u.v_uint), FALSE);
-      if (type == PBT_UINT32)
-        field_value = g_value_set_long(g_value_new(), u.v_uint);
-      else
-        field_value = g_value_set_int(g_value_new(), u.v_int);
+    case PBT_UINT32:
+      if (wire_type == PB_WT_STRING) {
+        g_return_val_if_fail(
+            _decode_packed(stream, type, msg, tag, _decode_field_int32), FALSE);
+        continue;
+      } else {
+        field_value = _decode_field_int32(stream, type);
+      }
       break;
-    }
     case PBT_INT64:
-    case PBT_UINT64: {
-      g_return_val_if_fail(
-          wire_type == PB_WT_VARINT || wire_type == PB_WT_PACKED, FALSE);
-      union {
-        gint64 v_int;
-        guint64 v_uint;
-      } u;
-      g_return_val_if_fail(pb_decode_varint(stream, &u.v_uint), FALSE);
-      field_value = g_value_set_long(g_value_new(), u.v_int);
+    case PBT_UINT64:
+      if (wire_type == PB_WT_STRING) {
+        g_return_val_if_fail(
+            _decode_packed(stream, type, msg, tag, _decode_field_int64), FALSE);
+        continue;
+      } else {
+        field_value = _decode_field_int64(stream, type);
+      }
       break;
-    }
     case PBT_SINT32:
-    case PBT_SINT64: {
-      g_return_val_if_fail(
-          wire_type == PB_WT_VARINT || wire_type == PB_WT_PACKED, FALSE);
-      int64_t value;
-      g_return_val_if_fail(pb_decode_svarint(stream, &value), FALSE);
-      field_value = g_value_set_long(g_value_new(), value);
+    case PBT_SINT64:
+      if (wire_type == PB_WT_STRING) {
+        g_return_val_if_fail(
+            _decode_packed(stream, type, msg, tag, _decode_field_sint), FALSE);
+        continue;
+      } else {
+        field_value = _decode_field_sint(stream, type);
+      }
       break;
-    }
     case PBT_FLOAT:
     case PBT_FIXED32:
-    case PBT_SFIXED32: {
-      g_return_val_if_fail(
-          wire_type == PB_WT_32BIT || wire_type == PB_WT_PACKED, FALSE);
-      union {
-        gint32 v_int;
-        gfloat v_float;
-      } u;
-      g_return_val_if_fail(pb_decode_fixed32(stream, &u), FALSE);
-      field_value = g_value_new();
-      if (type == PBT_FLOAT) {
-        g_value_set_double(field_value, u.v_float);
+    case PBT_SFIXED32:
+      if (wire_type == PB_WT_STRING) {
+        g_return_val_if_fail(
+            _decode_packed(stream, type, msg, tag, _decode_field_fiexed32),
+            FALSE);
+        continue;
       } else {
-        g_value_set_int(field_value, u.v_int);
+        field_value = _decode_field_fiexed32(stream, type);
       }
       break;
-    }
-
     case PBT_DOUBLE:
     case PBT_FIXED64:
-    case PBT_SFIXED64: {
-      g_return_val_if_fail(
-          wire_type == PB_WT_64BIT || wire_type == PB_WT_PACKED, FALSE);
-      union {
-        gint64 v_long;
-        gdouble v_double;
-      } u;
-      g_return_val_if_fail(pb_decode_fixed64(stream, &u), FALSE);
-      field_value = g_value_new();
-      if (type == PBT_DOUBLE) {
-        g_value_set_double(field_value, u.v_double);
+    case PBT_SFIXED64:
+      if (wire_type == PB_WT_STRING) {
+        g_return_val_if_fail(
+            _decode_packed(stream, type, msg, tag, _decode_field_fiexed64),
+            FALSE);
+        continue;
       } else {
-        g_value_set_long(field_value, u.v_long);
+        field_value = _decode_field_fiexed64(stream, type);
       }
       break;
-    }
     case PBT_BYTES: {
       g_return_val_if_fail(wire_type == PB_WT_STRING, FALSE);
       uint32_t length;
@@ -195,18 +280,10 @@ static gbool _decode(GPbMessage *msg, pb_istream_t *stream) {
     }
     g_return_val_if_fail(field_value, FALSE);
     if (field->repeated) {
-      GValue *varr = (GValue *)g_ptr_array_get(msg->values, tag);
-      if (varr == NULL) {
-        GPtrArray *arr = g_ptr_array_new_with((GFreeCallback)g_value_free);
-        g_return_val_if_fail(arr, FALSE, g_value_free(field_value));
-        varr = g_value_set(g_value_new(), G_TYPE_PTR_ARRAY, arr,
-                           (GFreeCallback)g_ptr_array_free);
-        g_return_val_if_fail(varr, FALSE, g_ptr_array_free(arr),
-                             g_value_free(field_value));
-        g_ptr_array_set(msg->values, tag, varr);
-      }
+      GValue *varr = _ensure_field_repeated(msg, tag);
       g_return_val_if_fail(
-          g_ptr_array_add((GPtrArray *)g_value_pointer(varr), field_value),
+          varr &&
+              g_ptr_array_add((GPtrArray *)g_value_pointer(varr), field_value),
           FALSE, g_value_free(field_value));
     } else {
       g_ptr_array_set(msg->values, tag, field_value);
@@ -224,15 +301,14 @@ static gbool _decode(GPbMessage *msg, pb_istream_t *stream) {
           break;
         case PBT_STRING:
           value = g_value_set(g_value_new(), G_TYPE_STR,
-                              (gpointer)field->default_value.v_str, NULL);
+                              (gpointer)field->default_str, NULL);
           break;
         case PBT_DOUBLE:
         case PBT_FLOAT:
-          value =
-              g_value_set_double(g_value_new(), field->default_value.v_double);
+          value = g_value_set_double(g_value_new(), field->default_double);
           break;
         default:
-          value = g_value_set_long(g_value_new(), field->default_value.v_int);
+          value = g_value_set_long(g_value_new(), field->default_int);
           break;
         }
       }
