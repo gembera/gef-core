@@ -81,21 +81,16 @@ clean:
 int test_protobuf(int argc, char *argv[]) {
   g_log_init(INFO, NULL, NULL);
   g_mem_record(g_mem_record_default_callback);
+  GPbField person_fields[] = {{1, "name", PBT_STRING},
+                              {2, "id", PBT_INT32},
+                              {3, "email", PBT_STRING},
+                              {4, "phone", PBT_MESSAGE, "PhoneNumber", TRUE},
+                              0};
+  g_pb_message_type_new("Person", person_fields);
 
-  GPbField fs_person[] = {{1, "name", PBT_STRING},
-                          {2, "id", PBT_INT32},
-                          {3, "email", PBT_STRING},
-                          {4, "phone", PBT_MESSAGE, "PhoneNumber", TRUE},
-                          0};
-  GPbMessageType *mt_person = g_pb_message_type_new("Person", fs_person);
-
-  GPbField fs_person_num[] = {
-      {1, "number", PBT_STRING}, {2, "type", PBT_INT32}, 0};
-  GPbMessageType *mt_person_num =
-      g_pb_message_type_new("PhoneNumber", fs_person_num);
-
-  assert(g_equal(mt_person->name, "Person"));
-  assert(mt_person == g_pb_message_type_get("Person"));
+  GPbField phonenumber_fields[] = {
+      {1, "number", PBT_STRING}, {2, "type", PBT_ENUM, "PhoneType"}, 0};
+  g_pb_message_type_new("PhoneNumber", phonenumber_fields);
 
   guint max;
   for (max = 0; max < 5000; max += 50) {

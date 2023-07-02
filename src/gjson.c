@@ -284,6 +284,9 @@ static void _json_to_string(GString *str, GValue *val, gint level) {
   case G_TYPE_BOOL:
     g_string_append(str, g_value_bool(val) ? "true" : "false");
     break;
+  case G_TYPE_LONG:
+    g_string_printf(str, "%ld", g_value_long(val));
+    break;
   case G_TYPE_INT:
     g_string_printf(str, "%d", g_value_int(val));
     break;

@@ -77,6 +77,7 @@ static gbool _decode(GPbMessage *msg, pb_istream_t *stream) {
       field_value = g_value_set_bool(g_value_new(), value != 0);
       break;
     }
+    case PBT_ENUM:
     case PBT_INT32:
     case PBT_UINT32: {
       g_return_val_if_fail(
@@ -86,10 +87,10 @@ static gbool _decode(GPbMessage *msg, pb_istream_t *stream) {
         guint32 v_uint;
       } u;
       g_return_val_if_fail(pb_decode_varint32(stream, &u.v_uint), FALSE);
-      if (type == PBT_INT32)
-        field_value = g_value_set_int(g_value_new(), u.v_int);
-      else
+      if (type == PBT_UINT32)
         field_value = g_value_set_long(g_value_new(), u.v_uint);
+      else
+        field_value = g_value_set_int(g_value_new(), u.v_int);
       break;
     }
     case PBT_INT64:
@@ -451,6 +452,7 @@ static gbool _encode_one(pb_ostream_t *stream, GPbField *field, GValue *value) {
     g_return_val_if_fail(pb_encode_varint(stream, g_value_bool(value)), FALSE);
     break;
   }
+  case PBT_ENUM:
   case PBT_INT32:
   case PBT_UINT32:
   case PBT_INT64:
